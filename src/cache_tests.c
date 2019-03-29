@@ -35,9 +35,11 @@ static cache_state cache2;
 static uint64_t memory[32 * 1024 * 8 / 8] __ALIGN(0x00010000);
 
 static void entropy_code(uint64_t x1, uint64_t x2, uint64_t x3) {
+/*
   if (x2 > x3) {
     x1 = x2 + x3;
   }
+*/
   volatile uint64_t v __UNUSED = 0;
   v = *((uint64_t *)x1);
 }
