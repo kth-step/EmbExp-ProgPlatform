@@ -59,6 +59,8 @@ void run_cache_experiment() {
   // debug_set(cache1[SET(state1.x1)]);
 
   entropy_code(state1.x1, state1.x2, state1.x3);
+  /*  volatile uint64_t v __UNUSED = 0;
+      v = *((uint64_t *)(1000+0x80000000)); */
 
   flush_d_cache(0);
   flush_d_cache(1);

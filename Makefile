@@ -62,7 +62,7 @@ clean:
 # targets for running and debugging
 # ---------------------------------
 connect:
-	cd ../EmbExp-Remote/; ./interactive.py RPi3
+	cd ../EmbExp-Remote/; python2 interactive.py RPi3
 
 # Ctrl+] mode character
 uart:
