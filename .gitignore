@@ -1,0 +1,16 @@
+
+*.o
+
+*.elf
+*.img
+
+.gdb_history
+
+*~
+
+Makefile.local
+
+.vscode
+
+temp
+
