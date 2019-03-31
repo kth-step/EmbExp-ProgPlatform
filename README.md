@@ -1,4 +1,6 @@
-# Embedded Experiments - the program platform
+# EmbExp program platform
+
+This repository is the program platform for EmbExp embedded experiments. It can be used to build programs to run on EmbExp.
 
 ## 1. Compile
 
