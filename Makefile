@@ -5,7 +5,7 @@ ifndef CROSS
   CROSS	= aarch64-linux-gnu-
 endif
 ifndef GDB
-  GDB   = {CROSS}gdb
+  GDB   = ${CROSS}gdb
 endif
 
 
@@ -13,6 +13,7 @@ endif
 # ---------------------------------
 NAME	= output/example-program.elf
 KERNEL	= output/kernel.img
+SFLAGS  = -Iinc
 CFLAGS	= -ggdb3 -std=gnu99 -Wall -fno-builtin -Iinc
 LDFLAGS = -Bstatic --gc-sections -nostartfiles -nostdlib
 
@@ -23,10 +24,10 @@ rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst 
 # source definition
 # ---------------------------------
 SOURCES_C     = $(call rwildcard, src/, *.c)
-SOURCES_ASM   = $(call rwildcard, src/, *.asm)
+SOURCES_S     = $(call rwildcard, src/, *.S)
 INCLUDE_FILES = $(call rwildcard, inc/, *.h)
 
-OBJECTS     = $(SOURCES_C:.c=.o) $(SOURCES_ASM:.asm=.o)
+OBJECTS     = $(SOURCES_C:.c=.o) $(SOURCES_S:.S=.o)
 
 
 
@@ -35,8 +36,8 @@ OBJECTS     = $(SOURCES_C:.c=.o) $(SOURCES_ASM:.asm=.o)
 # ---------------------------------
 all: $(KERNEL)
 
-%.o: %.asm ${INCLUDE_FILES}
-	${CROSS}as -o $@ $<
+%.o: %.S ${INCLUDE_FILES}
+	${CROSS}as ${SFLAGS} -o $@ $<
 
 %.o: %.c ${INCLUDE_FILES}
 	${CROSS}gcc ${CFLAGS} -c -o $@ -fno-stack-protector $<

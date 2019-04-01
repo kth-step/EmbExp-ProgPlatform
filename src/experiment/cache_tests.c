@@ -2,6 +2,9 @@
 #include "cpu/aarch64/mmu.h"
 #include "cpu/aarch64/cache.h"
 
+#include "experiment/cache_run.h"
+
+
 #define __UNUSED __attribute__((unused))
 #define __ALIGN(x) __attribute__ ((aligned (x)))
 #define PAGE_SIZE (4096)
@@ -29,58 +32,31 @@ static void basic_mmu() {
 #define CACHEABLE(x) ((void *)(((uint64_t)(&x)) + 0x80000000))
 #define ALIAS(x)     ((void *)(((uint64_t)(&x)) + 0x40000000))
 
+//static uint64_t memory[32 * 1024 * 8 / 8] __ALIGN(0x00010000) __UNUSED;
+
+// allocated data for cache state data structures
 static cache_state cache1;
 static cache_state cache2;
 
-static uint64_t memory[32 * 1024 * 8 / 8] __ALIGN(0x00010000);
-
-static void entropy_code(uint64_t x1, uint64_t x2, uint64_t x3) {
-/*
-  if (x2 > x3) {
-    x1 = x2 + x3;
-  }
-*/
-  volatile uint64_t v __UNUSED = 0;
-  v = *((uint64_t *)x1);
-}
-
-typedef struct state_input_t {
-  uint64_t x1;
-  uint64_t x2;
-  uint64_t x3;
-} state_input;
-
-#include "entropy_input.h"
-
 void run_cache_experiment() {
+  // setup and enable mmu
   basic_mmu();
 
-  // save_cache_state(cache1);
-  // debug_set(cache1[SET(state1.x1)]);
+  // prime TLB
+  volatile uint64_t v __UNUSED = 0;
+  v = *((uint64_t *)(0x80000000));
 
-  entropy_code(state1.x1, state1.x2, state1.x3);
-  /*  volatile uint64_t v __UNUSED = 0;
-      v = *((uint64_t *)(1000+0x80000000)); */
+  // run 2 cache experiments
+  _cache_run(cache1, cache2);
+  //debug_set(cache1[SET(0)]);
+  //debug_set(cache2[SET(0)]);
 
-  flush_d_cache(0);
-  flush_d_cache(1);
-
-  // save_cache_state(cache1);
-  // debug_set(cache1[SET(state1.x1)]);
-  
-  entropy_code(state1.x1, state1.x2, state1.x3);
-  save_cache_state(cache1);
-  debug_set(cache1[SET(state1.x1)]);
- 
-  flush_d_cache(0);
-  flush_d_cache(1);
-  entropy_code(state2.x1, state2.x2, state2.x3);
-  save_cache_state(cache2);
-  // debug_set(cache1[SET(state1.x2)]);
-  debug_set(cache2[SET(state2.x1)]);
-
+  // compare and print result of comparison
   if (compare_cache(cache1, cache2) == 0)
     printf("RESULT: SUCCESS\n");
   else
     printf("RESULT: FAILED\n");
 }
+
+
+
