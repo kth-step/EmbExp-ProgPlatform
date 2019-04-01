@@ -1,5 +1,5 @@
-#include "hw/rpi3hw.h"
-#include "hw/uart.h"
+#include "board/rpi3/rpi3hw.h"
+#include "board/rpi3/uart.h"
 
 void bcm283x_mu_serial_putc(const char data)
 {

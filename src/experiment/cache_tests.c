@@ -1,6 +1,6 @@
 #include "lib/printf.h"
-#include "lib/mmu.h"
-#include "lib/cache.h"
+#include "cpu/aarch64/mmu.h"
+#include "cpu/aarch64/cache.h"
 
 #define __UNUSED __attribute__((unused))
 #define __ALIGN(x) __attribute__ ((aligned (x)))
@@ -80,7 +80,7 @@ void run_cache_experiment() {
   debug_set(cache2[SET(state2.x1)]);
 
   if (compare_cache(cache1, cache2) == 0)
-    printf("SUCCESS");
+    printf("RESULT: SUCCESS\n");
   else
-    printf("FAILED");
+    printf("RESULT: FAILED\n");
 }

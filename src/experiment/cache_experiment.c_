@@ -1,6 +1,6 @@
 #include "lib/printf.h"
-#include "lib/mmu.h"
-#include "lib/cache.h"
+#include "cpu/aarch64/mmu.h"
+#include "cpu/aarch64/cache.h"
 
 #define __UNUSED __attribute__((unused))
 #define __ALIGN(x) __attribute__ ((aligned (x)))

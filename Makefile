@@ -5,17 +5,16 @@ ifndef CROSS
   CROSS	= aarch64-linux-gnu-
 endif
 ifndef GDB
-  GDB   = gdb-multiarch
+  GDB   = {CROSS}gdb
 endif
 
 
 # settings
 # ---------------------------------
-NAME	= example-program.elf
-KERNEL	= kernel.img
+NAME	= output/example-program.elf
+KERNEL	= output/kernel.img
 CFLAGS	= -ggdb3 -std=gnu99 -Wall -fno-builtin -Iinc
 LDFLAGS = -Bstatic --gc-sections -nostartfiles -nostdlib
-
 
 rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d))
 
@@ -23,14 +22,9 @@ rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst 
 
 # source definition
 # ---------------------------------
-SOURCES_C   = $(wildcard src/*.c) \
-              $(wildcard src/*/*.c)
-
-SOURCES_ASM = $(wildcard src/*.asm) \
-              $(wildcard src/*/*.asm)
-
+SOURCES_C     = $(call rwildcard, src/, *.c)
+SOURCES_ASM   = $(call rwildcard, src/, *.asm)
 INCLUDE_FILES = $(call rwildcard, inc/, *.h)
-
 
 OBJECTS     = $(SOURCES_C:.c=.o) $(SOURCES_ASM:.asm=.o)
 
@@ -47,14 +41,17 @@ all: $(KERNEL)
 %.o: %.c ${INCLUDE_FILES}
 	${CROSS}gcc ${CFLAGS} -c -o $@ -fno-stack-protector $<
 
-$(NAME): ${OBJECTS} entry/entry.o
-	${CROSS}ld $(LDFLAGS) -o $@ -T linkerscript.ld $^
+$(NAME): ${OBJECTS}
+	mkdir -p ./output
+	${CROSS}ld $(LDFLAGS) -o $@ -T linkerscripts/rpi3.ld $^
 
 $(KERNEL): $(NAME)
+	mkdir -p ./output
 	${CROSS}objcopy --gap-fill=0xff -j .text -j .rodata -j .data -O binary $< $@
 
 clean:
-	rm -f $(KERNEL) $(NAME) ${OBJECTS} entry/entry.o
+	rm -rf output
+	rm -f $(call rwildcard, src/, *.o)
 
 
 
@@ -69,14 +66,14 @@ uart:
 	telnet localhost 20088
 
 run: $(NAME)
-	${GDB} -x run.gdb $(NAME)
+	${GDB} -x scripts/run.gdb $(NAME)
 
 log:
 	nc localhost 20088
 
 runlog: $(NAME)
-	./run_only.sh "make log" "make run"
+	./scripts/run_only.sh "make log" "make run"
 
 runlog_reset: $(NAME)
-	./connect_and_run.sh "make log" "make run"
+	./scripts/connect_and_run.sh "make log" "make run"
 

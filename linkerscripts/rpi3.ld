@@ -16,7 +16,7 @@ SECTIONS
 	. = ALIGN(8);
 	.text :
 	{
-	    entry/entry.o (.text*)
+	    src/board/rpi3/entry.o (.text*)
 		*(.text*)
 	}
 

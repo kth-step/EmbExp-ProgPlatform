@@ -1,6 +1,8 @@
 
 .globl _start
 
+.globl _reset_core0
+
 .section .text
 _start:
 	// all four cores are executing from here
@@ -15,6 +17,7 @@ _start:
 	mov w0, #1
 	bl _set_led
 
+_reset_core0:
 	// ... to execute the main c function
 	ldr x5, =0x00100000
 	mov sp, x5

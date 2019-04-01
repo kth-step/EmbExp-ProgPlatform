@@ -1,4 +1,4 @@
-#include "lib/cache.h"
+#include "cpu/aarch64/cache.h"
 #include "lib/printf.h"
 
 void flush_d_cache(uint64_t level) {

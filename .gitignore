@@ -1,8 +1,7 @@
 
 *.o
-
-*.elf
-*.img
+output
+temp
 
 .gdb_history
 
@@ -12,5 +11,4 @@ Makefile.local
 
 .vscode
 
-temp
 

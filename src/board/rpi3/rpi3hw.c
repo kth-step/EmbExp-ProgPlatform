@@ -12,7 +12,7 @@
  * Copyright (c) 2012 David Welch dwelch@dwelch.com
  */
 
-#include "hw/rpi3hw.h"
+#include "board/rpi3/rpi3hw.h"
 
 static void enable_af_pins(int clock, uint32_t bitmask)
 {
