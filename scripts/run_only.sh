@@ -2,8 +2,9 @@
 
 # setup environment
 my_pid=$BASHPID
-postuart__exec=$1
-postdebug_exec=$2
+rdycheck__exec=$1
+postuart__exec=$2
+postdebug_exec=$3
 #echo "exec when uart  ready: $postuart__exec"
 #echo "exec when debug ready: $postdebug_exec"
 tempfifo="./temp/interactive.in"
@@ -39,6 +40,11 @@ if [ ! -p $tempfifo ]; then
 else
     echo "another interactive session is still running" >&2
     exit 1
+fi
+
+# check if the connection is ready
+if ! $rdycheck__exec ; then
+    kill -SIGINT ${my_pid}
 fi
 
 # start interactive session

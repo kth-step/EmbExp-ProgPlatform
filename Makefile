@@ -62,6 +62,9 @@ clean:
 connect:
 	cd ../EmbExp-Remote/; python2 interactive.py RPi3
 
+checkready:
+	./scripts/check_ready.sh
+
 # Ctrl+] mode character
 uart:
 	telnet localhost 20088
@@ -73,7 +76,7 @@ log:
 	nc localhost 20088
 
 runlog: $(NAME)
-	./scripts/run_only.sh "make log" "make run"
+	./scripts/run_only.sh "make checkready" "make log" "make run"
 
 runlog_reset: $(NAME)
 	./scripts/connect_and_run.sh "make log" "make run"
