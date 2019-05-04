@@ -1,12 +1,15 @@
 # cross compiler
 # ---------------------------------
 -include Makefile.local
-ifndef CROSS
-  CROSS	= aarch64-linux-gnu-
+ifndef EMBEXP_CROSS
+  EMBEXP_CROSS	= aarch64-linux-gnu-
 endif
-ifndef GDB
-  GDB   = ${CROSS}gdb
+ifndef EMBEXP_GDB
+  EMBEXP_GDB    = ${EMBEXP_CROSS}gdb
 endif
+
+CROSS = ${EMBEXP_CROSS}
+GDB   = ${EMBEXP_GDB}
 
 
 # settings
