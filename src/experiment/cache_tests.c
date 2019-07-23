@@ -38,6 +38,7 @@ static void basic_mmu() {
 static cache_state cache1;
 static cache_state cache2;
 
+#ifndef SINGLE_EXPERIMENTS
 void run_cache_experiment() {
   // setup and enable mmu
   basic_mmu();
@@ -57,6 +58,6 @@ void run_cache_experiment() {
   else
     printf("RESULT: FAILED\n");
 }
-
+#endif
 
 

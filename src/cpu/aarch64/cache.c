@@ -117,6 +117,48 @@ void get_cache_line(cache_line *line, uint64_t set, uint64_t way) {
   line->valid = (((0x60000000 & value) >> 29) != 0);
 }
 
+
+uint64_t get_prefetching_conf() {
+  uint64_t volatile value;
+  asm (
+       "MRS %x[result], S3_1_C15_C2_0"
+       : [result] "=r" (value)
+       : 
+       );
+  return value;
+}
+
+
+prefetch_conf parse_prefetch_conf(uint64_t conf) {
+  prefetch_conf res;
+  res.NPFSTRM = (conf >> 19) & 0b11;
+  res.STRIDE  = (conf >> 17) & 0b1;
+  res.L1PCTL  = (conf >> 13) & 0b111;
+  return res;
+}
+
+uint64_t set_prefetching_conf(uint64_t conf, prefetch_conf new_conf) {
+  uint64_t mask = ~((0b11<<19) | (0b1<<17) | (0b111<<13));
+  //printf("mask %b \n", mask);
+  conf &= mask;
+  conf |= (((uint64_t)new_conf.NPFSTRM) & 0b11) << 19;
+  conf |= (((uint64_t)new_conf.STRIDE) & 0b1) << 17;
+  uint64_t new_L1PCTL = (((uint64_t)new_conf.L1PCTL) & 0b111) << 13;
+  printf("new_L1PCTL %b \n", new_L1PCTL);
+  conf = conf | new_L1PCTL;
+  printf("new_conf %b \n", conf);
+  
+  uint64_t volatile value = conf;
+  asm (
+       "MSR S3_1_C15_C2_0, %x[input_i]"
+       :
+       : [input_i] "r" (value)
+       );
+  return conf;
+}
+
+
+
 void save_cache_state(cache_state cache) {
   for (int set=0; set<SETS; set++) {
     for (int way=0; way<WAYS; way++) {
@@ -127,24 +169,43 @@ void save_cache_state(cache_state cache) {
 
 
 
-void debug_line(cache_line * line) {
+void debug_line(cache_line * line, _Bool values) {
   uint64_t i;
   printf(" tag %x\r\n", line->tag);
   printf(" valid %d\r\n", (line->valid));
-  for (i=0; i<8; i++) {
-    printf(" %x-%x ", (line->data[i] >> 32), line->data[i]);
+  if (values) {
+    for (i=0; i<8; i++) {
+      printf(" %x-%x ", (line->data[i] >> 32), line->data[i]);
+    }
+    printf("\n");
   }
-  printf("\n");
   printf(" regs: %x-%x %x-%x\n", (line->r0 >> 32), line->r0, (line->r1 >> 32), line->r1);
 
 }
 
+void debug_line_info(cache_line * line) {
+  uint64_t i;
+  if (!line->valid)
+    return;
 
-void debug_set(set_t set) {
+  printf(" tag %x\r\n", line->tag);
+  printf(" regs: %x-%x %x-%x\n", (line->r0 >> 32), line->r0, (line->r1 >> 32), line->r1);
+
+}
+
+void debug_set(set_t set, _Bool values) {
   uint64_t i;
   printf("Debugging set\r\n");
   for (i=0; i<WAYS; i++) {
-    debug_line(&(set[i]));
+    debug_line(&(set[i]), values);
+  }
+}
+
+void debug_set_info(set_t set) {
+  uint64_t i;
+  printf("Info set\r\n");
+  for (i=0; i<WAYS; i++) {
+    debug_line_info(&(set[i]));
   }
 }
 
