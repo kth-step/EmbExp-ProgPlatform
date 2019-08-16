@@ -20,6 +20,7 @@ echo "---------------------------"
 
 # create temp folder if it doesn't exist yet
 mkdir -p ./temp
+rm ./temp/*
 
 # setup finalization
 finalizer() {
@@ -64,6 +65,7 @@ do
     echo -n "."
     sleep 1
 done
+sleep 1
 
 # uart can be connected now
 echo

@@ -17,6 +17,7 @@ echo "---------------------------"
 
 # create temp folder if it doesn't exist yet
 mkdir -p ./temp
+rm ./temp/*
 
 # setup finalization
 finalizer() {
