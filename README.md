@@ -13,7 +13,7 @@ This repository is the program platform for EmbExp embedded experiments. It can 
 ## 2. Connect to experiment platform (embexp-remote)
 
 * run `./interactive.py RPi3` in `embexp-remote`
-* wait until openocd is started and the local ports are connected (20088-UART 20033-gdb and 20044-oocd_telnet)
+* wait until openocd is started and the local ports are connected (20000-UART 20013-gdb and 20004-oocd_telnet)
 * leave the terminal running until you're done
 * don't forget to disconnect afterwards by pressing return in this terminal (so that the board is free for others again)
 * if one of the applications crashes by some operation (like openocd), just stop the script by pressing return and start everything again
@@ -21,7 +21,7 @@ This repository is the program platform for EmbExp embedded experiments. It can 
 
 ## 3. Connecting to the UART
 
-* run telnet localhost 20088
+* run telnet localhost 20000
 * press the key combination `^]` (`Ctrl+]`)
 * type `mode character` and hit return
 
@@ -37,7 +37,7 @@ This repository is the program platform for EmbExp embedded experiments. It can 
 ## 5. Connecting with GDB
 
 * run `aarch64-elf-gdb rpi3-jtag.elf` (or as above)
-* in gdb, type `target remote localhost:20033`
+* in gdb, type `target remote localhost:20013`
 * in gdb, type `load` (do this again when you recompile to reload everything)
 * in gdb, type `b main`
 * in gdb, type `j main`

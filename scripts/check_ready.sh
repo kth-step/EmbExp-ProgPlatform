@@ -2,8 +2,8 @@
 
 # check if the ports are available
 declare -a ports_to_check=(
-    20088
-    20033
+    20000
+    20013
 )
 
 # loop over the ports
