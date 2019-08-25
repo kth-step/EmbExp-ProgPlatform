@@ -70,13 +70,13 @@ checkready:
 
 # Ctrl+] mode character
 uart:
-	telnet localhost 20088
+	telnet localhost 20000
 
 run: $(NAME)
 	${GDB} -x scripts/run.gdb $(NAME)
 
 log:
-	nc localhost 20088
+	nc localhost 20000
 
 runlog: $(NAME)
 	./scripts/run_only.sh "make checkready" "make log" "make run"
