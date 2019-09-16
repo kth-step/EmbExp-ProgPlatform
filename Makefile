@@ -63,7 +63,7 @@ clean:
 # targets for running and debugging
 # ---------------------------------
 connect:
-	cd ../EmbExp-Remote/; ./interactive.py RPi3
+	../EmbExp-Box/interface/remote.py RPi3
 
 checkready:
 	./scripts/check_ready.sh
@@ -79,8 +79,8 @@ log:
 	nc localhost 20000
 
 runlog: $(NAME)
-	./scripts/run_only.sh "make checkready" "make log" "make run"
+	./scripts/run_only.py
 
 runlog_reset: $(NAME)
-	./scripts/connect_and_run.sh "make log" "make run"
+	./scripts/connect_and_run.py
 
