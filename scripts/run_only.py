@@ -24,7 +24,7 @@ subprocess.call(["rm", tempuartlog])
 subprocess.call(["rm", temprunlog])
 
 with open(tempuartlog, "w") as uartlog:
-	uartproc = subprocess.Popen(postuart__exec, stdout=uartlog, stderr=subprocess.STDOUT)
+	uartproc = subprocess.Popen(postuart__exec, stdout=uartlog, stderr=None)
 	try:
 		print("starting uart logging")
 		with open(temprunlog, "w") as runlog:
