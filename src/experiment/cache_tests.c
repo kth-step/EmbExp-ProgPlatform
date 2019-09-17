@@ -54,9 +54,9 @@ void run_cache_experiment() {
 
   // compare and print result of comparison
   if (compare_cache(cache1, cache2) == 0)
-    printf("RESULT: SUCCESS\n");
+    printf("RESULT: EQUAL\n");
   else
-    printf("RESULT: FAILED\n");
+    printf("RESULT: UNEQUAL\n");
 }
 #endif
 

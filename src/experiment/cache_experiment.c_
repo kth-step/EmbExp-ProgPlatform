@@ -37,9 +37,9 @@ static void basic_mmu() {
 
 void assert(uint64_t condition, char * string) {
   if (condition)
-    printf("condition %s success\n", string);
+    printf("condition %s holds\n", string);
   else
-    printf("condition %s FAILED\n", string);
+    printf("condition %s fails\n", string);
 }
 
 
