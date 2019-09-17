@@ -76,7 +76,7 @@ run: $(NAME)
 	${GDB} -x scripts/run.gdb $(NAME)
 
 log:
-	nc localhost 20000
+	@nc localhost 20000
 
 runlog: $(NAME)
 	./scripts/run_only.py

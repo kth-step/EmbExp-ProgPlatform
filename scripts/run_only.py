@@ -3,7 +3,7 @@
 import subprocess
 
 rdycheck__exec = ["make", "checkready"]
-postuart__exec = ["make", "log"]
+postuart__exec = ["make", "--no-print-directory", "log"]
 postdebug_exec = ["make", "run"]
 
 retval = subprocess.call(rdycheck__exec)
