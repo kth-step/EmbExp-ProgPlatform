@@ -115,8 +115,8 @@ void test_cache_flush() {
   assert((x == y), " cacheable alias has the same value");
 }
 
-extern uint64_t experiment_memory[32 * 1024 * 8 / 8];
-#define memory experiment_memory
+extern uint64_t _experiment_memory[32 * 1024 * 8 / 8];
+#define memory _experiment_memory
 
 void test_two_ways() {
   flush_d_cache(0);

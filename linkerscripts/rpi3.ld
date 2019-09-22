@@ -11,12 +11,24 @@ OUTPUT_ARCH(aarch64)
 ENTRY(_start)
 SECTIONS
 {
-	. = 0x00001000;
+	__boot_loc              =   0x1000;
+
+	__experiment_code_loc   =   0x2000;
+	__experiment_memory_loc = 0x100000;
+	__experiment_memory_len =  0x40000;/* 32 * 1024 * 8 */
+
+
+	. = __boot_loc;
 
 	. = ALIGN(8);
-	.text :
+	.text __boot_loc :
 	{
-	    src/board/rpi3/entry.o (.text*)
+		src/board/rpi3/entry.o (.text*)
+
+		__experiment_code_loc_rel = __experiment_code_loc - __boot_loc;
+		. = __experiment_code_loc_rel;
+		KEEP(*(.experiment_code)) /* keep variable even if not referenced */
+
 		*(.text*)
 	}
 
@@ -61,14 +73,10 @@ SECTIONS
 		KEEP(*(.__bss_end));
 	}
 
-	.experiment_memory 0x100000 :
+	.experiment_memory __experiment_memory_loc :
 	{
-		KEEP(*(.experiment_memory)) /* keep variable even if not referenced */
-	}
-
-	.experiment_code 0x200000 :
-	{
-		KEEP(*(.experiment_code)) /* keep variable even if not referenced */
+		_experiment_memory = . ;
+		. += __experiment_memory_len ;/* 32 * 1024 * 8 */
 	}
 
 	/DISCARD/ : { *(.dynsym) }

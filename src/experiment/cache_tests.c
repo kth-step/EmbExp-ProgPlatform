@@ -37,26 +37,15 @@ static cache_state cache1;
 static cache_state cache2;
 
 // memory space allocated for experiments
-uint64_t __attribute__((section (".experiment_memory"))) experiment_memory[32 * 1024 * 8 / 8];
-uint32_t __attribute__((section (".experiment_code"))) experiment_code[256];
-
-extern uint8_t _scamv_begin;
-extern uint8_t _scamv_end;
+extern uint64_t _experiment_memory[32 * 1024 * 8 / 8];
 
 
 #ifndef SINGLE_EXPERIMENTS
 void run_cache_experiment() {
-  int length;
   // !!! clean experiment memory first !!!
-  length = sizeof(experiment_memory)/sizeof(uint64_t);
+  int length = sizeof(_experiment_memory)/sizeof(uint64_t);
   for (int i = 0; i < length; i++) {
-    experiment_memory[i] = 0;
-  }
-  // !!! and copy code to experiment section !!!
-  length = (&_scamv_end - &_scamv_begin);
-  if (length > sizeof(experiment_code)/sizeof(uint32_t)) return;
-  for (int i = 0; i < length; i++) {
-    ((uint8_t*)experiment_code)[i] = (&_scamv_begin)[i];
+    _experiment_memory[i] = 0;
   }
 
   // setup and enable mmu

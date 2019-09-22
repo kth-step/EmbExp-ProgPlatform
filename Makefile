@@ -37,7 +37,7 @@ OBJECTS     = $(SOURCES_C:.c=.o) $(SOURCES_S:.S=.o)
 
 # compilation and linking
 # ---------------------------------
-all: $(NAME_DA)
+all: $(NAME)
 
 %.o: %.S ${INCLUDE_FILES}
 	${CROSS}as ${SFLAGS} -o $@ $<
@@ -48,9 +48,7 @@ all: $(NAME_DA)
 $(NAME): ${OBJECTS}
 	mkdir -p ./output
 	${CROSS}ld $(LDFLAGS) -o $@ -T linkerscripts/rpi3.ld $^
-
-$(NAME_DA): $(NAME)
-	${CROSS}objdump -t -h -D $< > $@
+	${CROSS}objdump -t -h -D $@ > "$@_da"
 
 clean:
 	rm -rf output
@@ -83,7 +81,10 @@ runlog: $(NAME)
 runlog_reset: $(NAME)
 	./scripts/connect_and_run.py
 
+cleanuart:
+	make clean && make runlog && cat temp/uart.log
+
 
 .PHONY: all clean
-.PHONY: connect checkready uart run log runlog runlog_reset
+.PHONY: connect checkready uart run log runlog runlog_reset cleanuart
 
