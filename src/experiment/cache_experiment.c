@@ -9,7 +9,7 @@
 uint64_t page_table_l1[4] __ALIGN(PAGE_SIZE);
 
 
-static void basic_mmu() {
+static void __UNUSED basic_mmu() {
   init_mmu();
   set_l1(page_table_l1);
   // Set up translation table entries in memory with looped store
@@ -115,7 +115,8 @@ void test_cache_flush() {
   assert((x == y), " cacheable alias has the same value");
 }
 
-uint64_t memory[32 * 1024 * 8 / 8] __ALIGN(0x00010000);;
+extern uint64_t experiment_memory[32 * 1024 * 8 / 8];
+#define memory experiment_memory
 
 void test_two_ways() {
   flush_d_cache(0);
@@ -215,7 +216,7 @@ static void entropy_code(uint64_t x1, uint64_t x2, uint64_t x3) {
   v = *((uint64_t *)x1);
 }
 
-static void test_entropy() {
+static void __UNUSED test_entropy() {
   flush_d_cache(0);
   flush_d_cache(1);
   memory[0] = 0x100;

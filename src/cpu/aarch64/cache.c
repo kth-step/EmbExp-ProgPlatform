@@ -184,7 +184,6 @@ void debug_line(cache_line * line, _Bool values) {
 }
 
 void debug_line_info(cache_line * line) {
-  uint64_t i;
   if (!line->valid)
     return;
 

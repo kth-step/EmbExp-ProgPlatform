@@ -1,6 +1,13 @@
 
 .globl _cache_run
 
+.section .experiment_code_sec
+
+scamv_entry:
+.include "experiment/cache_run_input.h"
+	ret
+
+
 .section .text
 
 scamv_setup1:
@@ -11,10 +18,6 @@ scamv_setup2:
 .include "experiment/cache_run_input_setup2.h"
 	ret
 
-
-scamv_entry:
-.include "experiment/cache_run_input.h"
-	ret
 
 _cache_run:
 	sub sp, sp, #(8 * 40)

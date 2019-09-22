@@ -15,10 +15,10 @@ GDB   = ${EMBEXP_GDB}
 # settings
 # ---------------------------------
 NAME	= output/example-program.elf
-KERNEL	= output/kernel.img
+NAME_DA	= output/example-program.da
 SFLAGS  = -Iinc
 CFLAGS	= -ggdb3 -std=gnu99 -Wall -fno-builtin -Iinc
-LDFLAGS = -Bstatic --gc-sections -nostartfiles -nostdlib
+LDFLAGS = -Bstatic -nostartfiles -nostdlib
 
 rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d))
 
@@ -37,7 +37,7 @@ OBJECTS     = $(SOURCES_C:.c=.o) $(SOURCES_S:.S=.o)
 
 # compilation and linking
 # ---------------------------------
-all: $(KERNEL)
+all: $(NAME_DA)
 
 %.o: %.S ${INCLUDE_FILES}
 	${CROSS}as ${SFLAGS} -o $@ $<
@@ -49,9 +49,8 @@ $(NAME): ${OBJECTS}
 	mkdir -p ./output
 	${CROSS}ld $(LDFLAGS) -o $@ -T linkerscripts/rpi3.ld $^
 
-$(KERNEL): $(NAME)
-	mkdir -p ./output
-	${CROSS}objcopy --gap-fill=0xff -j .text -j .rodata -j .data -O binary $< $@
+$(NAME_DA): $(NAME)
+	${CROSS}objdump -t -d $< > $@
 
 clean:
 	rm -rf output
@@ -83,4 +82,8 @@ runlog: $(NAME)
 
 runlog_reset: $(NAME)
 	./scripts/connect_and_run.py
+
+
+.PHONY: all clean
+.PHONY: connect checkready uart run log runlog runlog_reset
 

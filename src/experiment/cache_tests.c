@@ -32,14 +32,21 @@ static void basic_mmu() {
 #define CACHEABLE(x) ((void *)(((uint64_t)(&x)) + 0x80000000))
 #define ALIAS(x)     ((void *)(((uint64_t)(&x)) + 0x40000000))
 
-//static uint64_t memory[32 * 1024 * 8 / 8] __ALIGN(0x00010000) __UNUSED;
-
 // allocated data for cache state data structures
 static cache_state cache1;
 static cache_state cache2;
 
+// memory space allocated for experiments
+uint64_t __attribute__((section (".experiment_memory"))) experiment_memory[32 * 1024 * 8 / 8];
+
 #ifndef SINGLE_EXPERIMENTS
 void run_cache_experiment() {
+  // !!! clean experiment memory first !!!
+  uint64_t length = sizeof(experiment_memory)/sizeof(uint64_t);
+  for (int i = 0; i < length; i++) {
+    experiment_memory[i] = 0;
+  }
+
   // setup and enable mmu
   basic_mmu();
 

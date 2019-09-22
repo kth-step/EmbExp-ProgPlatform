@@ -61,6 +61,16 @@ SECTIONS
 		KEEP(*(.__bss_end));
 	}
 
+	.experiment_memory_sec 0x100000 :
+	{
+		KEEP(*(.experiment_memory)) /* keep variable even if not referenced */
+	}
+
+	.experiment_code_sec 0x200000 :
+	{
+		KEEP(*(.experiment_code)) /* keep variable even if not referenced */
+	}
+
 	/DISCARD/ : { *(.dynsym) }
 	/DISCARD/ : { *(.dynstr*) }
 	/DISCARD/ : { *(.dynamic*) }
