@@ -1,14 +1,14 @@
 
 .globl _cache_run
-
-.section .experiment_code_sec
-
-scamv_entry:
-.include "experiment/cache_run_input.h"
-	ret
-
+.globl _scamv_begin
+.globl _scamv_end
 
 .section .text
+
+_scamv_begin:
+.include "experiment/cache_run_input.h"
+	ret
+_scamv_end:
 
 scamv_setup1:
 .include "experiment/cache_run_input_setup1.h"
@@ -63,7 +63,7 @@ _cache_run:
 
 // run the experiment code - run#1
 	bl scamv_setup1
-	bl scamv_entry
+	bl experiment_code
 
 // save the cache state for run#1
 	//save_cache_state(cache1);
@@ -87,7 +87,7 @@ _cache_run:
 
 // run the experiment code - run#2
 	bl scamv_setup2
-	bl scamv_entry
+	bl experiment_code
 
 // save the cache state for run#2
 	//save_cache_state(cache1);

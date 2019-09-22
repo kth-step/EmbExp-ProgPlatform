@@ -50,7 +50,7 @@ $(NAME): ${OBJECTS}
 	${CROSS}ld $(LDFLAGS) -o $@ -T linkerscripts/rpi3.ld $^
 
 $(NAME_DA): $(NAME)
-	${CROSS}objdump -t -d $< > $@
+	${CROSS}objdump -t -h -D $< > $@
 
 clean:
 	rm -rf output
