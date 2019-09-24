@@ -1,5 +1,4 @@
 # connect to the remote
-target remote localhost:20013
 load
 
 # clear all previous state

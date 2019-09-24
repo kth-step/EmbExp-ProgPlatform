@@ -59,21 +59,26 @@ clean:
 
 # targets for running and debugging
 # ---------------------------------
+ifndef EMBEXP_INSTANCE_IDX
+  export EMBEXP_INSTANCE_IDX=0
+endif
+export EMBEXP_UART_PORT=$(shell bash -c "echo $$(( 20000 + ($(EMBEXP_INSTANCE_IDX) * 100) ))")
+export EMBEXP_GDBS_PORT=$(shell bash -c "echo $$(( 20013 + ($(EMBEXP_INSTANCE_IDX) * 100) ))")
 connect:
-	../EmbExp-Box/interface/remote.py RPi3
+	../EmbExp-Box/interface/remote.py RPi3 -idx $(EMBEXP_INSTANCE_IDX)
 
 checkready:
 	./scripts/check_ready.sh
 
 # Ctrl+] mode character
 uart:
-	telnet localhost 20000
-
-run: $(NAME)
-	${GDB} -x scripts/run.gdb $(NAME)
+	telnet localhost $(EMBEXP_UART_PORT)
 
 log:
-	@nc localhost 20000
+	@nc localhost $(EMBEXP_UART_PORT)
+
+run: $(NAME)
+	${GDB} --eval-command="target remote localhost:$(EMBEXP_GDBS_PORT)" -x scripts/run.gdb $(NAME)
 
 runlog: $(NAME)
 	./scripts/run_only.py

@@ -2,8 +2,8 @@
 
 # check if the ports are available
 declare -a ports_to_check=(
-    20000
-    20013
+    ${EMBEXP_UART_PORT}
+    ${EMBEXP_GDBS_PORT}
 )
 
 # loop over the ports
