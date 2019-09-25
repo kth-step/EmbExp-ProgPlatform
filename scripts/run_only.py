@@ -6,14 +6,15 @@ rdycheck__exec = ["make", "checkready"]
 postuart__exec = ["make", "--no-print-directory", "log"]
 postdebug_exec = ["make", "run"]
 
+tempuartlog = "./temp/uart.log"
+temprunlog  = "./temp/run.log"
+
 retval = subprocess.call(rdycheck__exec)
 
 if retval != 0:
 	raise Exception("connection has not been established yet, run \"make connect\" first")
 
 
-tempuartlog = "./temp/uart.log"
-temprunlog  = "./temp/run.log"
 print( "---------------------------")
 print(f"uart log > {tempuartlog}")
 print(f"run log  > {temprunlog}")
@@ -37,5 +38,4 @@ with open(tempuartlog, "w") as uartlog:
 		print()
 		print("terminating uart logging process")
 		uartproc.terminate()
-
 

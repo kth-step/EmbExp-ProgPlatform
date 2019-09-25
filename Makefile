@@ -82,9 +82,15 @@ run: $(NAME)
 
 runlog: $(NAME)
 	./scripts/run_only.py
+	@echo "======================="
+	@echo "======================="
+	@cat temp/uart.log
 
 runlog_reset: $(NAME)
 	./scripts/connect_and_run.py
+
+runlog_try: $(NAME)
+	./scripts/try_run_only.py
 
 cleanuart:
 	make clean && make runlog && cat temp/uart.log

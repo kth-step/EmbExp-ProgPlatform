@@ -4,11 +4,16 @@ import subprocess
 import time
 import sys
 
+rdycheck__exec = ["make", "checkready"]
 connect_exec = ["make", "connect"]
 runlog__exec = ["make", "runlog"]
 
-
 tempfile = "./temp/interactive.log"
+
+retval = subprocess.call(rdycheck__exec)
+if retval == 0:
+	raise Exception("connection has already been established, find the running process and stop it first")
+
 print( "---------------------------")
 print(f"interactive output > {tempfile}")
 print( "---------------------------")
@@ -47,5 +52,4 @@ with open(tempfile, "w+") as connectlog:
 		print()
 		print("terminating connect process")
 		connectproc.terminate()
-
 
