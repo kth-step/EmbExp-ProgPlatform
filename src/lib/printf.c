@@ -4,8 +4,8 @@
 
 static void uart_putchar(char c)
 {
-  if (c == '\n')
-    bcm283x_mu_serial_putc('\r');
+  //if (c == '\n')
+  //  bcm283x_mu_serial_putc('\r');
   bcm283x_mu_serial_putc(c);
 }
 
