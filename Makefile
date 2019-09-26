@@ -77,11 +77,8 @@ uart:
 log:
 	@nc localhost $(EMBEXP_UART_PORT)
 
-run: $(NAME)
-	${GDB} --eval-command="target remote localhost:$(EMBEXP_GDBS_PORT)" -x scripts/run.gdb $(NAME)
-
 runlog: $(NAME)
-	./scripts/run_only.py
+	./scripts/run_only.py ${GDB} "localhost:$(EMBEXP_GDBS_PORT)" $(NAME)
 	@echo "======================="
 	@echo "======================="
 	@cat temp/uart.log

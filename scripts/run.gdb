@@ -13,7 +13,12 @@ detach
 quit
 end
 
-# jump to an entry point (preferably resetting the stack and so on)
-#j main.c:15
-#j _start
+# jump to an entry point that resets the stack also
 j _reset_core0
+
+# in case of interruption:
+set confirm off
+delete
+detach
+quit
+
