@@ -17,6 +17,12 @@ scamv_setup2:
 .include "experiment/cache_run_input_setup2.h"
 	ret
 
+.section .data
+_sp_store:
+	.quad 0
+
+
+.section .text
 
 _cache_run:
 	sub sp, sp, #(8 * 40)
@@ -51,6 +57,11 @@ _cache_run:
 	str x28, [sp, #(8 * 28)]
 	str x29, [sp, #(8 * 29)] // FP
 	str x30, [sp, #(8 * 30)] // LR
+
+// store SP register
+	ldr x0, =_sp_store
+	mov x1, sp
+	str x1, [x0]
 
 // flush the cache
 	//flush_d_cache(0);
@@ -89,10 +100,15 @@ _cache_run:
 	bl scamv_entry
 
 // save the cache state for run#2
-	//save_cache_state(cache1);
+	//save_cache_state(cache2);
 	ldr x0,  [sp, #(8 *  1)]
 	bl save_cache_state
 
+
+// restore SP register
+	ldr x0, =_sp_store
+	ldr x1, [x0]
+	mov sp, x1
 
 	ldr x0,  [sp, #(8 *  0)]
 	ldr x1,  [sp, #(8 *  1)]
