@@ -30,7 +30,13 @@ with open(tempuartlog, "w") as uartlog:
 		print("starting uart logging")
 		with open(temprunlog, "w") as runlog:
 			print("starting run logging")
-			subprocess.call(postdebug_exec, stdout=runlog, stderr=subprocess.STDOUT)
+			try:
+				subprocess.call(postdebug_exec, stdout=runlog, stderr=subprocess.STDOUT, timeout=2)
+			except subprocess.TimeoutExpired:
+				print("!" * 60)
+				print("!!! the execution on the board didn't finish. something is off.")
+				print("!" * 60)
+				raise
 			print()
 			print("finishing run logging process")
 		print("finishing uart logging")
