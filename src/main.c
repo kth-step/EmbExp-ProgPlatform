@@ -12,8 +12,7 @@ int main()
 {
   uart_init();
 
-  printf("start\r\n");
-  printf("\nInit complete.\n");
+  printf("Init complete.\n");
 
   run_cache_experiment();
   
