@@ -4,27 +4,42 @@
 .section .experiment_code
 scamv_entry:
 .include "experiment/cache_run_input.h"
-	ret
+	b scamv_exit
 
-
-.section .text
-
-scamv_setup1:
-.include "experiment/cache_run_input_setup1.h"
-	ret
-
-scamv_setup2:
-.include "experiment/cache_run_input_setup2.h"
-	ret
 
 .section .data
 _sp_store:
+	.quad 0
+_scamv_ret_store:
 	.quad 0
 
 
 .section .text
 
+scamv_run1:
+	ldr x0, =_scamv_ret_store
+	str x30, [x0]
+	mov x0,  #0
+	mov x30, #0
+.include "experiment/cache_run_input_setup1.h"
+	b scamv_entry
+
+scamv_run2:
+	ldr x0, =_scamv_ret_store
+	str x30, [x0]
+	mov x0,  #0
+	mov x30, #0
+.include "experiment/cache_run_input_setup2.h"
+	b scamv_entry
+
+scamv_exit:
+	ldr x0, =_scamv_ret_store
+	ldr x30, [x0]
+	ret
+
+
 _cache_run:
+// save registers on stack
 	sub sp, sp, #(8 * 40)
 	str x0,  [sp, #(8 *  0)] // cache1
 	str x1,  [sp, #(8 *  1)] // cache2
@@ -70,11 +85,47 @@ _cache_run:
 	//flush_d_cache(1);
 	mov x0, #1
 	bl flush_d_cache
+// create defined processor state
+	mov x0,  #0
+	mov x1,  #0
+	mov x2,  #0
+	mov x3,  #0
+	mov x4,  #0
+	mov x5,  #0
+	mov x6,  #0
+	mov x7,  #0
+	mov x8,  #0
+	mov x9,  #0
+	mov x10, #0
+	mov x11, #0
+	mov x12, #0
+	mov x13, #0
+	mov x14, #0
+	mov x15, #0
+	mov x16, #0
+	mov x17, #0
+	mov x18, #0
+	mov x19, #0
+	mov x20, #0
+	mov x21, #0
+	mov x22, #0
+	mov x23, #0
+	mov x24, #0
+	mov x25, #0
+	mov x26, #0
+	mov x27, #0
+	mov x28, #0
+	mov x29, #0
+	mov x30, #0
+	mov sp,  x30
+	adds x0, x1, x2
 
 // run the experiment code - run#1
-	bl scamv_setup1
-	bl scamv_entry
-
+	bl scamv_run1
+// restore SP register
+	ldr x0, =_sp_store
+	ldr x1, [x0]
+	mov sp, x1
 // save the cache state for run#1
 	//save_cache_state(cache1);
 	ldr x0,  [sp, #(8 *  0)]
@@ -94,22 +145,54 @@ _cache_run:
 	//flush_d_cache(1);
 	mov x0, #1
 	bl flush_d_cache
+// create defined processor state
+	mov x0,  #0
+	mov x1,  #0
+	mov x2,  #0
+	mov x3,  #0
+	mov x4,  #0
+	mov x5,  #0
+	mov x6,  #0
+	mov x7,  #0
+	mov x8,  #0
+	mov x9,  #0
+	mov x10, #0
+	mov x11, #0
+	mov x12, #0
+	mov x13, #0
+	mov x14, #0
+	mov x15, #0
+	mov x16, #0
+	mov x17, #0
+	mov x18, #0
+	mov x19, #0
+	mov x20, #0
+	mov x21, #0
+	mov x22, #0
+	mov x23, #0
+	mov x24, #0
+	mov x25, #0
+	mov x26, #0
+	mov x27, #0
+	mov x28, #0
+	mov x29, #0
+	mov x30, #0
+	mov sp,  x30
+	adds x0, x1, x2
 
 // run the experiment code - run#2
-	bl scamv_setup2
-	bl scamv_entry
-
+	bl scamv_run2
+// restore SP register
+	ldr x0, =_sp_store
+	ldr x1, [x0]
+	mov sp, x1
 // save the cache state for run#2
 	//save_cache_state(cache2);
 	ldr x0,  [sp, #(8 *  1)]
 	bl save_cache_state
 
 
-// restore SP register
-	ldr x0, =_sp_store
-	ldr x1, [x0]
-	mov sp, x1
-
+// save registers from stack
 	ldr x0,  [sp, #(8 *  0)]
 	ldr x1,  [sp, #(8 *  1)]
 	ldr x2,  [sp, #(8 *  2)]

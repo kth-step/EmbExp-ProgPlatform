@@ -61,6 +61,7 @@ This repository is the program platform for EmbExp embedded experiments. It can 
 * some documentation
   * `https://sourceware.org/gdb/onlinedocs/gdb/Continuing-and-Stepping.html`
   * `https://stackoverflow.com/questions/42800801/how-to-use-gdb-to-debug-qemu-with-smp-symmetric-multiple-processors`
+  * `https://quequero.org/2014/04/introduction-to-arm-architecture/`
 
 
 
