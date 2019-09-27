@@ -7,6 +7,11 @@
 
 void run_cache_experiment();
 
+void experiment_complete_marker() {
+  // infinite echo loop
+  printf_echoloop();
+}
+
 
 int main()
 {
@@ -18,8 +23,7 @@ int main()
   
   printf("Experiment complete.\n");
 
-  // infinite echo loop
-  printf_echoloop();
+  experiment_complete_marker();
 }
 
 void main_core1()

@@ -6,7 +6,7 @@ set confirm off
 delete
 
 # setup final breakpoint and exit procedure
-b main.c:21
+b experiment_complete_marker
 commands
 delete
 detach
