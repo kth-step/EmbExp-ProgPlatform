@@ -30,8 +30,8 @@ print(f"run log  > {temprunlog}")
 print( "---------------------------")
 
 subprocess.call(["mkdir", "-p", "temp"])
-subprocess.call(["rm", tempuartlog])
-subprocess.call(["rm", temprunlog])
+subprocess.call(["rm", "-f", tempuartlog])
+subprocess.call(["rm", "-f", temprunlog])
 
 with open(tempuartlog, "w") as uartlog:
 	uartproc = subprocess.Popen(postuart__exec, stdout=uartlog, stderr=None)

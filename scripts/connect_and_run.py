@@ -19,7 +19,7 @@ print(f"interactive output > {tempfile}")
 print( "---------------------------")
 
 subprocess.call(["mkdir", "-p", "temp"])
-subprocess.call(["rm", tempfile])
+subprocess.call(["rm", "-f", tempfile])
 
 
 with open(tempfile, "w+") as connectlog:
