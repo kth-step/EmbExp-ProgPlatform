@@ -47,6 +47,6 @@ void debug_set_info(set_t set);
 
 cache_line * get_line_for_pa(cache_state cache, uint64_t pa);
 int hit_for_pa(cache_state cache, uint64_t pa);
-uint64_t compare_cache(cache_state c1, cache_state c2);
+uint64_t compare_cache(cache_state c1, cache_state c2, uint64_t setnum);
 
 #endif

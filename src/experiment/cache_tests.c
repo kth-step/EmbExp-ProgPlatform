@@ -61,7 +61,7 @@ void run_cache_experiment() {
   //debug_set(cache2[SET(0)]);
 
   // compare and print result of comparison
-  if (compare_cache(cache1, cache2) == 0)
+  if (compare_cache(cache1, cache2, SETS) == 0)
     printf("RESULT: EQUAL\n");
   else
     printf("RESULT: UNEQUAL\n");

@@ -254,7 +254,7 @@ void test_entropy_pair(uint64_t x1, uint64_t x2, uint64_t x3, uint64_t pa,
   save_cache_state(cache2);
   assert(hit_for_pa(cache2, pa1), " 0 is in the cache");
 
-  assert((compare_cache(cache1, cache2) == 0) == (eq == 0), " indistinguishable caches");
+  assert((compare_cache(cache1, cache2, SETS) == 0) == (eq == 0), " indistinguishable caches");
 }
 
 void test_entropy_pair_1_1() {

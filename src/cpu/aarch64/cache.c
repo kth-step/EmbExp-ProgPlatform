@@ -225,8 +225,8 @@ int hit_for_pa(cache_state cache, uint64_t pa) {
 }
 
 
-uint64_t compare_cache(cache_state c1, cache_state c2) {
-  for (uint64_t set=0; set<SETS; set++) {
+uint64_t compare_cache(cache_state c1, cache_state c2, uint64_t setnum) {
+  for (uint64_t set=0; set<setnum; set++) {
     for (uint64_t way=0; way<WAYS; way++) {
       cache_line * l1 = &c1[set][way];
       if (l1->valid) {
