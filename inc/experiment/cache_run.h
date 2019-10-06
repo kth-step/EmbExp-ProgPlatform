@@ -4,7 +4,10 @@
 #include "cpu/aarch64/cache.h"
 #include <stdint.h>
 
-void _cache_run(cache_state cache1, cache_state cache2);
+void _scamv_run1();
+void _scamv_run2();
+
+void _cache_run(void (*_scamv_run)(), cache_state cache);
 
 #endif
 

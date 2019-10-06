@@ -56,7 +56,8 @@ void run_cache_experiment() {
   v = *((uint64_t *)(0x80000000));
 
   // run 2 cache experiments
-  _cache_run(cache1, cache2);
+  _cache_run(_scamv_run1, cache1);
+  _cache_run(_scamv_run2, cache2);
   //debug_set(cache1[0], 0);
   //debug_set(cache2[0], 0);
 
