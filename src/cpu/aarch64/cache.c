@@ -208,6 +208,20 @@ void debug_set_info(set_t set) {
   }
 }
 
+void print_cache_valid(cache_state c) {
+  printf("----\n");
+  printf("print_cache_valid\n");
+  for (uint64_t set=0; set<SETS; set++) {
+    for (uint64_t way=0; way<WAYS; way++) {
+      cache_line * l1 = &c[set][way];
+      if (l1->valid) {
+        printf(" %i\t::%i\t:: tag %x\n", set, way, l1->tag);
+      }
+    }
+  }
+  printf("----\n");
+}
+
 cache_line * get_line_for_pa(cache_state cache, uint64_t pa) {
   uint64_t set = SET(pa);
   for (int way=0; way<WAYS; way++) {
