@@ -87,6 +87,8 @@ _cache_run:
 	//flush_d_cache(1);
 	mov x0, #1
 	bl flush_d_cache
+// clean experiment memory
+	bl _clean_experiment_memory
 // move _scamv_run to x30 (LR)
 	ldr x30, [sp, #(8 *  0)]
 // create defined processor state

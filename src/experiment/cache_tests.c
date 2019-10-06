@@ -38,16 +38,16 @@ static cache_state cache2;
 
 // memory space allocated for experiments
 extern uint64_t _experiment_memory[32 * 1024 * 8 / 8];
-
-
-#ifndef SINGLE_EXPERIMENTS
-void run_cache_experiment() {
-  // !!! clean experiment memory first !!!
+void _clean_experiment_memory() {
   int length = sizeof(_experiment_memory)/sizeof(uint64_t);
   for (int i = 0; i < length; i++) {
     _experiment_memory[i] = 0;
   }
+}
 
+
+#ifndef SINGLE_EXPERIMENTS
+void run_cache_experiment() {
   // setup and enable mmu
   basic_mmu();
 
@@ -57,7 +57,9 @@ void run_cache_experiment() {
 
   // run 2 cache experiments
   _cache_run(_scamv_run1, cache1);
+  //print_cache_valid(cache1);
   _cache_run(_scamv_run2, cache2);
+  //print_cache_valid(cache2);
   //debug_set(cache1[0], 0);
   //debug_set(cache2[0], 0);
 
