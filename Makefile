@@ -45,9 +45,9 @@ all: $(NAME)
 %.o: %.c ${INCLUDE_FILES}
 	${CROSS}gcc ${CFLAGS} -c -o $@ -fno-stack-protector $<
 
-$(NAME): ${OBJECTS}
+$(NAME): ${OBJECTS} ${SOURCES_C} ${SOURCES_S} ${INCLUDE_FILES}
 	mkdir -p ./output
-	${CROSS}ld $(LDFLAGS) -o $@ -T linkerscripts/rpi3.ld $^
+	${CROSS}ld $(LDFLAGS) -o $@ -T linkerscripts/rpi3.ld ${OBJECTS}
 	${CROSS}objdump -t -h -D $@ > "$@_da"
 
 clean:
