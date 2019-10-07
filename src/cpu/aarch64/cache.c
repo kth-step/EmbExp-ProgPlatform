@@ -1,6 +1,8 @@
 #include "cpu/aarch64/cache.h"
 #include "lib/printf.h"
 
+#define BARRIER_DSB_ISB() __asm__ __volatile__("DSB SY \t\n ISB \t\n")
+
 void flush_d_cache(uint64_t level) {
   uint64_t nways = (level == 0)?WAYS:WAYS_L2;
   uint64_t nsets = (level == 0)?SETS:SETS_L2;
@@ -44,22 +46,15 @@ void flush_d_cache(uint64_t level) {
            );
     }
   }
-  asm (
-       "DSB SY"
-       :
-       :
-       );
-  asm (
-       "ISB"
-       :
-       :
-       );
 
+  BARRIER_DSB_ISB();
 }
 
 
 void get_cache_line(cache_line *line, uint64_t set, uint64_t way) {
   volatile uint64_t value;
+  BARRIER_DSB_ISB();
+
   for (uint64_t  offset=0; offset<8; offset++) {
     value = 0;
     value |= (0b11 & way) << 30;
@@ -115,6 +110,8 @@ void get_cache_line(cache_line *line, uint64_t set, uint64_t way) {
   line->tag += set * 64;
 
   line->valid = (((0x60000000 & value) >> 29) != 0);
+
+  BARRIER_DSB_ISB();
 }
 
 
@@ -160,11 +157,15 @@ uint64_t set_prefetching_conf(uint64_t conf, prefetch_conf new_conf) {
 
 
 void save_cache_state(cache_state cache) {
+  BARRIER_DSB_ISB();
+
   for (int set=0; set<SETS; set++) {
     for (int way=0; way<WAYS; way++) {
       get_cache_line(&(cache[set][way]), set, way);
     }
   }
+
+  BARRIER_DSB_ISB();
 }
 
 

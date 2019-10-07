@@ -5,7 +5,11 @@
 
 .section .experiment_code
 scamv_entry:
+	dsb sy
+	isb
 .include "experiment/cache_run_input.h"
+	dsb sy
+	isb
 	b scamv_exit
 
 
