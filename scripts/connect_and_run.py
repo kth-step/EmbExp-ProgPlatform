@@ -5,6 +5,7 @@ import time
 import sys
 
 rdycheck__exec = ["make", "checkready"]
+clscheck__exec = ["make", "checkclosed"]
 connect_exec = ["make", "connect"]
 runlog__exec = ["make", "runlog"]
 
@@ -52,4 +53,9 @@ with open(tempfile, "w+") as connectlog:
 		print()
 		print("terminating connect process")
 		connectproc.terminate()
+		connectproc.wait()
+		while subprocess.call(clscheck__exec, stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL) != 0:
+			print(".", end='', flush=True)
+			time.sleep(1)
+		print()
 

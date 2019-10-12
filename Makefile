@@ -70,6 +70,9 @@ connect:
 checkready:
 	./scripts/check_ready.sh
 
+checkclosed:
+	./scripts/check_closed.sh
+
 # Ctrl+] mode character
 uart:
 	telnet localhost $(EMBEXP_UART_PORT)
