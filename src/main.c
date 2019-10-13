@@ -3,6 +3,7 @@
 #include "board/rpi3/led.h"
 #include "board/rpi3/rpi3hw.h"
 #include "lib/printf.h"
+#include "config.h"
 
 
 void run_cache_experiment();
@@ -19,7 +20,9 @@ int main()
 
   printf("Init complete.\n");
 
+#ifdef RUN_CACHE
   run_cache_experiment();
+#endif
   
   printf("Experiment complete.\n");
 

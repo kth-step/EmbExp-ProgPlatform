@@ -1,4 +1,5 @@
 #include "lib/printf.h"
+#include "config.h"
 #include "cpu/aarch64/mmu.h"
 #include "cpu/aarch64/cache.h"
 
@@ -63,8 +64,15 @@ void run_cache_experiment() {
   //debug_set(cache1[0], 0);
   //debug_set(cache2[0], 0);
 
+#ifdef RUN_CACHE_MULTIW
+  #define CACHE_SET_NUM (SETS)
+#elif defined RUN_CACHE_MULTIW_SUBSET
+  #define CACHE_SET_NUM (SETS/2)
+#else
+  #error "no cache experiment parameters selected"
+#endif
   // compare and print result of comparison
-  if (compare_cache(cache1, cache2, SETS) == 0)
+  if (compare_cache(cache1, cache2, CACHE_SET_NUM) == 0)
     printf("RESULT: EQUAL\n");
   else
     printf("RESULT: UNEQUAL\n");
