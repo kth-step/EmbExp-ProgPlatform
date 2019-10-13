@@ -4,7 +4,7 @@
 #include "config_input.h"
 
 #ifdef __PROGPLAT_BOARD__RPI3
-  #ifndef __PROGPLAT_ARCH__ARMV8
+  #ifndef __PROGPLAT_ARCH__ARM8
     #error "wrong architecture for selected board type"
   #endif
 #else
