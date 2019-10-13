@@ -1,4 +1,5 @@
 
+inc/config_input.h
 *.o
 output
 temp

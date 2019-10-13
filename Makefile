@@ -11,6 +11,7 @@ endif
 CROSS = ${EMBEXP_CROSS}
 GDB   = ${EMBEXP_GDB}
 
+include Makefile.config
 
 # settings
 # ---------------------------------
@@ -28,7 +29,7 @@ rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst 
 # ---------------------------------
 SOURCES_C     = $(call rwildcard, src/, *.c)
 SOURCES_S     = $(call rwildcard, src/, *.S)
-INCLUDE_FILES = $(call rwildcard, inc/, *.h)
+INCLUDE_FILES = $(call rwildcard, inc/, *.h) inc/config_input.h
 
 OBJECTS     = $(SOURCES_C:.c=.o) $(SOURCES_S:.S=.o)
 
@@ -39,6 +40,9 @@ OBJECTS     = $(SOURCES_C:.c=.o) $(SOURCES_S:.S=.o)
 # ---------------------------------
 all: $(NAME)
 
+inc/config_input.h: Makefile.config
+	./scripts/gen_config_input.py
+
 %.o: %.S ${INCLUDE_FILES}
 	${CROSS}as ${SFLAGS} -o $@ $<
 
@@ -47,12 +51,12 @@ all: $(NAME)
 
 $(NAME): ${OBJECTS} ${SOURCES_C} ${SOURCES_S} ${INCLUDE_FILES}
 	mkdir -p ./output
-	${CROSS}ld $(LDFLAGS) -o $@ -T linkerscripts/rpi3.ld ${OBJECTS}
+	${CROSS}ld $(LDFLAGS) -o $@ -T linkerscripts/$(PROGPLAT_BOARD).ld ${OBJECTS}
 	${CROSS}objdump -t -h -D $@ > "$@_da"
 
 clean:
 	rm -rf output
-	rm -f $(call rwildcard, src/, *.o)
+	rm -f $(call rwildcard, src/, *.o) inc/config_input.h
 
 
 
@@ -65,7 +69,7 @@ endif
 export EMBEXP_UART_PORT=$(shell bash -c "echo $$(( 20000 + ($(EMBEXP_INSTANCE_IDX) * 100) ))")
 export EMBEXP_GDBS_PORT=$(shell bash -c "echo $$(( 20013 + ($(EMBEXP_INSTANCE_IDX) * 100) ))")
 connect:
-	../EmbExp-Box/interface/remote.py RPi3 -idx $(EMBEXP_INSTANCE_IDX)
+	../EmbExp-Box/interface/remote.py $(PROGPLAT_BOARD) -idx $(EMBEXP_INSTANCE_IDX)
 
 checkready:
 	./scripts/check_ready.sh
