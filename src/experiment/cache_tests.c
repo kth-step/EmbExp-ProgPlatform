@@ -34,8 +34,14 @@ static void basic_mmu() {
 #define ALIAS(x)     ((void *)(((uint64_t)(&x)) + 0x40000000))
 
 // allocated data for cache state data structures
+#ifdef RUN_2EXPS
 static cache_state cache1;
 static cache_state cache2;
+#elif defined RUN_1EXPS
+static cache_state cache;
+#else
+  #error "no experiment type selected"
+#endif
 
 // memory space allocated for experiments
 extern uint64_t _experiment_memory[32 * 1024 * 8 / 8];
@@ -78,8 +84,8 @@ void run_cache_experiment() {
   else
     printf("RESULT: UNEQUAL\n");
 #elif defined RUN_1EXPS
-  _cache_run(_scamv_run1, cache1);
-  print_cache_full(cache1);
+  _cache_run(_scamv_run1, cache);
+  print_cache_full(cache);
 #else
   #error "no experiment type selected"
 #endif
