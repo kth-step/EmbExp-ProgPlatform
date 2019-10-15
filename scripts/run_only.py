@@ -23,6 +23,28 @@ retval = subprocess.call(rdycheck__exec)
 if retval != 0:
 	raise Exception("connection has not been established yet, run \"make connect\" first")
 
+# read timeout for run from config file
+run_timeout = None
+with open("Makefile.config", "r") as f:
+	for line in f:
+		if line.strip() == "":
+			continue
+		parts = line.split("=")
+		assert len(parts) == 2
+		k = parts[0].strip()
+		v = parts[1].strip()
+		if k.upper() == "PROGPLAT_RUN_TIMEOUT":
+			assert run_timeout == None
+			run_timeout = int(v)
+# default value
+if run_timeout == None:
+	run_timeout = None
+# value range
+if run_timeout < 0:
+	raise Exception("run_timeout cannot be negative")
+# special value for no timeout
+if run_timeout == 0:
+	run_timeout = None
 
 print( "---------------------------")
 print(f"uart log > {tempuartlog}")
@@ -40,7 +62,7 @@ with open(tempuartlog, "w") as uartlog:
 		with open(temprunlog, "w") as runlog:
 			print("starting run logging")
 			try:
-				subprocess.call(postdebug_exec, stdout=runlog, stderr=subprocess.STDOUT, timeout=6)
+				subprocess.call(postdebug_exec, stdout=runlog, stderr=subprocess.STDOUT, timeout=run_timeout)
 			except subprocess.TimeoutExpired:
 				print("!" * 60)
 				print("!!! the execution on the board didn't finish. something is off.")
