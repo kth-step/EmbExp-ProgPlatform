@@ -172,8 +172,8 @@ void save_cache_state(cache_state cache) {
 
 void debug_line(cache_line * line, _Bool values) {
   uint64_t i;
-  printf(" tag %x\r\n", line->tag);
-  printf(" valid %d\r\n", (line->valid));
+  printf(" tag %x\n", line->tag);
+  printf(" valid %d\n", (line->valid));
   if (values) {
     for (i=0; i<8; i++) {
       printf(" %x-%x ", (line->data[i] >> 32), line->data[i]);
@@ -188,14 +188,14 @@ void debug_line_info(cache_line * line) {
   if (!line->valid)
     return;
 
-  printf(" tag %x\r\n", line->tag);
+  printf(" tag %x\n", line->tag);
   printf(" regs: %x-%x %x-%x\n", (line->r0 >> 32), line->r0, (line->r1 >> 32), line->r1);
 
 }
 
 void debug_set(set_t set, _Bool values) {
   uint64_t i;
-  printf("Debugging set\r\n");
+  printf("Debugging set\n");
   for (i=0; i<WAYS; i++) {
     debug_line(&(set[i]), values);
   }
@@ -203,15 +203,30 @@ void debug_set(set_t set, _Bool values) {
 
 void debug_set_info(set_t set) {
   uint64_t i;
-  printf("Info set\r\n");
+  printf("Info set\n");
   for (i=0; i<WAYS; i++) {
     debug_line_info(&(set[i]));
   }
 }
 
+void print_cache_full(cache_state c) {
+  printf("----\n");
+  printf("print_cache_full\n");
+  printf("----\n");
+  for (uint64_t set=0; set<SETS; set++) {
+    printf("set=%d\n", set);
+    for (uint64_t way=0; way<WAYS; way++) {
+      printf("line=%d\n", way);
+      debug_line(&c[set][way], 0);
+    }
+  }
+  printf("----\n");
+}
+
 void print_cache_valid(cache_state c) {
   printf("----\n");
   printf("print_cache_valid\n");
+  printf("----\n");
   for (uint64_t set=0; set<SETS; set++) {
     for (uint64_t way=0; way<WAYS; way++) {
       cache_line * l1 = &c[set][way];

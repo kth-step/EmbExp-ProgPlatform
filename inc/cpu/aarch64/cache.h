@@ -45,6 +45,7 @@ void debug_set(set_t set, _Bool values);
 void debug_line_info(cache_line * line);
 void debug_set_info(set_t set);
 
+void print_cache_full(cache_state c);
 void print_cache_valid(cache_state c);
 
 cache_line * get_line_for_pa(cache_state cache, uint64_t pa);
