@@ -56,6 +56,7 @@ void run_cache_experiment() {
   volatile uint64_t v __UNUSED = 0;
   v = *((uint64_t *)(0x80000000));
 
+#ifdef RUN_2EXPS
   // run 2 cache experiments
   _cache_run(_scamv_run1, cache1);
   //print_cache_valid(cache1);
@@ -76,6 +77,12 @@ void run_cache_experiment() {
     printf("RESULT: EQUAL\n");
   else
     printf("RESULT: UNEQUAL\n");
+#elif defined RUN_1EXPS
+  _cache_run(_scamv_run1, cache1);
+  print_cache_full(cache1);
+#else
+  #error "no experiment type selected"
+#endif
 }
 #endif
 

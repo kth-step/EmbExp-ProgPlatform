@@ -13,6 +13,8 @@
 
 #ifdef __PROGPLAT_TYPE__EXPS2
   #define RUN_2EXPS
+#elif defined __PROGPLAT_TYPE__EXPS1
+  #define RUN_1EXPS
 #else
   #error "no experiment type selected"
 #endif
