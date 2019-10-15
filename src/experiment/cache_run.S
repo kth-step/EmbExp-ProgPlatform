@@ -5,11 +5,7 @@
 
 .section .experiment_code
 scamv_entry:
-	dsb sy
-	isb
 .include "experiment/cache_run_input.h"
-	dsb sy
-	isb
 	b scamv_exit
 
 
@@ -28,6 +24,8 @@ _scamv_run1:
 	mov x0,  #0
 	mov x30, #0
 .include "experiment/cache_run_input_setup1.h"
+	dsb sy
+	isb
 	b scamv_entry
 
 _scamv_run2:
@@ -36,9 +34,13 @@ _scamv_run2:
 	mov x0,  #0
 	mov x30, #0
 .include "experiment/cache_run_input_setup2.h"
+	dsb sy
+	isb
 	b scamv_entry
 
 scamv_exit:
+	dsb sy
+	isb
 	ldr x0, =_scamv_ret_store
 	ldr x30, [x0]
 	ret
