@@ -10,9 +10,9 @@ parser.add_argument("gdb_remote", help="")
 parser.add_argument("gdb_elf", help="")
 args = parser.parse_args()
 
-
+makeswitches = ["--silent", "--ignore-errors", "--no-print-directory"]
 rdycheck__exec = ["make", "checkready"]
-postuart__exec = ["make", "--no-print-directory", "log"]
+postuart__exec = ["make"] + makeswitches + ["log"]
 postdebug_exec = [args.gdb_cmd, f"--eval-command=target remote {args.gdb_remote}", "-x", "scripts/run.gdb", args.gdb_elf]
 
 tempuartlog = "./temp/uart.log"
