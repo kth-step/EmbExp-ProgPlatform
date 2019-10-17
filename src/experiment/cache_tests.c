@@ -85,7 +85,7 @@ void run_cache_experiment() {
     printf("RESULT: UNEQUAL\n");
 #elif defined RUN_1EXPS
   _cache_run(_scamv_run1, cache);
-  print_cache_full(cache);
+  print_cache_valid(cache);
 #else
   #error "no experiment type selected"
 #endif

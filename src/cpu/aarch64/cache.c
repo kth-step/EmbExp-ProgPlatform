@@ -172,11 +172,12 @@ void save_cache_state(cache_state cache) {
 
 void debug_line(cache_line * line, _Bool values) {
   uint64_t i;
-  printf(" tag %x\n", line->tag);
-  printf(" valid %d\n", (line->valid));
+  printf(" tag: %x\n", line->tag);
+  printf(" valid: %d\n", (line->valid));
   if (values) {
+    printf(" values:");
     for (i=0; i<8; i++) {
-      printf(" %x-%x ", (line->data[i] >> 32), line->data[i]);
+      printf(" %x-%x", (line->data[i] >> 32), line->data[i]);
     }
     printf("\n");
   }
@@ -188,7 +189,7 @@ void debug_line_info(cache_line * line) {
   if (!line->valid)
     return;
 
-  printf(" tag %x\n", line->tag);
+  printf(" tag: %x\n", line->tag);
   printf(" regs: %x-%x %x-%x\n", (line->r0 >> 32), line->r0, (line->r1 >> 32), line->r1);
 
 }
@@ -231,7 +232,7 @@ void print_cache_valid(cache_state c) {
     for (uint64_t way=0; way<WAYS; way++) {
       cache_line * l1 = &c[set][way];
       if (l1->valid) {
-        printf(" %i\t::%i\t:: tag %x\n", set, way, l1->tag);
+        printf("%i\t::%i\t:: tag: %x\n", set, way, l1->tag);
       }
     }
   }
