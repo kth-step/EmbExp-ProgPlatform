@@ -64,8 +64,6 @@ uint8_t cache_run_mult_compare(void (*_scamv_run_)(), cache_state cache_, uint8_
   return diff;
 }
 
-#define NUM_MUL_RUNS 10
-
 
 #ifndef SINGLE_EXPERIMENTS
 void run_cache_experiment() {
@@ -104,9 +102,9 @@ void run_cache_experiment() {
   }
 #elif defined RUN_1EXPS
   diff += cache_run_mult_compare(_scamv_run1, cache, NUM_MUL_RUNS);
+  print_cache_valid(cache);
   if (diff != 0)
     printf("INCONCLUSIVE: %d\n", diff);
-  print_cache_valid(cache);
 #else
   #error "no experiment type selected"
 #endif

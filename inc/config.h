@@ -29,6 +29,11 @@
   #error "no experiment parameters selected"
 #endif
 
+#ifdef __PROGPLAT_MUL_RUNS__
+  #define NUM_MUL_RUNS __PROGPLAT_MUL_RUNS__
+#else
+  #define NUM_MUL_RUNS 10
+#endif
 
 #endif // CONFIG_H
 
