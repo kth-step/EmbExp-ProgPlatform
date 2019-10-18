@@ -92,36 +92,86 @@ vectors:
 	.align	7
 	b	_do_error	/* Current EL Error Handler */
 
+/* put them here for safety >>>>>> */
+	.align	7
+	b	_do_sync	/* Current EL Synchronous Handler */
+
+	.align	7
+	b	_do_irq		/* Current EL IRQ Handler */
+
+	.align	7
+	b	_do_fiq		/* Current EL FIQ Handler */
+
+	.align	7
+	b	_do_error	/* Current EL Error Handler */
+
+	.align	7
+	b	_do_sync	/* Current EL Synchronous Handler */
+
+	.align	7
+	b	_do_irq		/* Current EL IRQ Handler */
+
+	.align	7
+	b	_do_fiq		/* Current EL FIQ Handler */
+
+	.align	7
+	b	_do_error	/* Current EL Error Handler */
+/* put them here for safety <<<<<< */
+
 
 _do_bad_sync:
+	// this is just a hack
+	ldr x0, =0x00100000
+	mov sp, x0
 	exception_entry
 	bl	do_bad_sync
 
 _do_bad_irq:
+	// this is just a hack
+	ldr x0, =0x00100000
+	mov sp, x0
 	exception_entry
 	bl	do_bad_irq
 
 _do_bad_fiq:
+	// this is just a hack
+	ldr x0, =0x00100000
+	mov sp, x0
 	exception_entry
 	bl	do_bad_fiq
 
 _do_bad_error:
+	// this is just a hack
+	ldr x0, =0x00100000
+	mov sp, x0
 	exception_entry
 	bl	do_bad_error
 
 _do_sync:
+	// this is just a hack
+	ldr x0, =0x00100000
+	mov sp, x0
 	exception_entry
 	bl	do_sync
 
 _do_irq:
+	// this is just a hack
+	ldr x0, =0x00100000
+	mov sp, x0
 	exception_entry
 	bl	do_irq
 
 _do_fiq:
+	// this is just a hack
+	ldr x0, =0x00100000
+	mov sp, x0
 	exception_entry
 	bl	do_fiq
 
 _do_error:
+	// this is just a hack
+	ldr x0, =0x00100000
+	mov sp, x0
 	exception_entry
 	bl	do_error
 

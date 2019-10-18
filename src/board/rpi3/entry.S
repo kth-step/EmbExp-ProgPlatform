@@ -21,6 +21,8 @@ _reset_core0:
 	// set exception vector base address
 	adr x0, vectors
 	msr vbar_el3, x0
+	msr vbar_el2, x0
+	msr vbar_el1, x0
 	// ... to execute the main c function
 	ldr x5, =0x00100000
 	mov sp, x5
