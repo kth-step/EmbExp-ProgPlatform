@@ -52,9 +52,24 @@ void _clean_experiment_memory() {
   }
 }
 
+static cache_state cache_temp;
+uint8_t cache_run_mult_compare(void (*_scamv_run_)(), cache_state cache_, uint8_t n) {
+  uint8_t diff = 0;
+  _cache_run(_scamv_run_, cache_);
+  for (uint8_t i = n; i > 0; i--) {
+    _cache_run(_scamv_run_, cache_temp);
+    if (compare_cache(cache_, cache_temp, SETS) != 0)
+      diff++;
+  }
+  return diff;
+}
+
+#define NUM_MUL_RUNS 10
+
 
 #ifndef SINGLE_EXPERIMENTS
 void run_cache_experiment() {
+  uint16_t diff = 0;
   // setup and enable mmu
   basic_mmu();
 
@@ -64,9 +79,9 @@ void run_cache_experiment() {
 
 #ifdef RUN_2EXPS
   // run 2 cache experiments
-  _cache_run(_scamv_run1, cache1);
+  diff += cache_run_mult_compare(_scamv_run1, cache1, NUM_MUL_RUNS);
   //print_cache_valid(cache1);
-  _cache_run(_scamv_run2, cache2);
+  diff += cache_run_mult_compare(_scamv_run2, cache2, NUM_MUL_RUNS);
   //print_cache_valid(cache2);
   //debug_set(cache1[0], 0);
   //debug_set(cache2[0], 0);
@@ -78,13 +93,19 @@ void run_cache_experiment() {
 #else
   #error "no cache experiment parameters selected"
 #endif
-  // compare and print result of comparison
-  if (compare_cache(cache1, cache2, CACHE_SET_NUM) == 0)
-    printf("RESULT: EQUAL\n");
-  else
-    printf("RESULT: UNEQUAL\n");
+  if (diff == 0) {
+    // compare and print result of comparison
+    if (compare_cache(cache1, cache2, CACHE_SET_NUM) == 0)
+      printf("RESULT: EQUAL\n");
+    else
+      printf("RESULT: UNEQUAL\n");
+  } else {
+    printf("INCONCLUSIVE: %d\n", diff);
+  }
 #elif defined RUN_1EXPS
-  _cache_run(_scamv_run1, cache);
+  diff += cache_run_mult_compare(_scamv_run1, cache, NUM_MUL_RUNS);
+  if (diff != 0)
+    printf("INCONCLUSIVE: %d\n", diff);
   print_cache_valid(cache);
 #else
   #error "no experiment type selected"
