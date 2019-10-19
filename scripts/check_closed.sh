@@ -16,5 +16,7 @@ do
     fi
 done
 
+echo "PORTS ARE CLOSED"
+
 exit 0
 

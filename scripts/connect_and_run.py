@@ -25,7 +25,7 @@ subprocess.call(["rm", "-f", tempfile])
 
 with open(tempfile, "w+") as connectlog:
 	connectlog.flush()
-	connectproc = subprocess.Popen(connect_exec, stdout=connectlog, stderr=subprocess.STDOUT)
+	connectproc = subprocess.Popen(connect_exec, stdin=subprocess.PIPE, stdout=connectlog, stderr=subprocess.STDOUT)
 	try:
 		# wait until the connect process is ready
 		found = False
@@ -41,7 +41,18 @@ with open(tempfile, "w+") as connectlog:
 			sys.stdout.flush()
 		print()
 
+		print("checking whether ports are already open")
+		for i in range(0,7):
+			retval = subprocess.call(rdycheck__exec)
+			if retval == 0:
+				break
+			time.sleep(0.5)
+
+		if retval != 0:
+			raise Exception("connection has not been established yet, something is off")
+		# wait a bit for some reason, seems like ports are open but server is not ready yet
 		time.sleep(1)
+
 		print("starting connect logging")
 
 		print("starting runlog process")

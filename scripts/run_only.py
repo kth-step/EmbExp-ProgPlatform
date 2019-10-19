@@ -56,13 +56,13 @@ subprocess.call(["rm", "-f", tempuartlog])
 subprocess.call(["rm", "-f", temprunlog])
 
 with open(tempuartlog, "w") as uartlog:
-	uartproc = subprocess.Popen(postuart__exec, stdout=uartlog, stderr=None)
+	uartproc = subprocess.Popen(postuart__exec, stdin=subprocess.PIPE, stdout=uartlog, stderr=None)
 	try:
 		print("starting uart logging")
 		with open(temprunlog, "w") as runlog:
 			print("starting run logging")
 			try:
-				subprocess.call(postdebug_exec, stdout=runlog, stderr=subprocess.STDOUT, timeout=run_timeout)
+				subprocess.call(postdebug_exec, stdin=subprocess.PIPE, stdout=runlog, stderr=subprocess.STDOUT, timeout=run_timeout)
 			except subprocess.TimeoutExpired:
 				print("!" * 60)
 				print("!!! the execution on the board didn't finish. something is off.")
