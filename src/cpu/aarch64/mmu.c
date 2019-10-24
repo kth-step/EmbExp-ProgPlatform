@@ -67,7 +67,8 @@ void enable_mmu(void) {
        : [result] "=r" (sctl)
        : 
        );
-  sctl |= 0x1; // The M bit (MMU).
+  sctl |= 0x1 << 0;  // The M bit (MMU).
+  sctl |= 0x1 << 1;  // The A bit (alignment check for memory accesses).
   sctl |= 0x1 << 2;  // The C bit (data cache).
   sctl |= 0x1 << 12; // The I bit (instruction cache).
   asm (
