@@ -58,7 +58,7 @@ uint8_t cache_run_mult_compare(void (*_scamv_run_)(), cache_state cache_, uint8_
   _cache_run(_scamv_run_, cache_);
   for (uint8_t i = n; i > 0; i--) {
     _cache_run(_scamv_run_, cache_temp);
-    if (compare_cache(cache_, cache_temp, SETS) != 0)
+    if (compare_cache(cache_, cache_temp) != 0)
       diff++;
   }
   return diff;
@@ -78,22 +78,27 @@ void run_cache_experiment() {
 #ifdef RUN_2EXPS
   // run 2 cache experiments
   diff += cache_run_mult_compare(_scamv_run1, cache1, NUM_MUL_RUNS);
-  //print_cache_valid(cache1);
+  print_cache_valid(cache1);
   diff += cache_run_mult_compare(_scamv_run2, cache2, NUM_MUL_RUNS);
-  //print_cache_valid(cache2);
+  print_cache_valid(cache2);
   //debug_set(cache1[0], 0);
   //debug_set(cache2[0], 0);
 
 #ifdef RUN_CACHE_MULTIW
-  #define CACHE_SET_NUM (SETS)
+  #define CACHE_SET_LOWER 0
+  #define CACHE_SET_UPPER (SETS)
 #elif defined RUN_CACHE_MULTIW_SUBSET
-  #define CACHE_SET_NUM (SETS/2)
+  #define CACHE_SET_LOWER (((SETS)/2)-4)
+  #define CACHE_SET_UPPER (SETS)
+#elif defined RUN_CACHE_MULTIW_SUBSET_PAGE_BOUNDARY
+  #define CACHE_SET_LOWER ((SETS)/2)
+  #define CACHE_SET_UPPER (SETS)
 #else
   #error "no cache experiment parameters selected"
 #endif
   if (diff == 0) {
     // compare and print result of comparison
-    if (compare_cache(cache1, cache2, CACHE_SET_NUM) == 0)
+    if (compare_cache_bounds(cache1, cache2, CACHE_SET_LOWER, CACHE_SET_UPPER) == 0)
       printf("RESULT: EQUAL\n");
     else
       printf("RESULT: UNEQUAL\n");

@@ -25,6 +25,9 @@
 #elif defined __PROGPLAT_PARAMS__EXP_CACHE_MULTIW_SUBSET
   #define RUN_CACHE
   #define RUN_CACHE_MULTIW_SUBSET
+#elif defined __PROGPLAT_PARAMS__EXP_CACHE_MULTIW_SUBSET_PAGE_BOUNDARY
+  #define RUN_CACHE
+  #define RUN_CACHE_MULTIW_SUBSET_PAGE_BOUNDARY
 #else
   #error "no experiment parameters selected"
 #endif

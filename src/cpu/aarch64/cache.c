@@ -256,8 +256,12 @@ int hit_for_pa(cache_state cache, uint64_t pa) {
 }
 
 
-uint64_t compare_cache(cache_state c1, cache_state c2, uint64_t setnum) {
-  for (uint64_t set=0; set<setnum; set++) {
+uint64_t compare_cache(cache_state c1, cache_state c2) {
+  return compare_cache_bounds(c1, c2, 0, SETS);
+}
+
+uint64_t compare_cache_bounds(cache_state c1, cache_state c2, uint64_t lower_bound, uint64_t upper_bound) {
+  for (uint64_t set=lower_bound; set<upper_bound; set++) {
     for (uint64_t way=0; way<WAYS; way++) {
       cache_line * l1 = &c1[set][way];
       if (l1->valid) {
