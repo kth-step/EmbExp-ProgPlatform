@@ -1,0 +1,31 @@
+# cross compiler
+# ---------------------------------
+
+ifndef EMBEXP_CROSS
+  EMBEXP_CROSS = aarch64-linux-gnu-
+  ifeq ("$(PROGPLAT_ARCH)", "arm8")
+    ifdef HOLBA_GCC_ARM8_CROSS
+      EMBEXP_CROSS = ${HOLBA_GCC_ARM8_CROSS}
+    endif
+  else ifeq ("$(PROGPLAT_ARCH)", "m0")
+    ifdef HOLBA_GCC_ARM_CROSS
+      EMBEXP_CROSS = ${HOLBA_GCC_ARM_CROSS}
+    endif
+  endif
+endif
+
+ifndef EMBEXP_GDB
+  EMBEXP_GDB = ${EMBEXP_CROSS}gdb
+endif
+
+CROSS = ${EMBEXP_CROSS}
+GDB   = ${EMBEXP_GDB}
+$(info !!! using EMBEXP_CROSS = "$(CROSS)")
+$(info !!! using EMBEXP_GDB   = "$(GDB)")
+$(info )
+
+# compiler flags
+# ---------------------------------
+SFLAGS  = -Iinc
+CFLAGS	= -ggdb3 -std=gnu99 -Wall -fno-builtin -fno-stack-protector -Iinc
+LDFLAGS = -Bstatic -nostartfiles -nostdlib
