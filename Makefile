@@ -7,6 +7,7 @@ include Makefile.config
 # toolchain
 include Makefile.toolchain
 
+
 # common definitions
 # ---------------------------------
 OUTDIR  = output
@@ -14,28 +15,23 @@ NAME	= ${OUTDIR}/program.elf
 
 rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d))
 
+
 # file definitions
 # ---------------------------------
-SOURCES_C     = $(call rwildcard, all/src/, *.c) \
-                $(call rwildcard, arch/$(PROGPLAT_ARCH)/src/, *.c) \
-                $(call rwildcard, board/$(PROGPLAT_BOARD)/src/, *.c)
+CODE_DIRS     = all arch/$(PROGPLAT_ARCH) board/$(PROGPLAT_BOARD)
 
-SOURCES_S     = $(call rwildcard, all/src/, *.S) \
-                $(call rwildcard, arch/$(PROGPLAT_ARCH)/src/, *.S) \
-                $(call rwildcard, board/$(PROGPLAT_BOARD)/src/, *.S)
-
-INCLUDE_FILES = $(call rwildcard, all/inc/, *.h) \
-                $(call rwildcard, arch/$(PROGPLAT_ARCH)/inc/, *.h) \
-                $(call rwildcard, board/$(PROGPLAT_BOARD)/inc/, *.h) \
-                all/inc/config_input.h
+SOURCES_C     = $(foreach d,$(CODE_DIRS),$(call rwildcard, $d/src/, *.c))
+SOURCES_S     = $(foreach d,$(CODE_DIRS),$(call rwildcard, $d/src/, *.S))
+INCLUDE_FILES = $(foreach d,$(CODE_DIRS),$(call rwildcard, $d/inc/, *.h)) all/inc/config_input.h
 
 OBJECTS       = $(SOURCES_C:.c=.o) $(SOURCES_S:.S=.o)
 
 LINKERFILE    = board/ld/$(PROGPLAT_BOARD).ld
 
+
 # compiler flags
 # ---------------------------------
-INCFLAGS = -Iall/inc -Iarch/$(PROGPLAT_ARCH)/inc -Iboard/$(PROGPLAT_BOARD)/inc
+INCFLAGS = $(foreach d,$(CODE_DIRS),-I$d/inc)
 SFLAGS   = ${INCFLAGS}
 CFLAGS	 = -ggdb3 -std=gnu99 -Wall -fno-builtin -fno-stack-protector ${INCFLAGS}
 LDFLAGS  = -Bstatic -nostartfiles -nostdlib
@@ -65,6 +61,7 @@ clean:
 
 
 .PHONY: all clean
+
 
 # running and debugging
 include Makefile.run
