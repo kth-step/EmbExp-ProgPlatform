@@ -24,8 +24,4 @@ $(info !!! using EMBEXP_CROSS = "$(CROSS)")
 $(info !!! using EMBEXP_GDB   = "$(GDB)")
 $(info )
 
-# compiler flags
-# ---------------------------------
-SFLAGS  = -Iinc
-CFLAGS	= -ggdb3 -std=gnu99 -Wall -fno-builtin -fno-stack-protector -Iinc
-LDFLAGS = -Bstatic -nostartfiles -nostdlib
+

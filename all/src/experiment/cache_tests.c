@@ -1,7 +1,7 @@
 #include "lib/printf.h"
 #include "config.h"
-#include "cpu/aarch64/mmu.h"
-#include "cpu/aarch64/cache.h"
+#include "mmu.h"
+#include "cache.h"
 
 #include "experiment/cache_run.h"
 

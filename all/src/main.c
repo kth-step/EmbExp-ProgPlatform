@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <stdarg.h>
-#include "board/rpi3/led.h"
-#include "board/rpi3/rpi3hw.h"
+#include "led.h"
+#include "rpi3hw.h"
 #include "lib/printf.h"
 #include "config.h"
 

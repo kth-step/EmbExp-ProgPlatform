@@ -1,5 +1,5 @@
 
-inc/config_input.h
+all/inc/config_input.h
 *.o
 output
 temp

@@ -1,7 +1,7 @@
 #ifndef _CACHE_RUN_H
 #define _CACHE_RUN_H
 
-#include "cpu/aarch64/cache.h"
+#include "cache.h"
 #include <stdint.h>
 
 void _scamv_run1();

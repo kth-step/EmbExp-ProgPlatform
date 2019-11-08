@@ -1,4 +1,4 @@
-#include "cpu/aarch64/mmu.h"
+#include "mmu.h"
 
 void init_mmu() {
   // Initialize translation table control registers

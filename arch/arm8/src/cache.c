@@ -1,4 +1,4 @@
-#include "cpu/aarch64/cache.h"
+#include "cache.h"
 #include "lib/printf.h"
 
 #define BARRIER_DSB_ISB() __asm__ __volatile__("DSB SY \t\n ISB \t\n")

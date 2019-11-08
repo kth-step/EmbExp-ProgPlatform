@@ -23,7 +23,7 @@ SECTIONS
 	. = ALIGN(8);
 	.text __boot_loc :
 	{
-		src/board/rpi3/entry.o (.text*)
+		board/rpi3/src/entry.o (.text*)
 
 		__experiment_code_loc_rel = __experiment_code_loc - __boot_loc;
 		. = __experiment_code_loc_rel;

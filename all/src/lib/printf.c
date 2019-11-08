@@ -1,4 +1,4 @@
-#include "board/rpi3/uart.h"
+#include "uart.h"
 #include "lib/printf.h"
 
 

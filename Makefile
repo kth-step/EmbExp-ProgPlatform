@@ -16,20 +16,36 @@ rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst 
 
 # file definitions
 # ---------------------------------
-SOURCES_C     = $(call rwildcard, src/, *.c)
-SOURCES_S     = $(call rwildcard, src/, *.S)
-INCLUDE_FILES = $(call rwildcard, inc/, *.h) inc/config_input.h
+SOURCES_C     = $(call rwildcard, all/src/, *.c) \
+                $(call rwildcard, arch/$(PROGPLAT_ARCH)/src/, *.c) \
+                $(call rwildcard, board/$(PROGPLAT_BOARD)/src/, *.c)
+
+SOURCES_S     = $(call rwildcard, all/src/, *.S) \
+                $(call rwildcard, arch/$(PROGPLAT_ARCH)/src/, *.S) \
+                $(call rwildcard, board/$(PROGPLAT_BOARD)/src/, *.S)
+
+INCLUDE_FILES = $(call rwildcard, all/inc/, *.h) \
+                $(call rwildcard, arch/$(PROGPLAT_ARCH)/inc/, *.h) \
+                $(call rwildcard, board/$(PROGPLAT_BOARD)/inc/, *.h) \
+                all/inc/config_input.h
 
 OBJECTS       = $(SOURCES_C:.c=.o) $(SOURCES_S:.S=.o)
 
-LINKERFILE    = linkerscripts/$(PROGPLAT_BOARD).ld
+LINKERFILE    = board/ld/$(PROGPLAT_BOARD).ld
+
+# compiler flags
+# ---------------------------------
+INCFLAGS = -Iall/inc -Iarch/$(PROGPLAT_ARCH)/inc -Iboard/$(PROGPLAT_BOARD)/inc
+SFLAGS   = ${INCFLAGS}
+CFLAGS	 = -ggdb3 -std=gnu99 -Wall -fno-builtin -fno-stack-protector ${INCFLAGS}
+LDFLAGS  = -Bstatic -nostartfiles -nostdlib
 
 
 # compilation and linking
 # ---------------------------------
 all: $(NAME)
 
-inc/config_input.h: Makefile.config
+all/inc/config_input.h: Makefile.config
 	./scripts/gen_config_input.py
 
 %.o: %.S ${INCLUDE_FILES}
@@ -45,7 +61,7 @@ $(NAME): ${OBJECTS} ${SOURCES_C} ${SOURCES_S} ${INCLUDE_FILES}
 
 clean:
 	rm -rf ${OUTDIR}
-	rm -f $(call rwildcard, src/, *.o) inc/config_input.h
+	rm -f $(call rwildcard, src/, *.o) all/inc/config_input.h
 
 
 .PHONY: all clean
