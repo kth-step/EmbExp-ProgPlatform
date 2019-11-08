@@ -10,6 +10,11 @@ ifndef EMBEXP_CROSS
   else ifeq ("$(PROGPLAT_ARCH)", "m0")
     ifdef HOLBA_GCC_ARM_CROSS
       EMBEXP_CROSS = ${HOLBA_GCC_ARM_CROSS}
+
+      ARMDIR = $(dir $(EMBEXP_CROSS))..
+
+      ARMSYS = $(ARMDIR)/arm-none-eabi/lib/thumb/v6-m
+      ARMLIB = $(ARMDIR)/lib/gcc/arm-none-eabi/7.3.1/thumb/v6-m
     endif
   endif
 endif

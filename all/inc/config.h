@@ -7,6 +7,10 @@
   #ifndef __PROGPLAT_ARCH__ARM8
     #error "wrong architecture for selected board type"
   #endif
+#elif defined __PROGPLAT_BOARD__LPC11C24
+  #ifndef __PROGPLAT_ARCH__M0
+    #error "wrong architecture for selected board type"
+  #endif
 #else
   #error "no known board type selected"
 #endif
@@ -28,6 +32,7 @@
 #elif defined __PROGPLAT_PARAMS__EXP_CACHE_MULTIW_SUBSET_PAGE_BOUNDARY
   #define RUN_CACHE
   #define RUN_CACHE_MULTIW_SUBSET_PAGE_BOUNDARY
+#elif defined __PROGPLAT_PARAMS__NOTHING
 #else
   #error "no experiment parameters selected"
 #endif

@@ -18,7 +18,11 @@ rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst 
 
 # file definitions
 # ---------------------------------
-CODE_DIRS     = all arch/$(PROGPLAT_ARCH) board/$(PROGPLAT_BOARD)
+ifeq ("$(PROGPLAT_BOARD)", "lpc11c24")
+  CODE_DIRS_EXTRA = libs/CMSIS_CORE_LPC11xx
+endif
+
+CODE_DIRS     = all arch/$(PROGPLAT_ARCH) board/$(PROGPLAT_BOARD) ${CODE_DIRS_EXTRA}
 
 SOURCES_C     = $(foreach d,$(CODE_DIRS),$(call rwildcard, $d/src/, *.c))
 SOURCES_S     = $(foreach d,$(CODE_DIRS),$(call rwildcard, $d/src/, *.S))
@@ -32,10 +36,17 @@ LINKERFILE    = board/ld/$(BOARDCONFIG).ld
 
 # compiler flags
 # ---------------------------------
-INCFLAGS = $(foreach d,$(CODE_DIRS),-I$d/inc)
-SFLAGS   = ${INCFLAGS}
-CFLAGS	 = -ggdb3 -std=gnu99 -Wall -fno-builtin -fno-stack-protector ${INCFLAGS}
-LDFLAGS  = -Bstatic -nostartfiles -nostdlib
+ifeq ("$(PROGPLAT_ARCH)", "arm8")
+  CFLAGS_EXTRA  = -ggdb3
+else ifeq ("$(PROGPLAT_ARCH)", "m0")
+  CFLAGS_EXTRA = -g3 -specs=nosys.specs -DUSE_OLD_STYLE_DATA_BSS_INIT -ffunction-sections -fdata-sections -mcpu=cortex-m0 -mthumb -fno-common
+  LDFLAGS_POST = -L$(ARMSYS) -L$(ARMLIB) -lgcc
+endif
+
+INCFLAGS     = $(foreach d,$(CODE_DIRS),-I$d/inc)
+SFLAGS       = ${INCFLAGS}
+CFLAGS	     = -std=gnu99 -Wall -fno-builtin -fno-stack-protector ${INCFLAGS} ${CFLAGS_EXTRA}
+LDFLAGS_PRE  = -Bstatic -nostartfiles -nostdlib
 
 
 # compilation and linking
@@ -53,7 +64,7 @@ all/inc/config_input.h: Makefile.config
 
 $(NAME): ${OBJECTS} ${SOURCES_C} ${SOURCES_S} ${INCLUDE_FILES}
 	mkdir -p ${OUTDIR}
-	${CROSS}ld $(LDFLAGS) -o $@ -T $(LINKERFILE) ${OBJECTS}
+	${CROSS}ld $(LDFLAGS_PRE) -o $@ -T $(LINKERFILE) ${OBJECTS} $(LDFLAGS_POST)
 	${CROSS}objdump -t -h -D $@ > "$@_da"
 
 clean:
