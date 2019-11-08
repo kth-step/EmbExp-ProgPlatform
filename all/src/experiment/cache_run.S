@@ -10,8 +10,10 @@ scamv_entry:
 
 
 .section .data
+.align 4
 _sp_store:
 	.quad 0
+.align 4
 _scamv_ret_store:
 	.quad 0
 
