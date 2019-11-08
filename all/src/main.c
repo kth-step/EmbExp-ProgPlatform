@@ -1,12 +1,12 @@
 #include <stdint.h>
 #include <stdarg.h>
-#include "led.h"
-#include "rpi3hw.h"
 #include "lib/printf.h"
 #include "config.h"
 
 
+#ifdef RUN_CACHE
 void run_cache_experiment();
+#endif
 
 void experiment_complete_marker() {
   // infinite echo loop
@@ -16,7 +16,7 @@ void experiment_complete_marker() {
 
 int main()
 {
-  uart_init();
+  printf_init();
 
   printf("Init complete.\n");
 

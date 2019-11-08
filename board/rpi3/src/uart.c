@@ -26,3 +26,18 @@ uint32_t bcm283x_mu_serial_getc()
 
 	return data;
 }
+
+
+void uart_putchar(char c)
+{
+  //if (c == '\n')
+  //  bcm283x_mu_serial_putc('\r');
+  bcm283x_mu_serial_putc(c);
+}
+
+char uart_getchar()
+{
+  uint32_t data = bcm283x_mu_serial_getc();
+  return (char)data;
+}
+

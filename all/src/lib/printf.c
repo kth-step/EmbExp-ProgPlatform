@@ -2,19 +2,9 @@
 #include "lib/printf.h"
 
 
-static void uart_putchar(char c)
-{
-  //if (c == '\n')
-  //  bcm283x_mu_serial_putc('\r');
-  bcm283x_mu_serial_putc(c);
+void printf_init() {
+  uart_init();
 }
-
-static char uart_getchar()
-{
-  uint32_t data = bcm283x_mu_serial_getc();
-  return (char)data;
-}
-
 
 void printf_echoloop()
 {
