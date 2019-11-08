@@ -9,6 +9,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("gdb_cmd", help="")
 parser.add_argument("gdb_remote", help="")
 parser.add_argument("gdb_elf", help="")
+parser.add_argument("gdb_boardconfig", help="")
 parser.add_argument("gdb_mode", help="run/debug/run_exp")
 args = parser.parse_args()
 

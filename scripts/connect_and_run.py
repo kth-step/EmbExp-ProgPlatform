@@ -4,10 +4,12 @@ import subprocess
 import time
 import sys
 
+makeswitches = ["--silent", "--ignore-errors", "--no-print-directory"]
+
 rdycheck__exec = ["scripts/check_ready.sh"]
 clscheck__exec = ["scripts/check_closed.sh"]
-connect_exec = ["make", "connect"]
-runlog__exec = ["make", "runlog"]
+connect_exec = ["make"] + makeswitches + ["connect"]
+runlog__exec = ["make"] + makeswitches + ["runlog"]
 
 tempfile = "./temp/interactive.log"
 
