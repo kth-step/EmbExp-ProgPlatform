@@ -41,6 +41,7 @@ int main_entry(void) {
     ui_set_led(0, on);
     ui_set_led(1, on);
 
+/*
     uart_init();
     uart_send("\r\n");
     uart_send("hello!!!\r\n");
@@ -53,6 +54,7 @@ int main_entry(void) {
         if ((c = uart_read()) >= 0)
             while (uart_write((char)c));
     }
+*/
 
     return main();
 }
