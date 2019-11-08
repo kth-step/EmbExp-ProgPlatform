@@ -14,6 +14,6 @@ with open("Makefile.config", "r") as f:
 		else:
 			output_text += f"#define __{k.upper()}__{v.upper()}\n"
 
-with open("inc/config_input.h", "w") as f:
+with open("all/inc/config_input.h", "w") as f:
 	f.write(output_text)
 

@@ -1,108 +1,80 @@
-# cross compiler
-# ---------------------------------
--include Makefile.local
-ifndef EMBEXP_CROSS
-  EMBEXP_CROSS	= aarch64-linux-gnu-
-endif
-ifndef EMBEXP_GDB
-  EMBEXP_GDB    = ${EMBEXP_CROSS}gdb
-endif
-
-CROSS = ${EMBEXP_CROSS}
-GDB   = ${EMBEXP_GDB}
-
+# config
 include Makefile.config
 
-# settings
+# local settings
+-include Makefile.local
+
+# toolchain
+include Makefile.toolchain
+
+
+# common definitions
 # ---------------------------------
-NAME	= output/example-program.elf
-NAME_DA	= output/example-program.da
-SFLAGS  = -Iinc
-CFLAGS	= -ggdb3 -std=gnu99 -Wall -fno-builtin -Iinc
-LDFLAGS = -Bstatic -nostartfiles -nostdlib
+OUTDIR  = output
+NAME	= ${OUTDIR}/program.elf
 
 rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d))
 
 
-
-# source definition
+# file definitions
 # ---------------------------------
-SOURCES_C     = $(call rwildcard, src/, *.c)
-SOURCES_S     = $(call rwildcard, src/, *.S)
-INCLUDE_FILES = $(call rwildcard, inc/, *.h) inc/config_input.h
+ifeq ("$(PROGPLAT_BOARD)", "lpc11c24")
+  CODE_DIRS_EXTRA = libs/CMSIS_CORE_LPC11xx
+endif
 
-OBJECTS     = $(SOURCES_C:.c=.o) $(SOURCES_S:.S=.o)
+CODE_DIRS     = all arch/$(PROGPLAT_ARCH) board/$(PROGPLAT_BOARD) ${CODE_DIRS_EXTRA}
+
+SOURCES_C     = $(foreach d,$(CODE_DIRS),$(call rwildcard, $d/src/, *.c))
+SOURCES_S     = $(foreach d,$(CODE_DIRS),$(call rwildcard, $d/src/, *.S))
+INCLUDE_FILES = $(foreach d,$(CODE_DIRS),$(call rwildcard, $d/inc/, *.h)) all/inc/config_input.h
+
+OBJECTS       = $(SOURCES_C:.c=.o) $(SOURCES_S:.S=.o)
+
+BOARDCONFIG   = $(PROGPLAT_BOARD)
+LINKERFILE    = board/ld/$(BOARDCONFIG).ld
 
 
+# compiler flags
+# ---------------------------------
+ifeq ("$(PROGPLAT_ARCH)", "arm8")
+  CFLAGS_EXTRA  = -ggdb3
+else ifeq ("$(PROGPLAT_ARCH)", "m0")
+  CFLAGS_EXTRA = -g3 -specs=nosys.specs -DUSE_OLD_STYLE_DATA_BSS_INIT -ffunction-sections -fdata-sections -mcpu=cortex-m0 -mthumb -fno-common -D__USE_CMSIS=CMSIS_CORE_LPC11xx
+  LDFLAGS_POST = -L$(ARMSYS) -L$(ARMLIB) -lgcc
+endif
+
+INCFLAGS     = $(foreach d,$(CODE_DIRS),-I$d/inc)
+SFLAGS       = ${INCFLAGS}
+CFLAGS	     = -std=gnu99 -Wall -fno-builtin -fno-stack-protector ${INCFLAGS} ${CFLAGS_EXTRA}
+LDFLAGS_PRE  = -Bstatic -nostartfiles -nostdlib
 
 
 # compilation and linking
 # ---------------------------------
 all: $(NAME)
 
-inc/config_input.h: Makefile.config
+all/inc/config_input.h: Makefile.config
 	./scripts/gen_config_input.py
 
 %.o: %.S ${INCLUDE_FILES}
 	${CROSS}as ${SFLAGS} -o $@ $<
 
 %.o: %.c ${INCLUDE_FILES}
-	${CROSS}gcc ${CFLAGS} -c -o $@ -fno-stack-protector $<
+	${CROSS}gcc ${CFLAGS} -c -o $@ $<
 
 $(NAME): ${OBJECTS} ${SOURCES_C} ${SOURCES_S} ${INCLUDE_FILES}
-	mkdir -p ./output
-	${CROSS}ld $(LDFLAGS) -o $@ -T linkerscripts/$(PROGPLAT_BOARD).ld ${OBJECTS}
+	mkdir -p ${OUTDIR}
+	${CROSS}ld $(LDFLAGS_PRE) -o $@ -T $(LINKERFILE) ${OBJECTS} $(LDFLAGS_POST)
 	${CROSS}objdump -t -h -D $@ > "$@_da"
 
 clean:
-	rm -rf output
-	rm -f $(call rwildcard, src/, *.o) inc/config_input.h
-
-
-
-
-# targets for running and debugging
-# ---------------------------------
-ifndef EMBEXP_INSTANCE_IDX
-  export EMBEXP_INSTANCE_IDX=0
-endif
-export EMBEXP_UART_PORT=$(shell bash -c "echo $$(( 20000 + ($(EMBEXP_INSTANCE_IDX) * 100) ))")
-export EMBEXP_GDBS_PORT=$(shell bash -c "echo $$(( 20013 + ($(EMBEXP_INSTANCE_IDX) * 100) ))")
-connect:
-	../EmbExp-Box/interface/remote.py $(PROGPLAT_BOARD) -idx $(EMBEXP_INSTANCE_IDX)
-
-checkready:
-	./scripts/check_ready.sh
-
-checkclosed:
-	./scripts/check_closed.sh
-
-# Ctrl+] mode character
-uart:
-	telnet localhost $(EMBEXP_UART_PORT)
-
-log:
-	@nc localhost $(EMBEXP_UART_PORT)
-
-run: $(NAME)
-	${GDB} --eval-command="target remote localhost:$(EMBEXP_GDBS_PORT)" -x scripts/run.gdb $(NAME)
-
-runlog: $(NAME)
-	./scripts/run_only.py ${GDB} "localhost:$(EMBEXP_GDBS_PORT)" $(NAME)
-	@echo "======================="
-	@echo "======================="
-	@cat temp/uart.log
-
-runlog_reset: $(NAME)
-	./scripts/connect_and_run.py
-
-runlog_try: $(NAME)
-	./scripts/try_run_only.py
-
-cleanuart:
-	make clean && make runlog && cat temp/uart.log
+	rm -rf ${OUTDIR}
+	rm -f $(call rwildcard, , *.o) all/inc/config_input.h
 
 
 .PHONY: all clean
-.PHONY: connect checkready uart run log runlog runlog_reset cleanuart
+
+
+# running and debugging
+include Makefile.run
 
