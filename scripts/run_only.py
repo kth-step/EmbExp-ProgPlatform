@@ -11,7 +11,7 @@ parser.add_argument("gdb_remote", help="")
 parser.add_argument("gdb_elf", help="")
 args = parser.parse_args()
 
-rdycheck__exec = ["make", "checkready"]
+rdycheck__exec = ["scripts/check_ready.sh"]
 postuart__exec = ["nc", "localhost", os.environ["EMBEXP_UART_PORT"]]
 postdebug_exec = [args.gdb_cmd, f"--eval-command=target remote {args.gdb_remote}", "-x", "scripts/run.gdb", args.gdb_elf]
 

@@ -19,12 +19,6 @@ export EMBEXP_GDBS_PORT=$(shell bash -c "echo $$(( 20013 + ($(EMBEXP_INSTANCE_ID
 connect:
 	../EmbExp-Box/interface/remote.py $(PROGPLAT_BOARD) -idx $(EMBEXP_INSTANCE_IDX)
 
-checkready:
-	./scripts/check_ready.sh
-
-checkclosed:
-	./scripts/check_closed.sh
-
 # Ctrl+] mode character
 uart:
 	telnet localhost $(EMBEXP_UART_PORT)
@@ -51,4 +45,4 @@ cleanuart:
 	make clean && make runlog && cat temp/uart.log
 
 
-.PHONY: connect checkready checkclosed uart log run runlog runlog_reset runlog_try cleanuart
+.PHONY: connect uart log run runlog runlog_reset runlog_try cleanuart

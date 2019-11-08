@@ -26,7 +26,8 @@ INCLUDE_FILES = $(foreach d,$(CODE_DIRS),$(call rwildcard, $d/inc/, *.h)) all/in
 
 OBJECTS       = $(SOURCES_C:.c=.o) $(SOURCES_S:.S=.o)
 
-LINKERFILE    = board/ld/$(PROGPLAT_BOARD).ld
+BOARDCONFIG   = $(PROGPLAT_BOARD)
+LINKERFILE    = board/ld/$(BOARDCONFIG).ld
 
 
 # compiler flags

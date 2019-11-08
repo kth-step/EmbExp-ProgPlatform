@@ -2,13 +2,9 @@
 
 import subprocess
 
-rdycheck___exec = ["make", "checkready"]
-runlog_____exec = ["make", "runlog"]
-runlog_rst_exec = ["make", "runlog_reset"]
-
-retval = subprocess.call(rdycheck___exec)
+retval = subprocess.call(["scripts/check_ready.sh"])
 if retval == 0:
-	subprocess.call(runlog_____exec)
+	subprocess.call(["make", "runlog"])
 else:
-	subprocess.call(runlog_rst_exec)
+	subprocess.call(["scripts/connect_and_run.py"])
 

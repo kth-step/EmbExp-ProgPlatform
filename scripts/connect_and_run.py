@@ -4,8 +4,8 @@ import subprocess
 import time
 import sys
 
-rdycheck__exec = ["make", "checkready"]
-clscheck__exec = ["make", "checkclosed"]
+rdycheck__exec = ["scripts/check_ready.sh"]
+clscheck__exec = ["scripts/check_closed.sh"]
 connect_exec = ["make", "connect"]
 runlog__exec = ["make", "runlog"]
 
