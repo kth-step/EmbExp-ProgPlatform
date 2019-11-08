@@ -26,11 +26,11 @@ uart:
 log:
 	nc localhost $(EMBEXP_UART_PORT)
 
-run: $(NAME)
-	./scripts/run_gdb.py ${GDB} "localhost:$(EMBEXP_GDBS_PORT)" $(NAME) run_exp
+run debug: $(NAME)
+	./scripts/run_gdb.py ${GDB} "localhost:$(EMBEXP_GDBS_PORT)" $(NAME) $(BOARDCONFIG) $@
 
 runlog: $(NAME)
-	./scripts/run_only.py ${GDB} "localhost:$(EMBEXP_GDBS_PORT)" $(NAME) run_exp
+	./scripts/run_only.py ${GDB} "localhost:$(EMBEXP_GDBS_PORT)" $(NAME) $(BOARDCONFIG) run_exp
 	@echo "======================="
 	@echo "======================="
 	@cat temp/uart.log

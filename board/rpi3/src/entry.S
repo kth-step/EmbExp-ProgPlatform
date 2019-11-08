@@ -1,7 +1,7 @@
 
 .globl _start
 
-.globl _reset_core0
+.globl _embexp_entry
 
 .section .text
 _start:
@@ -18,6 +18,7 @@ _start:
 	bl _set_led
 
 _reset_core0:
+_embexp_entry:
 	// set exception vector base address
 	adr x0, vectors
 	msr vbar_el3, x0

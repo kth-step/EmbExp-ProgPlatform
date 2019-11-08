@@ -13,12 +13,31 @@ parser.add_argument("gdb_boardconfig", help="")
 parser.add_argument("gdb_mode", help="run/debug/run_exp")
 args = parser.parse_args()
 
-gdb_exec_l = [args.gdb_cmd, f"--eval-command=target remote {args.gdb_remote}", "-x", "scripts/run.gdb", args.gdb_elf]
+gdb_mode = args.gdb_mode
+if gdb_mode != "run" and gdb_mode != "debug" and gdb_mode != "run_exp":
+	raise Exception(f"not a valid gdb_mode: {gdb_mode}")
+
+def add_gdb_script(l, scriptname, mustexist = False, alt_scriptname = None):
+	filename = f"scripts/gdb/{scriptname}.gdb"
+	if not os.path.isfile(filename):
+		if alt_scriptname != None:
+			return add_gdb_script(l, alt_scriptname, mustexist)
+		if mustexist:
+			raise Exception(f"script file not found: {filename}")
+		return l
+	return l + ["-x", filename]
+
+gdb_exec_l = [args.gdb_cmd, f"--eval-command=target remote {args.gdb_remote}"]
+gdb_exec_l = add_gdb_script(gdb_exec_l, f"reset_{args.gdb_boardconfig}")
+gdb_exec_l = add_gdb_script(gdb_exec_l, "load", True)
+gdb_exec_l = add_gdb_script(gdb_exec_l, f"prep_{args.gdb_boardconfig}", False, "prep")
+gdb_exec_l = add_gdb_script(gdb_exec_l, gdb_mode, True)
+gdb_exec_l = gdb_exec_l + [args.gdb_elf]
 
 temprunlog  = "./temp/gdb.log"
 
 run_timeout = None
-if args.gdb_mode == "run_exp":
+if gdb_mode == "run_exp":
 	# read timeout for run from config file
 	with open("Makefile.config", "r") as f:
 		for line in f:
@@ -51,7 +70,7 @@ subprocess.call(["rm", "-f", temprunlog])
 with open(temprunlog, "w") as runlog:
 	print("starting run logging")
 
-	if args.gdb_mode == "run_exp":
+	if gdb_mode == "run_exp":
 		gdb_stdin  = subprocess.PIPE
 		gdb_stdout = runlog
 		gdb_stderr = subprocess.STDOUT
