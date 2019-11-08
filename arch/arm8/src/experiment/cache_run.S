@@ -5,7 +5,7 @@
 
 .section .experiment_code
 scamv_entry:
-.include "experiment/cache_run_input.h"
+.include "experiment/asm.h"
 	b scamv_exit
 
 
@@ -25,7 +25,7 @@ _scamv_run1:
 	str x30, [x0]
 	mov x0,  #0
 	mov x30, #0
-.include "experiment/cache_run_input_setup1.h"
+.include "experiment/asm_setup1.h"
 	dsb sy
 	isb
 	b scamv_entry
@@ -35,7 +35,7 @@ _scamv_run2:
 	str x30, [x0]
 	mov x0,  #0
 	mov x30, #0
-.include "experiment/cache_run_input_setup2.h"
+.include "experiment/asm_setup2.h"
 	dsb sy
 	isb
 	b scamv_entry
