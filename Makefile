@@ -57,7 +57,7 @@ $(NAME): ${OBJECTS} ${SOURCES_C} ${SOURCES_S} ${INCLUDE_FILES}
 
 clean:
 	rm -rf ${OUTDIR}
-	rm -f $(call rwildcard, src/, *.o) all/inc/config_input.h
+	rm -f $(call rwildcard, , *.o) all/inc/config_input.h
 
 
 .PHONY: all clean
