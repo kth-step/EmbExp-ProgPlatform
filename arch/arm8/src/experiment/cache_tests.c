@@ -88,7 +88,7 @@ void run_cache_experiment() {
   #define CACHE_SET_LOWER 0
   #define CACHE_SET_UPPER (SETS)
 #elif defined RUN_CACHE_MULTIW_SUBSET
-  #define CACHE_SET_LOWER (((SETS)/2)-4)
+  #define CACHE_SET_LOWER (((SETS)/2)-3)
   #define CACHE_SET_UPPER (SETS)
 #elif defined RUN_CACHE_MULTIW_SUBSET_PAGE_BOUNDARY
   #define CACHE_SET_LOWER ((SETS)/2)
