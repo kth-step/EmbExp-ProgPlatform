@@ -1,3 +1,5 @@
+#ifdef RUN_CACHE
+
 #include "lib/printf.h"
 #include "mmu.h"
 #include "cache.h"
@@ -517,4 +519,6 @@ void run_cache_experiment()
   test_prefetching();
 }
 
-#endif
+#endif // SINGLE_EXPERIMENTS
+
+#endif // RUN_CACHE

@@ -1,3 +1,5 @@
+#ifdef RUN_CACHE
+
 #include "lib/printf.h"
 #include "config.h"
 #include "mmu.h"
@@ -114,6 +116,6 @@ void run_cache_experiment() {
   #error "no experiment type selected"
 #endif
 }
-#endif
+#endif // !SINGLE_EXPERIMENTS
 
-
+#endif // RUN_CACHE
