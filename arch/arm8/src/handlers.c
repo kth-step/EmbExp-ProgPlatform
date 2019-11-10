@@ -1,8 +1,8 @@
-void bcm283x_mu_serial_putc(const char data);
-#define putc bcm283x_mu_serial_putc
-void print_string(const char* str) {
+#include "uart.h"
+
+static void print_string(const char* str) {
   while(*str) {
-    putc(*str);
+    uart_putchar(*str);
     str++;
   }
 }
