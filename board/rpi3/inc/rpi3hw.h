@@ -87,6 +87,4 @@ static inline void writel(uint64_t addr, uint32_t value)
 	__iowmb();
 }
 
-void uart_init(void);
-
 #endif
