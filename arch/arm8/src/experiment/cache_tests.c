@@ -1,7 +1,8 @@
+#include "config.h"
+
 #ifdef RUN_CACHE
 
 #include "lib/printf.h"
-#include "config.h"
 #include "mmu.h"
 #include "cache.h"
 
@@ -44,15 +45,6 @@ static cache_state cache;
 #else
   #error "no experiment type selected"
 #endif
-
-// memory space allocated for experiments
-extern uint64_t _experiment_memory[32 * 1024 * 8 / 8];
-void _clean_experiment_memory() {
-  int length = sizeof(_experiment_memory)/sizeof(uint64_t);
-  for (int i = 0; i < length; i++) {
-    _experiment_memory[i] = 0;
-  }
-}
 
 static cache_state cache_temp;
 uint8_t cache_run_mult_compare(void (*_scamv_run_)(), cache_state cache_, uint8_t n) {

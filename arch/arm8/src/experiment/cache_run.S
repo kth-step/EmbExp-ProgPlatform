@@ -1,6 +1,4 @@
 
-.ifdef RUN_CACHE
-
 .globl _cache_run
 .globl _scamv_run1
 .globl _scamv_run2
@@ -189,6 +187,4 @@ _cache_run:
 	add sp, sp, #(8 * 40)
 
 	ret
-
-.endif // RUN_CACHE
 

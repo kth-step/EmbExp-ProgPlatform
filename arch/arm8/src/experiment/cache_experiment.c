@@ -1,3 +1,5 @@
+#include "config.h"
+
 #ifdef RUN_CACHE
 
 #include "lib/printf.h"
