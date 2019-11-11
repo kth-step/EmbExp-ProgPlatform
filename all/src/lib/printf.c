@@ -9,16 +9,14 @@ void printf_init() {
 
 void printf_echoloop()
 {
-  while(1) {
-    uart_putchar(uart_getchar());
-  }
+  uart_echoloop();
 }
 
 
 static void printf_string(char *str)
 {
     if(!str) str = "(null)";    
-    while(*str) uart_putchar(*str++);
+    uart_print_string(str);
 }
 
 static void printf_int(int i)
