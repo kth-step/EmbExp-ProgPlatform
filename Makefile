@@ -59,7 +59,7 @@ all/inc/config_input.h: ${CONFIGFILE}
 	./scripts/gen_config_input.py
 
 %.o: %.S ${INCLUDE_FILES}
-	${CROSS}as ${SFLAGS} -o $@ $<
+	${CROSS}cpp ${INCFLAGS} $< | ${CROSS}as ${SFLAGS} -o $@ -
 
 %.o: %.c ${INCLUDE_FILES}
 	${CROSS}gcc ${CFLAGS} -c -o $@ $<

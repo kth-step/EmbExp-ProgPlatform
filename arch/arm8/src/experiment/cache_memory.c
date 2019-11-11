@@ -1,3 +1,8 @@
+#include "config.h"
+
+#ifdef RUN_CACHE
+
+
 #include <stdint.h>
 
 // memory space allocated for experiments
@@ -8,4 +13,7 @@ void _clean_experiment_memory() {
     _experiment_memory[i] = 0;
   }
 }
+
+
+#endif // RUN_CACHE
 
