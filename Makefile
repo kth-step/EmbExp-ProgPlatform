@@ -1,5 +1,7 @@
+CONFIGFILE = Makefile.config
+
 # config
-include Makefile.config
+include ${CONFIGFILE}
 
 # local settings
 -include Makefile.local
@@ -53,7 +55,7 @@ LDFLAGS_PRE  = -Bstatic -nostartfiles -nostdlib
 # ---------------------------------
 all: $(NAME)
 
-all/inc/config_input.h: Makefile.config
+all/inc/config_input.h: ${CONFIGFILE}
 	./scripts/gen_config_input.py
 
 %.o: %.S ${INCLUDE_FILES}
@@ -62,7 +64,7 @@ all/inc/config_input.h: Makefile.config
 %.o: %.c ${INCLUDE_FILES}
 	${CROSS}gcc ${CFLAGS} -c -o $@ $<
 
-$(NAME): ${OBJECTS} ${SOURCES_C} ${SOURCES_S} ${INCLUDE_FILES}
+$(NAME): ${OBJECTS} ${INCLUDE_FILES}
 	mkdir -p ${OUTDIR}
 	${CROSS}ld $(LDFLAGS_PRE) -o $@ -T $(LINKERFILE) ${OBJECTS} $(LDFLAGS_POST)
 	${CROSS}objdump -t -h -D $@ > "$@_da"
