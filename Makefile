@@ -40,6 +40,8 @@ LINKERFILE    = board/$(PROGPLAT_BOARD)/$(BOARDCONFIG).ld
 # ---------------------------------
 ifeq ("$(PROGPLAT_ARCH)", "arm8")
   CFLAGS_EXTRA  = -ggdb3
+else ifeq ("$(PROGPLAT_BOARD)", "rpi2")
+  CFLAGS_EXTRA  = -ggdb3 -mcpu=cortex-a7 -mfloat-abi=soft -mfpu=neon-vfpv4 -mlittle-endian -ffreestanding -fno-builtin
 else ifeq ("$(PROGPLAT_ARCH)", "m0")
   CFLAGS_EXTRA = -g3 -specs=nosys.specs -DUSE_OLD_STYLE_DATA_BSS_INIT -ffunction-sections -fdata-sections -mcpu=cortex-m0 -mthumb -fno-common -D__USE_CMSIS=CMSIS_CORE_LPC11xx
   LDFLAGS_POST = -L$(ARMSYS) -L$(ARMLIB) -lgcc

@@ -7,6 +7,10 @@
   #ifndef __PROGPLAT_ARCH__ARM8
     #error "wrong architecture for selected board type"
   #endif
+#elif defined(__PROGPLAT_BOARD__RPI2)
+  #ifndef __PROGPLAT_ARCH__ARM7
+    #error "wrong architecture for selected board type"
+  #endif
 #elif defined __PROGPLAT_BOARD__LPC11C24
   #ifndef __PROGPLAT_ARCH__M0
     #error "wrong architecture for selected board type"

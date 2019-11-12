@@ -7,6 +7,10 @@ ifndef EMBEXP_CROSS
     ifdef HOLBA_GCC_ARM8_CROSS
       EMBEXP_CROSS = ${HOLBA_GCC_ARM8_CROSS}
     endif
+  else ifeq ("$(PROGPLAT_ARCH)", "arm7")
+    ifdef HOLBA_GCC_ARM_CROSS
+      EMBEXP_CROSS = ${HOLBA_GCC_ARM_CROSS}
+    endif
   else ifeq ("$(PROGPLAT_ARCH)", "m0")
     ifdef HOLBA_GCC_ARM_CROSS
       EMBEXP_CROSS = ${HOLBA_GCC_ARM_CROSS}
