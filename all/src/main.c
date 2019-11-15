@@ -8,11 +8,14 @@
 void run_cache_experiment();
 #endif
 
+#ifdef RUN_TIME
+void run_time_experiment();
+#endif
+
 void experiment_complete_marker() {
   // infinite echo loop
   printf_echoloop();
 }
-
 
 int main()
 {
@@ -22,6 +25,8 @@ int main()
 
 #ifdef RUN_CACHE
   run_cache_experiment();
+#elif defined RUN_TIME
+  run_time_experiment();
 #endif
   
   printf("Experiment complete.\n");
