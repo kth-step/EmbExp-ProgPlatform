@@ -1,6 +1,57 @@
 #include "lib/printf.h"
+#include "config.h"
+#include <stdint.h>
+
+#define BARRIER_DMB_DSB_ISB() __asm__ __volatile__("DMB \t\n DSB \t\n ISB \t\n")
+
+#ifdef RUN_TIME
+
+uint32_t input_code(uint32_t x) {
+    if (x > 5) {
+        return x + 3;
+    } else {
+        return x;
+    }
+}
+
+void timer_reset() {
+    // TODO: reset the systick timer here
+}
+
+uint32_t timer_measure() {
+    // TODO: measure time here
+    return 999;
+}
 
 void run_time_experiment(void)
 {
-    printf("Paulin was here \n");
+    uint32_t t1,t2;
+
+    // NOTICE: this is a super crude mockup, and we need the barriers to prevent reorderings (brute force solution)
+
+    uint32_t input1 = 1;
+    uint32_t input2 = 12;
+
+    BARRIER_DMB_DSB_ISB();
+    timer_reset();
+    BARRIER_DMB_DSB_ISB();
+    input_code(input1);
+    BARRIER_DMB_DSB_ISB();
+    t1 = timer_measure();
+    BARRIER_DMB_DSB_ISB();
+
+    BARRIER_DMB_DSB_ISB();
+    timer_reset();
+    BARRIER_DMB_DSB_ISB();
+    input_code(input2);
+    BARRIER_DMB_DSB_ISB();
+    t2 = timer_measure();
+    BARRIER_DMB_DSB_ISB();
+
+    printf("Paulin was here\n");
+    printf("t1 = %d\n", t1);
+    printf("t2 = %d\n", t2);
 }
+
+#endif // RUN_TIME
+
