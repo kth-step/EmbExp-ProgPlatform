@@ -52,5 +52,6 @@ cache_line * get_line_for_pa(cache_state cache, uint64_t pa);
 int hit_for_pa(cache_state cache, uint64_t pa);
 uint64_t compare_cache(cache_state c1, cache_state c2);
 uint64_t compare_cache_bounds(cache_state c1, cache_state c2, uint64_t lower_bound, uint64_t upper_bound);
+uint64_t compare_cache_num_bounds(cache_state c1, cache_state c2, uint64_t lower_bound, uint64_t upper_bound);
 
 #endif

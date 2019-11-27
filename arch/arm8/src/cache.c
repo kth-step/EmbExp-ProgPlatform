@@ -295,3 +295,27 @@ uint64_t compare_cache_bounds(cache_state c1, cache_state c2, uint64_t lower_bou
   }
   return 0;
 }
+
+uint64_t compare_cache_num_bounds(cache_state c1, cache_state c2, uint64_t lower_bound, uint64_t upper_bound) {
+  for (uint64_t set=lower_bound; set<upper_bound; set++) {
+    uint64_t num1 = 0;
+    uint64_t num2 = 0;
+
+    for (uint64_t way=0; way<WAYS; way++) {
+      cache_line * l1 = &c1[set][way];
+      if (l1->valid) {
+        num1++;
+      }
+      cache_line * l2 = &c2[set][way];
+      if (l2->valid) {
+        num2++;
+      }
+    }
+
+    if (num1 != num2) {
+      return set;
+    }
+  }
+
+  return 0;
+}

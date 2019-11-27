@@ -79,12 +79,19 @@ void run_cache_experiment() {
   //debug_set(cache2[0], 0);
 
 #ifdef RUN_CACHE_MULTIW
+  #define CACHE_EQ_FUN compare_cache_bounds
+  #define CACHE_SET_LOWER 0
+  #define CACHE_SET_UPPER (SETS)
+#elif defined RUN_CACHE_MULTIW_NUMINSET
+  #define CACHE_EQ_FUN compare_cache_num_bounds
   #define CACHE_SET_LOWER 0
   #define CACHE_SET_UPPER (SETS)
 #elif defined RUN_CACHE_MULTIW_SUBSET
+  #define CACHE_EQ_FUN compare_cache_bounds
   #define CACHE_SET_LOWER (((SETS)/2)-3)
   #define CACHE_SET_UPPER (SETS)
 #elif defined RUN_CACHE_MULTIW_SUBSET_PAGE_BOUNDARY
+  #define CACHE_EQ_FUN compare_cache_bounds
   #define CACHE_SET_LOWER ((SETS)/2)
   #define CACHE_SET_UPPER (SETS)
 #else
@@ -92,7 +99,7 @@ void run_cache_experiment() {
 #endif
   if (diff == 0) {
     // compare and print result of comparison
-    if (compare_cache_bounds(cache1, cache2, CACHE_SET_LOWER, CACHE_SET_UPPER) == 0)
+    if (CACHE_EQ_FUN(cache1, cache2, CACHE_SET_LOWER, CACHE_SET_UPPER) == 0)
       printf("RESULT: EQUAL\n");
     else
       printf("RESULT: UNEQUAL\n");
