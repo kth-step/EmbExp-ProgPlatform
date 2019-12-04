@@ -1,4 +1,6 @@
 #include "lib/printf.h"
+#include "LPC11xx.h"
+#include "core_cm0.h"
 #include "config.h"
 #include <stdint.h>
 
@@ -8,19 +10,25 @@
 
 uint32_t input_code(uint32_t x) {
     if (x > 5) {
-        return x + 3;
-    } else {
+        return x + 3*x ;
+    } 
+    else {
         return x;
     }
 }
 
 void timer_reset() {
     // TODO: reset the systick timer here
+    SysTick->LOAD = 99 ;
+    SysTick->VAL = SysTick->LOAD ;
 }
 
 uint32_t timer_measure() {
-    // TODO: measure time here
-    return 999;
+    uint32_t t ;
+     /* Since CVR register counts down, the execution time is the difference
+      between the start value (reload value) and the current value */
+    t = SysTick->LOAD - SysTick->VAL ; 
+    return t;
 }
 
 void run_time_experiment(void)
@@ -32,6 +40,7 @@ void run_time_experiment(void)
     uint32_t input1 = 1;
     uint32_t input2 = 12;
 
+    SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk ;
     BARRIER_DMB_DSB_ISB();
     timer_reset();
     BARRIER_DMB_DSB_ISB();
