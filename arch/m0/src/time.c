@@ -31,8 +31,7 @@ uint32_t timer_measure() {
     return t;
 }
 
-void run_time_experiment(void)
-{
+void time_run_c()  {
     uint32_t t1,t2;
 
     // NOTICE: this is a super crude mockup, and we need the barriers to prevent reorderings (brute force solution)
@@ -61,6 +60,15 @@ void run_time_experiment(void)
     printf("t1 = %d\n", t1);
     printf("t2 = %d\n", t2);
 }
+
+uint32_t _time_run() ;
+void run_time_experiment(void)
+{
+    uint32_t res = _time_run() ;
+    //time_run_c();
+    printf("%d\n", res);
+}
+
 
 #endif // RUN_TIME
 
