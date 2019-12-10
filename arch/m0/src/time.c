@@ -8,18 +8,18 @@
 
 #ifdef RUN_TIME
 
-uint32_t input_code(uint32_t x) {
+/*uint32_t input_code(uint32_t x) {
     if (x > 5) {
         return x + 3*x ;
     } 
     else {
         return x;
     }
-}
+}*/
 
 void timer_reset() {
     // TODO: reset the systick timer here
-    SysTick->LOAD = 99 ;
+    SysTick->LOAD = 990 ;
     SysTick->VAL = SysTick->LOAD ;
 }
 
@@ -40,10 +40,11 @@ void time_run_c()  {
     uint32_t input2 = 12;
 
     SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk ;
+    SysTick->CTRL|= SysTick_CTRL_CLKSOURCE_Msk ;
     BARRIER_DMB_DSB_ISB();
     timer_reset();
     BARRIER_DMB_DSB_ISB();
-    input_code(input1);
+    _input_code(input1);
     BARRIER_DMB_DSB_ISB();
     t1 = timer_measure();
     BARRIER_DMB_DSB_ISB();
@@ -51,7 +52,7 @@ void time_run_c()  {
     BARRIER_DMB_DSB_ISB();
     timer_reset();
     BARRIER_DMB_DSB_ISB();
-    input_code(input2);
+    _input_code(input2);
     BARRIER_DMB_DSB_ISB();
     t2 = timer_measure();
     BARRIER_DMB_DSB_ISB();
@@ -64,9 +65,9 @@ void time_run_c()  {
 uint32_t _time_run() ;
 void run_time_experiment(void)
 {
-    uint32_t res = _time_run() ;
-    //time_run_c();
-    printf("%d\n", res);
+    //uint32_t res = _time_run() ;
+    time_run_c();
+    //rintf("%d\n", res);
 }
 
 
