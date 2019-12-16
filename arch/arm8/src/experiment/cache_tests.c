@@ -64,6 +64,29 @@ void run_cache_experiment() {
   volatile uint64_t v __UNUSED = 0;
   v = *((uint64_t *)(0x80000000));
 
+  // http://infocenter.arm.com/help/topic/com.arm.doc.ddi0500d/DDI0500D_cortex_a53_r0p2_trm.pdf
+  // p.246
+  // https://developer.arm.com/docs/den0024/latest/caches/cache-discovery
+  uint64_t result;
+  asm (
+       "                                   \
+        //mov %x[xtmp], #0x1              \t\n \
+        msr CSSELR_EL1, %x[xtmp]        \t\n \
+        mrs %x[result], CCSIDR_EL1    \t\n \
+       "
+       : [result] "=r" (result)
+       : [xtmp] "r" (0) // L1 data/instructions (0, 1), L2(2)
+       );
+
+  printf("cache id = %x\n", result);
+
+  // L1 Data 32KB
+  // L1 Inst 32KB
+  // L2      512KB
+
+  return;
+
+
 #ifdef RUN_2EXPS
   // run 2 cache experiments
   diff += cache_run_mult_compare(1, cache1, NUM_MUL_RUNS);
