@@ -9,7 +9,9 @@
 .section .experiment_code
 scamv_entry:
 .include "experiment/asm.h"
-	bx r13
+	ldr r0, =scamv_exit
+	add r0, r0, #1
+	bx r0
 
 
 .section .data
@@ -27,14 +29,12 @@ _scamv_timeafter_store:
 .section .text
 
 _time_run1:
-	bx lr
 	ldr r0, =_scamv_ret_store
 	mov r1, r14
 	str r1, [r0]
 	ldr r0, =scamv_entry
+	add r0, r0, #1
 	mov r14, r0
-	ldr r0, =scamv_exit
-	mov r13, r0
 	mov r0,  #0
 	mov r1,  #0
 .include "experiment/asm_setup1.h"
@@ -42,17 +42,18 @@ _time_run1:
 	dsb
 	isb
 	// TODO: reset timer here
+	dmb
+	dsb
+	isb
 	bx r14
 
 _time_run2:
-	bx lr
 	ldr r0, =_scamv_ret_store
 	mov r1, r14
 	str r1, [r0]
 	ldr r0, =scamv_entry
+	add r0, r0, #1
 	mov r14, r0
-	ldr r0, =scamv_exit
-	mov r13, r0
 	mov r0,  #0
 	mov r1,  #0
 .include "experiment/asm_setup2.h"
@@ -60,6 +61,9 @@ _time_run2:
 	dsb
 	isb
 	// TODO: reset timer here
+	dmb
+	dsb
+	isb
 	bx r14
 
 scamv_exit:
@@ -68,6 +72,9 @@ scamv_exit:
 	isb
 	// TODO: measure time here in r0 (subtract two indirect jumps and barrier instructions, should we remove barriers because this should not matter?)
 	mov r0, #0x99
+	dmb
+	dsb
+	isb
 	ldr r1, =_scamv_timeafter_store
 	str r0, [r1]
 	ldr r0, =_scamv_ret_store
@@ -117,6 +124,7 @@ _time_run:
 	bl _clean_experiment_memory
 // move _scamv_run to r14 (LR)
 	ldr r1, [sp, #(8 *  0)]
+	add r1, r1, #1
 	mov r14, r1
 // create defined processor state
 	mov r0,  #0
@@ -135,14 +143,7 @@ _time_run:
 	mov r13, r0
 
 // run the experiment code
-	mov r0, r14
-	add r0, r0, #1
-	blx r0
-
-// proxy code for experiment run
-	mov r0, #17
-	ldr r1, =_scamv_timeafter_store
-	str r0, [r1]
+	blx r14
 
 // =======================================================
 // context restore starts
