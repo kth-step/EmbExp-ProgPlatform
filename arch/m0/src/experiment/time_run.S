@@ -27,6 +27,8 @@ _scamv_timeafter_store:
 .section .text
 
 _time_run1:
+	b comebackhere
+	bx lr
 	ldr r0, =_scamv_ret_store
 	mov r1, r14
 	str r1, [r0]
@@ -44,6 +46,7 @@ _time_run1:
 	bx r14
 
 _time_run2:
+	bx lr
 	ldr r0, =_scamv_ret_store
 	mov r1, r14
 	str r1, [r0]
@@ -133,11 +136,18 @@ _time_run:
 	mov r13, r0
 
 // run the experiment code
-//	blx r14
+	ldr r2, =_time_run1
+	mov lr, r2
+	//bx r2
+	//bl _time_run1
+	mov pc, r2
+
 // proxy code for experiment run
+comebackhere:
 	mov r0, #17
 	ldr r1, =_scamv_timeafter_store
 	str r0, [r1]
+
 // =======================================================
 // context restore starts
 // =======================================================
