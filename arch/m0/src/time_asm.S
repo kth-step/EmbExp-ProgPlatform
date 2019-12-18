@@ -4,7 +4,7 @@
 
 .globl _time_run
 .globl _input_code
-
+.globl _barriers
 _input_code:
 loop_cont:
     cmp r0, #0
@@ -44,5 +44,8 @@ _time_run:
     sub r0, r0, r1 
     //mov r14, r0
 	bx lr
-
+_barriers :
+    dmb
+    dsb
+    isb
 #endif // RUN_TIME

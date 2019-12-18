@@ -19,8 +19,7 @@
 
 void timer_reset() {
     // TODO: reset the systick timer here
-    SysTick->LOAD = 990 ;
-    SysTick->VAL = SysTick->LOAD ;
+    SysTick->VAL = 0 ;
 }
 
 uint32_t timer_measure() {
@@ -36,15 +35,17 @@ void time_run_c()  {
 
     // NOTICE: this is a super crude mockup, and we need the barriers to prevent reorderings (brute force solution)
 
-    uint32_t input1 = 1;
-    uint32_t input2 = 12;
+    uint32_t input1 = 14;
+    uint32_t input2 = 11;
 
+    SysTick->CTRL |= SysTick_CTRL_CLKSOURCE_Msk ;
     SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk ;
-    SysTick->CTRL|= SysTick_CTRL_CLKSOURCE_Msk ;
+    SysTick->LOAD = 120 ;
     BARRIER_DMB_DSB_ISB();
     timer_reset();
+    printf("time tst = %d\n", SysTick->VAL);
     BARRIER_DMB_DSB_ISB();
-    _input_code(input1);
+    //_input_code(input1);
     BARRIER_DMB_DSB_ISB();
     t1 = timer_measure();
     BARRIER_DMB_DSB_ISB();
@@ -52,22 +53,23 @@ void time_run_c()  {
     BARRIER_DMB_DSB_ISB();
     timer_reset();
     BARRIER_DMB_DSB_ISB();
-    _input_code(input2);
+    //_input_code(input2);
     BARRIER_DMB_DSB_ISB();
     t2 = timer_measure();
     BARRIER_DMB_DSB_ISB();
 
-    printf("Paulin was here\n");
+    printf("Time for each experiment\n");
     printf("t1 = %d\n", t1);
     printf("t2 = %d\n", t2);
+    printf("t2 - t1 = %d\n", t2 -  t1);
 }
 
 uint32_t _time_run() ;
 void run_time_experiment(void)
 {
     //uint32_t res = _time_run() ;
+    //printf("%d\n", res);
     time_run_c();
-    //rintf("%d\n", res);
 }
 
 
