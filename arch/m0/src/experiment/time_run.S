@@ -75,8 +75,6 @@ scamv_exit:
 
 
 _time_run:
-	mov r0, #17
-	bx lr
 // save registers on stack
 	sub sp, sp, #(8 * 40)
 	str r0,  [sp, #(8 *  0)] // _scamv_run
@@ -109,6 +107,10 @@ _time_run:
 	mov r1, sp
 	str r1, [r0]
 
+// =======================================================
+// context save finished
+// =======================================================
+
 // clean experiment memory
 	bl _clean_experiment_memory
 // move _scamv_run to r14 (LR)
@@ -131,13 +133,21 @@ _time_run:
 	mov r13, r0
 
 // run the experiment code
-	blx r14
+//	blx r14
+// proxy code for experiment run
+	mov r0, #17
+	ldr r1, =_scamv_timeafter_store
+	str r0, [r1]
+// =======================================================
+// context restore starts
+// =======================================================
+
 // restore SP register
 	ldr r0, =_sp_store
 	ldr r1, [r0]
 	mov sp, r1
 
-// save registers from stack
+// restore registers from stack
 	ldr r0,  [sp, #(8 *  8)]
 	ldr r1,  [sp, #(8 *  9)]
 	ldr r2,  [sp, #(8 * 10)]
