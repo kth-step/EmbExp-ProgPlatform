@@ -41,7 +41,15 @@ _time_run1:
 	dmb
 	dsb
 	isb
-	// TODO: reset timer here
+	// reset timer here
+	mov r1, #0x5
+	ldr r0, =0xE000E010  // SYST_CSR
+	str r1, [r0]
+	ldr r1, =0xFFFFFF
+	ldr r0, =0xE000E014  // SYST_RVR
+	str r1, [r0]
+	ldr r0, =0xE000E018  // SYST_CVR
+	str r1, [r0]
 	dmb
 	dsb
 	isb
@@ -60,7 +68,15 @@ _time_run2:
 	dmb
 	dsb
 	isb
-	// TODO: reset timer here
+	// reset timer here
+	mov r1, #0x5
+	ldr r0, =0xE000E010  // SYST_CSR
+	str r1, [r0]
+	ldr r1, =0xFFFFFF
+	ldr r0, =0xE000E014  // SYST_RVR
+	str r1, [r0]
+	ldr r0, =0xE000E018  // SYST_CVR
+	str r1, [r0]
 	dmb
 	dsb
 	isb
@@ -70,8 +86,15 @@ scamv_exit:
 	dmb
 	dsb
 	isb
-	// TODO: measure time here in r0 (subtract two indirect jumps and barrier instructions, should we remove barriers because this should not matter?)
-	mov r0, #0x99
+	// measure time here, and store it in r0
+	// (what's the impact of the load and store on the measurement? is it always the same constant value?)
+	// (we should keep them but do we need all the barriers?)
+	ldr r0, =0xE000E018  // SYST_CVR
+	ldr r1, [r0]
+	ldr r0, =0xE000E014  // SYST_RVR
+	ldr r0, [r0]
+	sub r0, r0, r1
+	// TODO: check countflag in status register, set r0 to 0xFFFFFFFF in this case
 	dmb
 	dsb
 	isb
