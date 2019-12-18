@@ -31,11 +31,13 @@ SECTIONS
 {
         
 	. = ORIGIN(ram);
+
         .text : 
         {
                 /*FILL(0xff)*/
                 KEEP (*(.isr_vector));
                 KEEP (*(.after_vectors));
+		KEEP(*(.experiment_code))
                 *(.text);
         } >ram        
         _etext = .;
