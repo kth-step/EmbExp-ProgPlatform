@@ -155,7 +155,7 @@ _cache_run:
 	bl debug_set
 */
 
-// save registers from stack
+// restore registers from stack
 	ldr x0,  [sp, #(8 *  0)]
 	ldr x1,  [sp, #(8 *  1)]
 	ldr x2,  [sp, #(8 *  2)]
