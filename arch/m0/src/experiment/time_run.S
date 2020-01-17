@@ -97,6 +97,7 @@ scamv_exit:
 	ldr r0, [r0]
 	sub r0, r0, r1
 	// TODO: check countflag in status register, set r0 to 0xFFFFFFFF in this case
+/*
 	push {r2, lr}
 	ldr r2, =string
 	//ldr r2, =0x00010000  // COUNTFLAG_MASK (bit 16)
@@ -105,6 +106,7 @@ scamv_exit:
 	mov r2, #11
 	bl printf
 	pop {r2, pc}
+*/
 
 	dmb
 	dsb
