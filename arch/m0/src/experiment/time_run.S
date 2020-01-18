@@ -1,11 +1,9 @@
 #include "config.h"
-//#include "lib/printf.h"
 #ifdef RUN_TIME
 
 .globl _time_run
 .globl _time_run1
 .globl _time_run2
-.extern printf
 
 .section .experiment_code
 scamv_entry:
@@ -25,8 +23,6 @@ _scamv_ret_store:
 .align 3
 _scamv_timeafter_store:
 	.quad 0
-.balign 4
-	string: .asciz "\n%d \n"
 
 .section .text
 
@@ -97,15 +93,6 @@ scamv_exit:
 	ldr r0, [r0]
 	sub r0, r0, r1
 	// TODO: check countflag in status register, set r0 to 0xFFFFFFFF in this case
-	push {r2, lr}
-	ldr r2, =string
-	//ldr r2, =0x00010000  // COUNTFLAG_MASK (bit 16)
-	//ldr r3, =0xE000E010  // SYST_CSR
-	//add r2, r2, r3
-	mov r2, #11
-	bl printf
-	pop {r2, pc}
-
 	dmb
 	dsb
 	isb

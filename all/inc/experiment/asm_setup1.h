@@ -1,6 +1,3 @@
-mov r2, #3
-mov r3, #3
-
 /* 
 // Experiment 1 : Beggining
 // Exepriment 1 : End  
@@ -21,6 +18,12 @@ mov r3, #3
 */
 
 /*
-// Experiments 4, 5 and 6 : Beggining
-// Experiments 4, 5 and 6 : End
+// Experiments 4, 5, 6 and 8: Beggining
+// Experiments 4, 5, 6 and 8: End
 */
+
+
+// Experiment 8 : Beggining
+mov r2, #3
+mov r3, #3
+// Exepriment 8 : End  
