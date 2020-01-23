@@ -70,7 +70,7 @@ _time_run2:
 	mov r1, #0x5
 	ldr r0, =0xE000E010  // SYST_CSR
 	str r1, [r0]
-	ldr r1, =0xFFFFFF
+	ldr r1, =0x000005
 	ldr r0, =0xE000E014  // SYST_RVR
 	str r1, [r0]
 	ldr r0, =0xE000E018  // SYST_CVR
@@ -95,11 +95,12 @@ scamv_exit:
 	// TODO: check countflag in status register, set r0 to 0xFFFFFFFF in this case
 	ldr r1, =0xE000E010  // SYST_CSR
 	ldr r3, [r1]
-	// mov r2, r3, lsr #31
-	lsr r2, r3, #31
+	lsr r2, r3, #16   // The COUNTFLAG corresponds to the bit 16 of the SYST_CVR register
+	//and r2, r2, #0x00000001
 	cmp r2, #0
 	beq _NoOverflow
 	ldr r0, =0xFFFFFFFF
+	_NoOverflow:
 	dmb
 	dsb
 	isb
@@ -108,8 +109,6 @@ scamv_exit:
 	ldr r0, =_scamv_ret_store
 	ldr r1, [r0]
 	mov r14, r1
-	_NoOverflow:
-		nop
 	bx lr
 
 
