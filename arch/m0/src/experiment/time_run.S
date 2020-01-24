@@ -70,7 +70,7 @@ _time_run2:
 	mov r1, #0x5
 	ldr r0, =0xE000E010  // SYST_CSR
 	str r1, [r0]
-	ldr r1, =0x000005
+	ldr r1, =0xFFFFFF
 	ldr r0, =0xE000E014  // SYST_RVR
 	str r1, [r0]
 	ldr r0, =0xE000E018  // SYST_CVR
