@@ -38,20 +38,27 @@ LINKERFILE    = board/$(PROGPLAT_BOARD)/$(BOARDCONFIG).ld
 
 # compiler flags
 # ---------------------------------
+LDFLAGS_PRE  = -Bstatic -nostartfiles -nostdlib
+
 ifeq ("$(PROGPLAT_ARCH)", "arm8")
   CFLAGS_EXTRA  = -ggdb3
 else ifeq ("$(PROGPLAT_BOARD)", "rpi2")
   CFLAGS_EXTRA  = -ggdb3 -mcpu=cortex-a7 -mfloat-abi=soft -mfpu=neon-vfpv4 -mlittle-endian -ffreestanding -fno-builtin
 else ifeq ("$(PROGPLAT_ARCH)", "m0")
-  SFLAGS_EXTRA = -mcpu=cortex-m0 -mthumb
-  CFLAGS_EXTRA = -g3 -specs=nosys.specs -DUSE_OLD_STYLE_DATA_BSS_INIT -ffunction-sections -fdata-sections -mcpu=cortex-m0 -mthumb -fno-common -D__USE_CMSIS=CMSIS_CORE_LPC11xx
-  LDFLAGS_POST = -L$(ARMSYS) -L$(ARMLIB) -lgcc
+  SFLAGS_EXTRA  = -mcpu=cortex-m0 -mthumb
+  CFLAGS_EXTRA  = -g3 -specs=nosys.specs -DUSE_OLD_STYLE_DATA_BSS_INIT -ffunction-sections -fdata-sections -mcpu=cortex-m0 -mthumb -fno-common -D__USE_CMSIS=CMSIS_CORE_LPC11xx
+  LDFLAGS_POST  = -L$(ARMSYS) -L$(ARMLIB) -lgcc
+else ifeq ("$(PROGPLAT_ARCH)", "rv32imac")
+  SFLAGS_EXTRA  = -march=rv32imac -mabi=ilp32
+  CFLAGS_EXTRA  = -g3 -ffreestanding -march=rv32imac -mabi=ilp32
+  LDFLAGS_PRE  += -melf32lriscv
+  LDFLAGS_POST  = -L$(RVSYS) -L$(RVLIB) -lgcc
 endif
 
 INCFLAGS     = $(foreach d,$(CODE_DIRS),-I$d/inc)
 SFLAGS       = ${SFLAGS_EXTRA} ${INCFLAGS}
 CFLAGS	     = -std=gnu99 -Wall -fno-builtin -fno-stack-protector ${INCFLAGS} ${CFLAGS_EXTRA}
-LDFLAGS_PRE  = -Bstatic -nostartfiles -nostdlib
+
 
 
 # compilation and linking

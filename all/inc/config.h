@@ -15,6 +15,10 @@
   #ifndef __PROGPLAT_ARCH__M0
     #error "wrong architecture for selected board type"
   #endif
+#elif defined __PROGPLAT_BOARD__ARTY_A7_100T__FE310
+  #ifndef __PROGPLAT_ARCH__RV32IMAC
+    #error "wrong architecture for selected board type"
+  #endif
 #else
   #error "no known board type selected"
 #endif

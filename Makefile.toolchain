@@ -20,6 +20,15 @@ ifndef EMBEXP_CROSS
       ARMSYS = $(ARMDIR)/arm-none-eabi/lib/thumb/v6-m
       ARMLIB = $(ARMDIR)/lib/gcc/arm-none-eabi/7.3.1/thumb/v6-m
     endif
+  else ifeq ("$(PROGPLAT_ARCH)", "rv32imac")
+    ifdef HOLBA_GCC_RISCV64_CROSS
+      EMBEXP_CROSS = ${HOLBA_GCC_RISCV64_CROSS}
+
+      RVDIR = $(dir $(EMBEXP_CROSS))..
+
+      RVSYS = $(RVDIR)/riscv64-unknown-elf/lib/rv32imac/ilp32
+      RVLIB = $(RVDIR)/lib/gcc/riscv64-unknown-elf/8.3.0/rv32imac/ilp32
+    endif
   endif
 endif
 
