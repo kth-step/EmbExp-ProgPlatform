@@ -32,6 +32,8 @@ int main()
   printf("Experiment complete.\n");
 
   experiment_complete_marker();
+
+  return 0;
 }
 
 void main_core1()
