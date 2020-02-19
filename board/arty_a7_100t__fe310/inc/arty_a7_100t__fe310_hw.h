@@ -34,14 +34,4 @@ unsigned int AMOSWAP ( unsigned int, unsigned int);
 #define UART0_IP        (UART0BASE+0x14)
 #define UART0_DIV       (UART0BASE+0x18)
 
-#define MTIME 0x0200BFF8
-
-#define PRCI_BASE       0x10008000
-
-#define PRCI_HFROSCCFG  (PRCI_BASE+0x00)
-#define PRCI_HFXOSCCFG  (PRCI_BASE+0x04)
-#define PRCI_PLLCFG     (PRCI_BASE+0x08)
-#define PRCI_PLLDIV     (PRCI_BASE+0x0C)
-#define PRCI_PROCMONCFG (PRCI_BASE+0xF0)
-
 #endif // _ARTY_A7_100T__FE310_HW_H

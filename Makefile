@@ -49,8 +49,8 @@ else ifeq ("$(PROGPLAT_ARCH)", "m0")
   CFLAGS_EXTRA  = -g3 -specs=nosys.specs -DUSE_OLD_STYLE_DATA_BSS_INIT -ffunction-sections -fdata-sections -mcpu=cortex-m0 -mthumb -fno-common -D__USE_CMSIS=CMSIS_CORE_LPC11xx
   LDFLAGS_POST  = -L$(ARMSYS) -L$(ARMLIB) -lgcc
 else ifeq ("$(PROGPLAT_ARCH)", "rv32imac")
-  SFLAGS_EXTRA  = -march=rv32imac -mabi=ilp32
-  CFLAGS_EXTRA  = -g3 -ffreestanding -march=rv32imac -mabi=ilp32
+  SFLAGS_EXTRA  = -march=rv32imac -mabi=ilp32 -mno-relax
+  CFLAGS_EXTRA  = -g3 -ffreestanding -march=rv32imac -mabi=ilp32 -mno-relax
   LDFLAGS_PRE  += -melf32lriscv
   LDFLAGS_POST  = -L$(RVSYS) -L$(RVLIB) -lgcc
 endif

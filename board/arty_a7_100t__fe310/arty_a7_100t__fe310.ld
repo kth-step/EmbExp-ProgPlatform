@@ -16,22 +16,27 @@ SECTIONS
     } >ram        
     _etext = .;
 
-    .data : 
+    .data : ALIGN(4)
     {
-        _data = .;
-        *(.data);
-        _edata = .;
+        *(.data*);
+        *(.sdata*);
+        . = ALIGN(8);
     } >ram AT>ram
 
-    .bss : 
+    PROVIDE(_data_lma = LOADADDR(.data)); 
+    PROVIDE(_data = ADDR(.data)); 
+    PROVIDE(_edata = ADDR(.data) + SIZEOF(.data)); 
+
+    .bss : ALIGN(4)
     {
-        __bss_start__ = .;
-        _bss = .;
-        *(.bss);
-        __bss_end__ = .;
-        _ebss = .;	  
+        *(.bss*);
+        *(.sbss*);
+        . = ALIGN(8);
     } > ram
 
-    _vStackTop = 0x80000000 + 0x2000 -16;
+    PROVIDE(_bss = ADDR(.bss)); 
+    PROVIDE(_ebss = ADDR(.bss) + SIZEOF(.bss)); 
+
+    __stack_pointer$ = 0x80000000 + 0x4000;
 }
 
