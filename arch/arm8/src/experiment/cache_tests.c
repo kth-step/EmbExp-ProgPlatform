@@ -15,6 +15,10 @@
 /* page table memory */
 uint64_t page_table_l1[4] __ALIGN(PAGE_SIZE);
 
+void reset_cache_experiment() {
+  disable_mmu();
+}
+
 static void basic_mmu() {
   init_mmu();
   set_l1(page_table_l1);

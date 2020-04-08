@@ -6,6 +6,7 @@
 
 #ifdef RUN_CACHE
 void run_cache_experiment();
+void reset_cache_experiment();
 #endif
 
 void experiment_complete_marker() {
@@ -16,6 +17,10 @@ void experiment_complete_marker() {
 
 int main()
 {
+#ifdef RUN_CACHE
+  reset_cache_experiment();
+#endif
+
   printf_init();
 
   printf("Init complete.\n");
