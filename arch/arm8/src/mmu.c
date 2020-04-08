@@ -37,7 +37,7 @@ uint64_t set_l1(void * l1) {
 
 void l1_set_translation(uint64_t * l1, uint64_t va, uint64_t pa, uint64_t cacheable) {
   uint64_t idx = (va / L1_PAGE_SIZE);
-  uint64_t entry = (pa / L1_PAGE_SIZE);
+  uint64_t entry = (pa / L1_PAGE_SIZE) * L1_PAGE_SIZE;
   if (cacheable == 0)
     entry |= 0x00000741;
   else
