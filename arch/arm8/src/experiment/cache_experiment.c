@@ -13,7 +13,7 @@
 uint64_t page_table_l1[4] __ALIGN(PAGE_SIZE);
 
 
-static void __UNUSED basic_mmu() {
+static void basic_mmu() {
   init_mmu();
   set_l1(page_table_l1);
   // Set up translation table entries in memory with looped store
@@ -26,17 +26,16 @@ static void __UNUSED basic_mmu() {
   // AttrIdx=000 Device-nGnRnE.
   // The third entry is 1GB block from 0x80000000 to 0xBFFFFFFF.
   l1_set_translation(page_table_l1, 0x80000000, 0, 1);
-  l1_set_translation(page_table_l1, 0xC0000000, 0, 1);
-  
+  //l1_set_translation(page_table_l1, 0xC0000000, 0, 1);
+
+  // TODO: dirty quick fix for rpi4, overwrites the last mapping, second cacheable alias
+  l1_set_translation(page_table_l1, 0xC0000000, 0xC0000000, 0);
+
   enable_mmu();
 }
 
-
-
 #define CACHEABLE(x) ((void *)(((uint64_t)(&x)) + 0x80000000))
 #define ALIAS(x)     ((void *)(((uint64_t)(&x)) + 0x40000000))
-
-
 
 void assert(uint64_t condition, char * string) {
   if (condition)
@@ -45,10 +44,8 @@ void assert(uint64_t condition, char * string) {
     printf("condition %s fails\n", string);
 }
 
-
 static cache_state cache1;
 static cache_state cache2;
-
 
 void test_mmu_alias() {
   flush_d_cache(0);
@@ -504,7 +501,7 @@ void run_cache_experiment()
   /* printf("-------------------- START TEST 1 --------------------\n"); */
   /* test_mmu_alias(); */
   /* printf("-------------------- START TEST 2 --------------------\n"); */
-  /* test_value_in_cache(); */
+  test_value_in_cache();
   /* printf("-------------------- START TEST 3 --------------------\n"); */
   /* test_cache_flush(); */
   /* printf("-------------------- START TEST 4 --------------------\n"); */
@@ -518,7 +515,7 @@ void run_cache_experiment()
   /* test_entropy(); */ 
   /* test_entropy_pair_1_1(); */
 
-  test_prefetching();
+  /* test_prefetching(); */
 }
 
 #endif // SINGLE_EXPERIMENTS

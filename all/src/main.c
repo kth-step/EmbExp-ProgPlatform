@@ -22,7 +22,7 @@ int main()
 #endif
 
   printf_init();
-
+  
   printf("Init complete.\n");
 
 #ifdef RUN_CACHE

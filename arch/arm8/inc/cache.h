@@ -3,14 +3,15 @@
 
 #include <stdint.h>
 
-#define WAYS (4)
+#define WAYS (2)
 #define SETS (32 * 1024 / 64 / WAYS)
 #define SET(x) ((((uint64_t)(x))/64)%SETS)
 #define TAG_OF_ADDR(x) (((uint64_t)(x)) / SETS / 64)
 #define TAG_SET_TO_ADDR(tag, set) (tag * 64 * SETS + set*64)
 
 #define WAYS_L2 (16)
-#define SETS_L2 (512 * 1024 / 64 / WAYS_L2)
+// size of L2 is 1MB. Source: https://www.raspberrypi.org/documentation/hardware/raspberrypi/bcm2711/README.md
+#define SETS_L2 (1024 * 1024 / 64 / WAYS_L2)
 
 #define TRUE (1)
 #define FALSE (0)
@@ -38,6 +39,7 @@ uint64_t set_prefetching_conf(uint64_t conf, prefetch_conf new_conf);
 
 void flush_d_cache(uint64_t level);
 void get_cache_line(cache_line *line, uint64_t set, uint64_t way);
+void get_cache_line_a72(cache_line *line, uint64_t set, uint64_t way);
 void save_cache_state(cache_state cache);
 void debug_line(cache_line * line, _Bool values);
 void debug_set(set_t set, _Bool values);

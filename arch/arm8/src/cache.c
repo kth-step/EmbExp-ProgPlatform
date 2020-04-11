@@ -2,6 +2,7 @@
 #include "lib/printf.h"
 
 #define BARRIER_DSB_ISB() __asm__ __volatile__("DSB SY \t\n ISB \t\n")
+#define CORTEX_A72
 
 void flush_d_cache(uint64_t level) {
   uint64_t nways = (level == 0)?WAYS:WAYS_L2;
@@ -60,25 +61,28 @@ void get_cache_line(cache_line *line, uint64_t set, uint64_t way) {
     value |= (0b11 & way) << 30;
     value |= (0b111111111111111111111111 & set) << 6;
     value |= (0b111 & offset) << 3;
-
+    // printf("accessing cache line value is %b\n", value);
+    
     asm (
          "MSR S3_3_C15_C4_0, %x[input_i]"
          :
          : [input_i] "r" (value)
          );
+    // Reading data
     asm (
          "MRS %x[result], S3_3_C15_C0_0"
          : [result] "=r" (value)
-         : 
+         :
          );
     line->data[offset] = value;
     asm (
          "MRS %x[result], S3_3_C15_C0_1"
          : [result] "=r" (value)
-         : 
+         :
          );
     line->data[offset] |= (value << 32);
   }
+
   // getting info
   value = 0;
   value |= (0b11 & way) << 30;
@@ -112,6 +116,84 @@ void get_cache_line(cache_line *line, uint64_t set, uint64_t way) {
   line->valid = (((0x60000000 & value) >> 29) != 0);
 
   BARRIER_DSB_ISB();
+}
+
+
+/* Page 183- ARMv8 Cortex-a72 reference manual: L1-D data RAM. */
+/*   31-24: RAMID = 0x09 */
+/*   23-19: Reserved */
+/*   18: Way select */
+/*   17-14: Unused */
+/*   13-6: Set select */
+/*   5-4: Bank select */
+/*   3: Upper or lower doubleword within the quadword */
+/*   2-0: Reserved */
+
+void get_cache_line_a72(cache_line *line, uint64_t set, uint64_t way) {
+  volatile uint64_t value;
+  BARRIER_DSB_ISB();
+
+  for (uint64_t  bank = 0; bank < 8; bank++) { 
+    value = 0;
+    value |= (0b11111111 & 0x09) << 24;
+    value |= (0b1 & way) << 18;
+    value |= (0b11111111 & set) << 6;
+    value |= (0b111 & bank) << 3;
+    /* printf("accessing cache line value is %b\n", value); */
+    asm (/* Instead of LDR pseudo-instruction I directly pass the address to SYS instruction */
+	 "SYS #0, C15, C4, #0, %x[input_i]"
+	 :
+	 : [input_i] "r" (value)
+	 );
+    BARRIER_DSB_ISB();
+
+    // Reading data
+    asm (
+	 "MRS %x[result], S3_0_C15_C1_0"
+	 : [result] "=r" (value)
+	 :
+	 );
+    /* printf("Line value is %b\n", value); */
+    line->data[bank] = value;
+    asm (
+	 "MRS %x[result], S3_0_C15_C1_1"
+	 : [result] "=r" (value)
+	 :
+	 );
+    /* printf("Line value is %b\n", value); */
+    line->data[bank] |= (value << 32);
+  }
+  // get info
+  value = 0;
+  value |= (0b11111111 & 0x08) << 24;
+  value |= (0b1 & way) << 18;
+  value |= (0b11111111 & set) << 6;
+
+  asm (
+       "SYS #0, C15, C4, #0, %x[input_i]"
+       :
+       : [input_i] "r" (value)
+       );
+  BARRIER_DSB_ISB();
+  // Reading data
+  asm (
+       "MRS %x[result], S3_0_C15_C1_0"
+       : [result] "=r" (value)
+       :
+       );
+  line->r1 = value;
+  line->tag = ((0x3FFFFFFF&value) << 2);  
+  
+  asm (
+       "MRS %x[result], S3_0_C15_C1_1"
+       : [result] "=r" (value)
+       :
+       );
+  line->valid = (((0x00000003 & value) << 29) != 0);
+
+  BARRIER_DSB_ISB();
+
+  return;
 }
 
 
@@ -161,27 +243,29 @@ void save_cache_state(cache_state cache) {
 
   for (int set=0; set<SETS; set++) {
     for (int way=0; way<WAYS; way++) {
-      get_cache_line(&(cache[set][way]), set, way);
+      #ifdef CORTEX_A72
+         get_cache_line_a72(&(cache[set][way]), set, way);
+      #else
+	 get_cache_line(&(cache[set][way]), set, way);
+      #endif
     }
   }
 
   BARRIER_DSB_ISB();
 }
 
-
-
 void debug_line(cache_line * line, _Bool values) {
   uint64_t i;
   printf(" tag: %x\n", line->tag);
   printf(" valid: %d\n", (line->valid));
   if (values) {
-    printf(" values:");
-    for (i=0; i<8; i++) {
+    printf(" values are:");
+    for (i = 0; i < 8; i++) {
       printf(" %x-%x", (line->data[i] >> 32), line->data[i]);
     }
     printf("\n");
   }
-  printf(" regs: %x-%x %x-%x\n", (line->r0 >> 32), line->r0, (line->r1 >> 32), line->r1);
+  //printf(" regs: %x-%x %x-%x\n", (line->r0 >> 32), line->r0, (line->r1 >> 32), line->r1);
 
 }
 
@@ -197,7 +281,7 @@ void debug_line_info(cache_line * line) {
 void debug_set(set_t set, _Bool values) {
   uint64_t i;
   printf("Debugging set\n");
-  for (i=0; i<WAYS; i++) {
+  for (i = 0; i < WAYS; i++) {
     debug_line(&(set[i]), values);
   }
 }
@@ -244,7 +328,7 @@ cache_line * get_line_for_pa(cache_state cache, uint64_t pa) {
   for (int way=0; way<WAYS; way++) {
     if (!cache[set][way].valid)
       continue;
-    if ((cache[set][way].tag / 64) == (pa / 64))
+    //if ((cache[set][way].tag / 64) == (pa / 64))
       return &(cache[set][way]);
   }
   return 0;
