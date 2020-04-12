@@ -139,7 +139,7 @@ void get_cache_line_a72(cache_line *line, uint64_t set, uint64_t way) {
     value |= (0b1 & way) << 18;
     value |= (0b11111111 & set) << 6;
     value |= (0b111 & bank) << 3;
-    /* printf("accessing cache line value is %b\n", value); */
+    /* printf("Accessedg cache line value is %b\n", value); */
     asm (/* Instead of LDR pseudo-instruction I directly pass the address to SYS instruction */
 	 "SYS #0, C15, C4, #0, %x[input_i]"
 	 :
@@ -153,16 +153,15 @@ void get_cache_line_a72(cache_line *line, uint64_t set, uint64_t way) {
 	 : [result] "=r" (value)
 	 :
 	 );
-    /* printf("Line value is %b\n", value); */
     line->data[bank] = value;
     asm (
 	 "MRS %x[result], S3_0_C15_C1_1"
 	 : [result] "=r" (value)
 	 :
 	 );
-    /* printf("Line value is %b\n", value); */
     line->data[bank] |= (value << 32);
   }
+  
   // get info
   value = 0;
   value |= (0b11111111 & 0x08) << 24;
@@ -181,14 +180,16 @@ void get_cache_line_a72(cache_line *line, uint64_t set, uint64_t way) {
        : [result] "=r" (value)
        :
        );
-  line->r1 = value;
-  line->tag = ((0x3FFFFFFF&value) << 2);  
-  
+  line->r0 = value;
+  line->tag = ((0x3FFFFFFF&value) << 14);  
+  /* line->tag += set * 64; */
+
   asm (
        "MRS %x[result], S3_0_C15_C1_1"
        : [result] "=r" (value)
        :
        );
+  line->r1 = value;
   line->valid = (((0x00000003 & value) << 29) != 0);
 
   BARRIER_DSB_ISB();
