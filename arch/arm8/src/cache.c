@@ -329,7 +329,7 @@ cache_line * get_line_for_pa(cache_state cache, uint64_t pa) {
   for (int way=0; way<WAYS; way++) {
     if (!cache[set][way].valid)
       continue;
-    //if ((cache[set][way].tag / 64) == (pa / 64))
+    /* if ((cache[set][way].tag / 64) == (pa / 64)) */
       return &(cache[set][way]);
   }
   return 0;
