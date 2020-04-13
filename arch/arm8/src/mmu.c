@@ -37,7 +37,8 @@ uint64_t set_l1(void * l1) {
 
 void l1_set_translation(uint64_t * l1, uint64_t va, uint64_t pa, uint64_t cacheable) {
   uint64_t idx = (va / L1_PAGE_SIZE);
-  uint64_t entry = (pa / L1_PAGE_SIZE);
+  // the physical address to map to is the base entry value (aligning it to the l1 page size)
+  uint64_t entry = (pa / L1_PAGE_SIZE) * L1_PAGE_SIZE;
   if (cacheable == 0)
     entry |= 0x00000741;
   else
@@ -71,6 +72,49 @@ void enable_mmu(void) {
   sctl |= 0x1 << 1;  // The A bit (alignment check for memory accesses).
   sctl |= 0x1 << 2;  // The C bit (data cache).
   sctl |= 0x1 << 12; // The I bit (instruction cache).
+  asm (
+       "MSR SCTLR_EL3, %x[input_i]"
+       :
+       : [input_i] "r" (sctl)
+       );
+  asm (
+       "DSB SY"
+       :
+       :
+       );
+  asm (
+       "ISB"
+       :
+       :
+       );
+}
+
+void disable_mmu(void) {
+    // It is implemented in the CPUECTLR register.
+  uint64_t smp;
+  asm (
+       "MRS %x[result], S3_1_C15_C2_1"
+       : [result] "=r" (smp)
+       : 
+       );
+  smp |= (0x1 << 6); // The SMP bit.
+  asm (
+       "MSR S3_1_C15_C2_1, %x[input_i]"
+       :
+       : [input_i] "r" (smp)
+       );
+  
+  // Enable caches and the MMU.
+  uint64_t sctl;
+  asm (
+       "MRS %x[result], SCTLR_EL3"
+       : [result] "=r" (sctl)
+       : 
+       );
+  sctl &= ~(0x1 << 0);  // The M bit (MMU).
+  sctl |=   0x1 << 1;   // The A bit (alignment check for memory accesses).
+  sctl &= ~(0x1 << 2);  // The C bit (data cache).
+  sctl &= ~(0x1 << 12); // The I bit (instruction cache).
   asm (
        "MSR SCTLR_EL3, %x[input_i]"
        :
