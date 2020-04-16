@@ -29,7 +29,8 @@ SECTIONS
 		. = __experiment_code_loc_rel;
 		KEEP(*(.experiment_code)) /* keep variable even if not referenced */
 
-		*(.text*)
+		*(.text*);
+		*(.rodata*);
 	}
 
 	. = ALIGN(8);
@@ -37,7 +38,8 @@ SECTIONS
 
 	. = ALIGN(8);
 	.data : {
-		*(.data*)
+		*(.data*);
+		*(.sdata*);
 	}
 
 	. = ALIGN(8);
@@ -65,7 +67,8 @@ SECTIONS
 	}
 
 	.bss : {
-		*(.bss*)
+		*(.bss*);
+		*(.sbss*);
 		 . = ALIGN(8);
 	}
 
