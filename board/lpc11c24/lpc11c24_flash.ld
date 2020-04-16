@@ -13,7 +13,9 @@ SECTIONS
                 KEEP (*(.isr_vector));
                 KEEP (*(.after_vectors));
 		KEEP(*(.experiment_code));
-                *(.text);
+                *(.text*);
+                *(.rodata*);
+                . = ALIGN(4);
         } >flash
         
 	. = ORIGIN(ram);
