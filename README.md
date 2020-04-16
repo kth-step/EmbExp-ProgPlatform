@@ -23,6 +23,8 @@ Even though the cross compiler can be provided using environment variables, the 
 Fist, look at the repository `HolBA` to setup a basic environment with the `EmbExp` repositories as well as the required gcc packages.
 Then, load the environment by running `source ${HOLBA}/env.sh`.
 Finally, test the compilation by compiling everything with the execution of `make`.
+Some gdb requires the package `libtinfo5` and you may need to install it with `apt` or similar.
+If possible, try to see the output of an execution with `make connect` in one terminal and `make runlog` in another.
 
 
 ### 1. Configure
