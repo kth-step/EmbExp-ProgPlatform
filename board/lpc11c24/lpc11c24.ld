@@ -1,26 +1,3 @@
-/* MIT License
-
-Copyright (c) 2017 catch22eu
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
-
 MEMORY
 {
     /*flash (rx)  : org = 0x00000000, len = 32k*/
@@ -29,36 +6,39 @@ MEMORY
   
 SECTIONS
 {
-        
 	. = ORIGIN(ram);
-
         .text : 
         {
                 /*FILL(0xff)*/
                 KEEP (*(.isr_vector));
                 KEEP (*(.after_vectors));
-		KEEP(*(.experiment_code))
+		KEEP(*(.experiment_code));
                 *(.text);
-        } >ram        
-        _etext = .;
+        } >ram
         
 	/*. = ORIGIN(ram);*/
-        .data : 
+        .data : ALIGN(4)
         {
-                _data = .;
-                *(.data);
-                _edata = .;
+                *(.data*);
+                *(.sdata*);
+                . = ALIGN(8);
         } >ram AT>ram
 
-        .bss : 
+        PROVIDE(_etext = LOADADDR(.data));
+        PROVIDE(_data = ADDR(.data));
+        PROVIDE(_edata = ADDR(.data) + SIZEOF(.data));
+
+        .bss : ALIGN(4)
         {
-                __bss_start__ = .;
-                _bss = .;
                 *(.bss);
-                __bss_end__ = .;
-                _ebss = .;	  
+                *(.sbss*);
+                . = ALIGN(8);
         } > ram
 
-	_vStackTop = 0x10000000 + 0x2000 -16;
+        PROVIDE(_bss = ADDR(.bss));
+        PROVIDE(_ebss = ADDR(.bss) + SIZEOF(.bss));
+        PROVIDE(__bss_start__ = ADDR(.bss));
+        PROVIDE(__bss_end__ = ADDR(.bss) + SIZEOF(.bss));
 
+	_vStackTop = 0x10000000 + 0x2000 -16;
 }
