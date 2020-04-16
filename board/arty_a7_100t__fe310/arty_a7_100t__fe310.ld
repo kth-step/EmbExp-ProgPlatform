@@ -13,8 +13,8 @@ SECTIONS
         board/arty_a7_100t__fe310/src/entry.o (.text*)
         KEEP (*(.experiment_code));
         *(.text*);
-    } >ram        
-    _etext = .;
+        *(.rodata*);
+    } >ram
 
     .data : ALIGN(4)
     {
