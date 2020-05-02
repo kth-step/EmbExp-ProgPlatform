@@ -52,54 +52,6 @@ scamv_exit:
 	ldr x30, [x0]
 	ret
 	
-	
-// Program flow prediction is always enabled and no programming is required to
-// take advantage of program flow prediction. Moreover, AArch64 state does not
-// implement BTB flush instructions. If the invalidation is required one has to 
-// turn the MMU off, turn it back on.
-// Cortex-a72 reference manual sections:
-//   --"Enabling program flow prediction"
-//   -- "BTB invalidation and context switches"
-
-_scamv_train_bp_exec_code:	
-// run experiment code in loop	
-	str	wzr, [sp, 28]
-	b	.L3
-.L4:
-.include "experiment/asm.h"
-	ldr	w0, [sp, 28]
-	add	w0, w0, 1
-	str	w0, [sp, 28]
-.L3:
-	ldr	w0, [sp, 28]
-// number of iterations	
-	cmp	w0, 499
-	ble	.L4
-	dsb sy
-	isb
-	ldp	x29, x30, [sp], 32
-	ret
-	
-_scamv_train_bp1:
-	stp	x29, x30, [sp, -32]!
-	mov	x29, sp
-// load experiment data	
-	mov x30, #0
-.include "experiment/asm_setup2.h"
-	dsb sy
-	isb
-	b _scamv_train_bp_exec_code
-
-_scamv_train_bp2:
-	stp	x29, x30, [sp, -32]!
-	mov	x29, sp
-// load experiment data	
-	mov x30, #0
-.include "experiment/asm_setup1.h"
-	dsb sy
-	isb
-	b _scamv_train_bp_exec_code
-
 _cache_run:
 // save registers on stack
 	sub sp, sp, #(8 * 40)
