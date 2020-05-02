@@ -78,8 +78,10 @@ void run_cache_experiment() {
 
 #ifdef RUN_2EXPS
   // run 2 cache experiments
+  _scamv_train_bp1();
   diff += cache_run_mult_compare(_scamv_run1, cache1, NUM_MUL_RUNS);
   // print_cache_valid(cache1);
+  _scamv_train_bp2();
   diff += cache_run_mult_compare(_scamv_run2, cache2, NUM_MUL_RUNS);
   // print_cache_valid(cache2);
   // debug_set(cache1[0], 0);
@@ -115,7 +117,7 @@ void run_cache_experiment() {
   }
 #elif defined RUN_1EXPS
   diff += cache_run_mult_compare(_scamv_run1, cache, NUM_MUL_RUNS);
-  print_cache_valid(cache);
+  //print_cache_valid(cache);
   if (diff != 0)
     printf("INCONCLUSIVE: %d\n", diff);
 #else
