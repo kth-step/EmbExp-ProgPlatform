@@ -80,10 +80,10 @@ void run_cache_experiment() {
   // run 2 cache experiments
   _scamv_train_bp1();
   diff += cache_run_mult_compare(_scamv_run1, cache1, NUM_MUL_RUNS);
-  // print_cache_valid(cache1);
+  print_cache_valid(cache1);
   _scamv_train_bp2();
   diff += cache_run_mult_compare(_scamv_run2, cache2, NUM_MUL_RUNS);
-  // print_cache_valid(cache2);
+  print_cache_valid(cache2);
   // debug_set(cache1[0], 0);
   // debug_set(cache2[0], 0);
   

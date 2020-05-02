@@ -70,6 +70,7 @@ _scamv_train_bp_exec_code:
 	add	w0, w0, 1
 	str	w0, [sp, 28]
 .L3:
+.include "experiment/asm_setup2.h"
 	ldr	w0, [sp, 28]
 // number of iterations	
 	cmp	w0, 499
