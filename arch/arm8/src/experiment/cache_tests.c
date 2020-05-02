@@ -116,7 +116,7 @@ void run_cache_experiment() {
     printf("INCONCLUSIVE: %d\n", diff);
   }
 #elif defined RUN_1EXPS
-  _scamv_train_bp1();
+  //_scamv_train_bp1();
   diff += cache_run_mult_compare(_scamv_run1, cache, NUM_MUL_RUNS);
   print_cache_valid(cache);
   if (diff != 0)
