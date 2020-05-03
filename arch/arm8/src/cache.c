@@ -119,15 +119,33 @@ void get_cache_line(cache_line *line, uint64_t set, uint64_t way) {
 }
 
 
-/* Page 183- ARMv8 Cortex-a72 reference manual: L1-D data RAM. */
+/* Page 183- ARMv8 Cortex-a72 reference manual: L1-D Data RAM. */
 /*   31-24: RAMID = 0x09 */
-/*   23-19: Reserved */
-/*   18: Way select */
-/*   17-14: Unused */
-/*   13-6: Set select */
-/*   5-4: Bank select */
+/*   23-19: Reserved     */
+/*   18: Way select      */
+/*   17-14: Unused       */
+/*   13-6: Set select    */
+/*   5-4: Bank select    */
 /*   3: Upper or lower doubleword within the quadword */
-/*   2-0: Reserved */
+/*   2-0: Reserved       */
+// DL1DATA1[31:0] Data word 1.
+// DL1DATA0[31:0] Data word 0.
+
+/* Page 183- ARMv8 Cortex-a72 reference manual: L1-D Tag RAM. */
+/*   31-24: RAMID = 0x08 */
+/*   23-19: Reserved     */
+/*   18: Way select      */
+/*   17-14: Unused       */
+/*   13-8: Row select    */
+/*   7-6: Bank select    */
+/*   5-0: Reserved       */
+// DL1DATA1[1:0] MESI state:
+// -- 0b00 Invalid.
+// -- 0b01 Exclusive.
+// -- 0b10 Shared.
+// -- 0b11 Modified.
+// DL1DATA0[30]   Non-secure identifier for the physical address.
+// DL1DATA0[29:0] Physical address tag [43:14].
 
 void get_cache_line_a72(cache_line *line, uint64_t set, uint64_t way) {
   volatile uint64_t value;
@@ -182,7 +200,7 @@ void get_cache_line_a72(cache_line *line, uint64_t set, uint64_t way) {
        );
   line->r0 = value;
   line->tag = ((0x3FFFFFFF&value) << 14);  
-  /* line->tag += set * 64; */
+  line->tag += set * 64; 
 
   asm (
        "MRS %x[result], S3_0_C15_C1_1"
