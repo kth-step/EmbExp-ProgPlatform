@@ -200,7 +200,7 @@ void get_cache_line_a72(cache_line *line, uint64_t set, uint64_t way) {
        );
   line->r0 = value;
   line->tag = ((0x3FFFFFFF&value) << 14);  
-  line->tag += set * 64; 
+  line->tag += set * 64; // TODO: what is this? whitout this tag from rpi3 and rpi4 are not equal
 
   asm (
        "MRS %x[result], S3_0_C15_C1_1"
