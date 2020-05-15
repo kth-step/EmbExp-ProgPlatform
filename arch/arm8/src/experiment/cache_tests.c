@@ -112,7 +112,7 @@ void run_cache_experiment() {
       printf("RESULT: EQUAL\n");
     else{
       printf("RESULT: UNEQUAL\n");
-      // print_cache_valid(cache1);
+      print_cache_valid(cache1);
     }
   } else {
     printf("INCONCLUSIVE: %d\n", diff);
