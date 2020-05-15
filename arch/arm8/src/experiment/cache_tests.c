@@ -110,10 +110,8 @@ void run_cache_experiment() {
     // compare and print result of comparison
     if (CACHE_EQ_FUN(cache1, cache2, CACHE_SET_LOWER, CACHE_SET_UPPER) == 0)
       printf("RESULT: EQUAL\n");
-    else{
+    else
       printf("RESULT: UNEQUAL\n");
-      print_cache_valid(cache1);
-    }
   } else {
     printf("INCONCLUSIVE: %d\n", diff);
   }
