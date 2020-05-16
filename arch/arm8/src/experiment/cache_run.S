@@ -80,7 +80,7 @@ _scamv_train_bp1:
 .L3:
 	ldr	w0, [sp, 28]
 // number of iterations	
-	cmp	w0, 499
+	cmp	w0, 2000
 	ble	.L1
 	dsb sy
 	isb
@@ -107,7 +107,7 @@ _scamv_train_bp2:
 .L6:
 	ldr	w0, [sp, 28]
 // number of iterations	
-	cmp	w0, 499
+	cmp	w0, 2000
 	ble	.L4
 	dsb sy
 	isb
