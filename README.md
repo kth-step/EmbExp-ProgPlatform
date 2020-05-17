@@ -8,6 +8,7 @@ The main goal is conducting low-level experiments that are typically implemented
 This platform mainly makes use of the [`EmbExp-Box`](https://github.com/kth-step/EmbExp-Box) infrastructure to run the low-level experiment software on hardware boards.
 It is fairly integrated with this infrastructure for convenience but can also be used with other GDB server based setups with a few tweaks.
 The repository [`EmbExp-BalRob`](https://github.com/kth-step/EmbExp-BalRob) is an example where the program platform has been ported to local deployment for one board type.
+The repository [`EmbExp-Logs`](https://github.com/kth-step/EmbExp-Logs) utilizes this platform to run individual experiments and collect the output.
 
 
 ## Supported targets
