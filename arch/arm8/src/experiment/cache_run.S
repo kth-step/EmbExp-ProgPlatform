@@ -67,6 +67,7 @@ _scamv_train_bp1:
 // run experiment code in loop	
 	str	wzr, [sp, 28]
 	b	.L3
+    bl _clean_experiment_memory
 // load experiment data	
 .L1:
 .include "experiment/asm_setup2.h"
@@ -94,6 +95,7 @@ _scamv_train_bp2:
 // run experiment code in loop	
 	str	wzr, [sp, 28]
 	b	.L6
+	bl _clean_experiment_memory
 // load experiment data	
 .L4:
 .include "experiment/asm_setup1.h"
