@@ -65,10 +65,17 @@ _scamv_train_bp1:
 	mov	x29, sp
 	mov x30, #0
 // run experiment code in loop
+	// flush the cache
+	//flush_d_cache(0);
+	mov x0, #0
+	bl flush_d_cache
+	//flush_d_cache(1);
+	mov x0, #1
+	bl flush_d_cache
+    bl _clean_experiment_memory
+
 	str	wzr, [sp, 28]
 	b	.L3
-    bl _clean_experiment_memory
-  	bl _zero_experiment_cache
 // load experiment data	
 .L1:
 .include "experiment/asm_setup2.h"
@@ -95,10 +102,17 @@ _scamv_train_bp2:
 	mov	x29, sp
 	mov x30, #0
 // run experiment code in loop	
+	// flush the cache
+	//flush_d_cache(0);
+	mov x0, #0
+	bl flush_d_cache
+	//flush_d_cache(1);
+	mov x0, #1
+	bl flush_d_cache
+    bl _clean_experiment_memory
+
 	str	wzr, [sp, 28]
 	b	.L6
-	bl _clean_experiment_memory
-	bl _zero_experiment_cache
 // load experiment data	
 .L4:
 .include "experiment/asm_setup1.h"
