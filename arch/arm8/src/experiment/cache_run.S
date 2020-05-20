@@ -64,17 +64,19 @@ _scamv_train_bp1:
 	stp	x29, x30, [sp, -32]!
 	mov	x29, sp
 	mov x30, #0
-// run experiment code in loop	
+// run experiment code in loop
 	str	wzr, [sp, 28]
 	b	.L3
     bl _clean_experiment_memory
+  	bl _zero_experiment_cache
 // load experiment data	
 .L1:
 .include "experiment/asm_setup2.h"
 	dsb sy
 	isb
+//	bl _check_experiment_memory
 .L2:
-.include "experiment/asm.h"
+ .include "experiment/asm.h"
 	ldr	w0, [sp, 28]
 	add	w0, w0, 1
 	str	w0, [sp, 28]
@@ -96,11 +98,13 @@ _scamv_train_bp2:
 	str	wzr, [sp, 28]
 	b	.L6
 	bl _clean_experiment_memory
+	bl _zero_experiment_cache
 // load experiment data	
 .L4:
 .include "experiment/asm_setup1.h"
 	dsb sy
 	isb
+//	bl _check_experiment_memory
 .L5:
 .include "experiment/asm.h"
 	ldr	w0, [sp, 28]
