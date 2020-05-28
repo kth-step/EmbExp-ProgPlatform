@@ -81,14 +81,14 @@ void run_cache_experiment() {
   // run 2 cache experiments
   // enable_pmu(1,0x10);
     
-  _scamv_train_bp1(); 
+  _scamv_train_bp(); 
   diff += cache_run_mult_compare(_scamv_run1, cache1, NUM_MUL_RUNS);
   // print_cache_valid(cache1);
   
   // disable_pmu(1);
   // read_pmu(1);
   
-  _scamv_train_bp2();
+  _scamv_train_bp(); 
   diff += cache_run_mult_compare(_scamv_run2, cache2, NUM_MUL_RUNS);
   // print_cache_valid(cache2);
   // debug_set(cache1[0], 0);

@@ -60,7 +60,7 @@ scamv_exit:
 //   --"Enabling program flow prediction"
 //   -- "BTB invalidation and context switches"
 
-_scamv_train_bp1:	
+_scamv_train_bp:	
 	stp	x29, x30, [sp, -32]!
 	mov	x29, sp
 	mov x30, #0
@@ -78,7 +78,7 @@ _scamv_train_bp1:
 	b	.L3
 // load experiment data	
 .L1:
-.include "experiment/asm_setup2.h"
+.include "experiment/asm_train.h"
 	dsb sy
 	isb
 //	bl _check_experiment_memory
@@ -92,43 +92,6 @@ _scamv_train_bp1:
 // number of iterations	
 	cmp	w0, 2000
 	ble	.L1
-	dsb sy
-	isb
-	ldp	x29, x30, [sp], 32
-	ret
-
-_scamv_train_bp2:	
-	stp	x29, x30, [sp, -32]!
-	mov	x29, sp
-	mov x30, #0
-// run experiment code in loop	
-	// flush the cache
-	//flush_d_cache(0);
-	mov x0, #0
-	bl flush_d_cache
-	//flush_d_cache(1);
-	mov x0, #1
-	bl flush_d_cache
-    bl _clean_experiment_memory
-
-	str	wzr, [sp, 28]
-	b	.L6
-// load experiment data	
-.L4:
-.include "experiment/asm_setup1.h"
-	dsb sy
-	isb
-//	bl _check_experiment_memory
-.L5:
-.include "experiment/asm.h"
-	ldr	w0, [sp, 28]
-	add	w0, w0, 1
-	str	w0, [sp, 28]
-.L6:
-	ldr	w0, [sp, 28]
-// number of iterations	
-	cmp	w0, 2000
-	ble	.L4
 	dsb sy
 	isb
 	ldp	x29, x30, [sp], 32
