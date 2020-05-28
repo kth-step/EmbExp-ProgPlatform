@@ -5,6 +5,7 @@
 #include "lib/printf.h"
 #include "mmu.h"
 #include "cache.h"
+// #include "pmu.h"
 
 #include "experiment/cache_run.h"
 
@@ -78,14 +79,21 @@ void run_cache_experiment() {
 
 #ifdef RUN_2EXPS
   // run 2 cache experiments
-  _scamv_train_bp1();
+  // enable_pmu(1,0x10);
+    
+  _scamv_train_bp1(); 
   diff += cache_run_mult_compare(_scamv_run1, cache1, NUM_MUL_RUNS);
   // print_cache_valid(cache1);
+  
+  // disable_pmu(1);
+  // read_pmu(1);
+  
   _scamv_train_bp2();
   diff += cache_run_mult_compare(_scamv_run2, cache2, NUM_MUL_RUNS);
   // print_cache_valid(cache2);
   // debug_set(cache1[0], 0);
   // debug_set(cache2[0], 0);
+
   
 #ifdef RUN_CACHE_MULTIW
   #define CACHE_EQ_FUN compare_cache_bounds
