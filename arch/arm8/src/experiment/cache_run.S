@@ -5,8 +5,7 @@
 .globl _cache_run
 .globl _scamv_run1
 .globl _scamv_run2
-.globl _scamv_train_bp1
-.globl _scamv_train_bp2
+.globl _scamv_train_bp
 
 .section .experiment_code
 scamv_entry:
