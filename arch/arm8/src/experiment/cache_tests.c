@@ -5,7 +5,10 @@
 #include "lib/printf.h"
 #include "mmu.h"
 #include "cache.h"
-// #include "pmu.h"
+//#include "pmu.h"
+#include "spectre.h"
+
+#define SPECTRE
 
 #include "experiment/cache_run.h"
 
@@ -79,25 +82,18 @@ void run_cache_experiment() {
 
 #ifdef RUN_2EXPS
   // run 2 cache experiments
-  _scamv_train_bp(); 
-  diff += cache_run_mult_compare(_scamv_run1, cache1, NUM_MUL_RUNS);
-  //print_cache_valid(cache1);
-
-  /*for(int i = 0; i < 28; i++){ 
-   	  _scamv_train_bp(); 
-   	  _cache_run(_scamv_run1, cache1);
-   	  print_cache_valid(cache1);
-   }*/
-  
-   /*for(int i = 0; i < 30; i++){ 
-   	   _scamv_train_bp(); 
-   	   _cache_run(_scamv_run2, cache2);
-   	   print_cache_valid(cache2);
-   }*/
-   
-  _scamv_train_bp(); 
-  diff += cache_run_mult_compare(_scamv_run2, cache2, NUM_MUL_RUNS);
-  //print_cache_valid(cache2);
+  #ifdef SPECTRE
+  	//check if spectre effect exists on a72
+  	diff += spectre(cache1, NUM_MUL_RUNS, 1); 
+  	print_cache_valid(cache1);
+  	diff += spectre(cache2, NUM_MUL_RUNS, 1);
+  	print_cache_valid(cache2);
+  #else	
+  	//diff += cache_run_mult_compare(_scamv_run1, cache1, NUM_MUL_RUNS);
+  	//print_cache_valid(cache1);
+  	//diff += cache_run_mult_compare(_scamv_run2, cache2, NUM_MUL_RUNS);
+  	//print_cache_valid(cache2);
+  #endif	
   // debug_set(cache1[0], 0);
   // debug_set(cache2[0], 0);
 
@@ -131,9 +127,14 @@ void run_cache_experiment() {
     printf("INCONCLUSIVE: %d\n", diff);
   }
 #elif defined RUN_1EXPS
-  _scamv_train_bp();
-  diff += cache_run_mult_compare(_scamv_run1, cache, NUM_MUL_RUNS);
-  print_cache_valid(cache);
+	#ifdef SPECTRE
+  		//check if spectre effect exists on a72
+  		diff += spectre(cache1, NUM_MUL_RUNS, 1); 
+  		print_cache_valid(cache1);
+  	#else
+  		diff += cache_run_mult_compare(_scamv_run1, cache, NUM_MUL_RUNS);
+  		print_cache_valid(cache);
+  #endif
   if (diff != 0)
     printf("INCONCLUSIVE: %d\n", diff);
 #else
