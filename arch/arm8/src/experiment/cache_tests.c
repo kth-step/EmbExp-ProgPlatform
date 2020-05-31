@@ -129,8 +129,8 @@ void run_cache_experiment() {
 #elif defined RUN_1EXPS
 	#ifdef SPECTRE
   		//check if spectre effect exists on a72
-  		diff += spectre(cache1, NUM_MUL_RUNS, 1); 
-  		print_cache_valid(cache1);
+  		diff += spectre(cache, NUM_MUL_RUNS, 1); 
+  		print_cache_valid(cache);
   	#else
   		diff += cache_run_mult_compare(_scamv_run1, cache, NUM_MUL_RUNS);
   		print_cache_valid(cache);
