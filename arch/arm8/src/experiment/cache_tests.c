@@ -86,7 +86,7 @@ void run_cache_experiment() {
   	//check if spectre effect exists on a72
   	diff += spectre(cache1, NUM_MUL_RUNS, 1); 
   	//print_cache_valid(cache1);
-  	diff += spectre(cache2, NUM_MUL_RUNS, 1);
+  	diff += spectre(cache2, NUM_MUL_RUNS, 2);
   	//print_cache_valid(cache2);
   #else	
   	//diff += cache_run_mult_compare(_scamv_run1, cache1, NUM_MUL_RUNS);
