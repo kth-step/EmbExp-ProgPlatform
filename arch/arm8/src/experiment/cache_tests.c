@@ -5,7 +5,6 @@
 #include "lib/printf.h"
 #include "mmu.h"
 #include "cache.h"
-//#include "pmu.h"
 #include "spectre.h"
 
 #define SPECTRE
@@ -36,10 +35,10 @@ static void basic_mmu() {
   // AttrIdx=000 Device-nGnRnE.
   // The third entry is 1GB block from 0x80000000 to 0xBFFFFFFF.
   l1_set_translation(page_table_l1, 0x80000000, 0, 1);
-  //l1_set_translation(page_table_l1, 0xC0000000, 0, 1);
+  l1_set_translation(page_table_l1, 0xC0000000, 0, 1);
 
   // TODO: dirty quick fix for rpi4, overwrites the last mapping, second cacheable alias
-  l1_set_translation(page_table_l1, 0xC0000000, 0xC0000000, 0);
+  //l1_set_translation(page_table_l1, 0xC0000000, 0xC0000000, 0);
 
   enable_mmu();
 }

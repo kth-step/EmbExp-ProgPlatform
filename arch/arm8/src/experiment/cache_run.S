@@ -5,10 +5,18 @@
 .globl _cache_run
 .globl _scamv_run1
 .globl _scamv_run2
-.globl _scamv_train_bp
 
 .section .experiment_code
 scamv_entry:
+// flush the cache
+	//flush_d_cache(0);
+	mov x0, #0
+	bl flush_d_cache
+	//flush_d_cache(1);
+	mov x0, #1
+	bl flush_d_cache
+	dsb sy
+	isb
 .include "experiment/asm.h"
 	b scamv_exit
 
@@ -30,8 +38,6 @@ _scamv_run1:
 	mov x0,  #0
 	mov x30, #0
 .include "experiment/asm_setup1.h"
-	dsb sy
-	isb
 	b scamv_entry
 
 _scamv_run2:
@@ -40,8 +46,6 @@ _scamv_run2:
 	mov x0,  #0
 	mov x30, #0
 .include "experiment/asm_setup2.h"
-	dsb sy
-	isb
 	b scamv_entry
 
 scamv_exit:
@@ -133,7 +137,7 @@ _cache_run:
 	mov x27, #0
 	mov x28, #0
 	mov x29, #0
-	mov sp,  x0
+	//mov sp,  x0 /* what the heck is this */
 	adds x0, x1, x2
 
 // run the experiment code
