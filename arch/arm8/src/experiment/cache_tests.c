@@ -7,7 +7,7 @@
 #include "cache.h"
 #include "spectre.h"
 
-//#define SPECTRE
+#define SPECTRE
 
 #include "experiment/cache_run.h"
 
