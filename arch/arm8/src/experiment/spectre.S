@@ -44,6 +44,20 @@ spectre:
 	strb	w1, [sp, 23]
 	strb	w2, [sp, 22]
 	strb	wzr, [sp, 47]
+	// clean experiment memory
+	bl _clean_experiment_memory
+	// create defined processor state
+	mov x0,  #0
+	mov x1,  #0
+	mov x2,  #0
+	mov x3,  #0
+	mov x4,  #0
+	mov x5,  #0
+	mov x6,  #0
+	mov x7,  #0
+	mov x8,  #0
+	mov x9,  #0
+	mov x10, #0
 	str	xzr, [sp, 56]
 	b	.L3
 .L10:
