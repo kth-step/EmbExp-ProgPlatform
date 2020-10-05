@@ -44,6 +44,8 @@ spectre:
 	strb	w1, [sp, 23]
 	strb	w2, [sp, 22]
 	strb	wzr, [sp, 47]
+	// clean experiment memory
+	bl _clean_experiment_memory
 	str	xzr, [sp, 56]
 	b	.L3
 .L10:
@@ -63,8 +65,7 @@ spectre:
 	ldrb	w0, [sp, 22]
 	cmp	w0, 1
 	bne	.L6
-	// clean experiment memory
-	bl _clean_experiment_memory
+
 	// create defined processor state
 	mov x0,  #0
 	mov x1,  #0
@@ -99,8 +100,6 @@ spectre:
 .include "experiment/asm_setup1.h"
 	b	.L7
 .L6:
-	// clean experiment memory
-	bl _clean_experiment_memory
 	// create defined processor state
 	mov x0,  #0
 	mov x1,  #0
