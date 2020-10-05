@@ -44,6 +44,25 @@ spectre:
 	strb	w1, [sp, 23]
 	strb	w2, [sp, 22]
 	strb	wzr, [sp, 47]
+	str	xzr, [sp, 56]
+	b	.L3
+.L10:
+	mov	x0, 1
+	str	x0, [sp, 48]
+	b	.L4
+.L5:
+.include "experiment/asm_train.h"
+	bl	bounds_check
+	ldr	x0, [sp, 48]
+	add	x0, x0, 1
+	str	x0, [sp, 48]
+.L4:
+	ldr	x0, [sp, 48]
+	cmp	x0, 6
+	bls	.L5
+	ldrb	w0, [sp, 22]
+	cmp	w0, 1
+	bne	.L6
 	// clean experiment memory
 	bl _clean_experiment_memory
 	// create defined processor state
@@ -77,28 +96,42 @@ spectre:
 	mov x27, #0
 	mov x28, #0
 	mov x29, #0
-	str	xzr, [sp, 56]
-	b	.L3
-.L10:
-	mov	x0, 1
-	str	x0, [sp, 48]
-	b	.L4
-.L5:
-.include "experiment/asm_train.h"
-	bl	bounds_check
-	ldr	x0, [sp, 48]
-	add	x0, x0, 1
-	str	x0, [sp, 48]
-.L4:
-	ldr	x0, [sp, 48]
-	cmp	x0, 6
-	bls	.L5
-	ldrb	w0, [sp, 22]
-	cmp	w0, 1
-	bne	.L6
 .include "experiment/asm_setup1.h"
 	b	.L7
 .L6:
+	// clean experiment memory
+	bl _clean_experiment_memory
+	// create defined processor state
+	mov x0,  #0
+	mov x1,  #0
+	mov x2,  #0
+	mov x3,  #0
+	mov x4,  #0
+	mov x5,  #0
+	mov x6,  #0
+	mov x7,  #0
+	mov x8,  #0
+	mov x9,  #0
+	mov x10, #0
+	mov x11, #0
+	mov x12, #0
+	mov x13, #0
+	mov x14, #0
+	mov x15, #0
+	mov x16, #0
+	mov x17, #0
+	mov x18, #0
+	mov x19, #0
+	mov x20, #0
+	mov x21, #0
+	mov x22, #0
+	mov x23, #0
+	mov x24, #0
+	mov x25, #0
+	mov x26, #0
+	mov x27, #0
+	mov x28, #0
+	mov x29, #0
 .include "experiment/asm_setup2.h"
 .L7:
 	bl	bounds_check
