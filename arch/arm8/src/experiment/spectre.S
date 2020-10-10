@@ -19,6 +19,49 @@ bound:
 	.comm	cache_temp,49152,8
 	.text
 	.align	2
+	.global	_clean_board_state
+	.type	_clean_board_state, %function
+_clean_board_state:
+	stp	x29, x30, [sp, -16]!
+	mov	x29, sp
+	// clean experiment memory
+	bl _clean_experiment_memory
+	// create defined processor state
+	mov     x0,  #0
+	mov     x1,  #0
+	mov     x2,  #0
+	mov     x3,  #0
+	mov     x4,  #0
+	mov     x5,  #0
+	mov     x6,  #0
+	mov     x7,  #0
+	mov     x8,  #0
+	mov     x9,  #0
+	mov     x10, #0
+	mov     x11, #0
+	mov     x12, #0
+	mov     x13, #0
+	mov     x14, #0
+	mov     x15, #0
+	mov     x16, #0
+	mov     x17, #0
+	mov     x18, #0
+	mov     x19, #0
+	mov     x20, #0
+	mov     x21, #0
+	mov     x22, #0
+	mov     x23, #0
+	mov     x24, #0
+	mov     x25, #0
+	mov     x26, #0
+	mov     x27, #0
+	mov     x28, #0
+	mov     x29, #0
+	mov	w0, 0
+	ldp	x29, x30, [sp], 16
+	ret
+	.size	_clean_board_state, .-_clean_board_state
+	.align	2
 	.global	bounds_check
 	.type	bounds_check, %function
 bounds_check:
@@ -63,75 +106,12 @@ spectre:
 	ldrb	w0, [sp, 22]
 	cmp	w0, 1
 	bne	.L6
-	// clean experiment memory
-	bl _clean_experiment_memory
-	// create defined processor state
-	mov x0,  #0
-	mov x1,  #0
-	mov x2,  #0
-	mov x3,  #0
-	mov x4,  #0
-	mov x5,  #0
-	mov x6,  #0
-	mov x7,  #0
-	mov x8,  #0
-	mov x9,  #0
-	mov x10, #0
-	mov x11, #0
-	mov x12, #0
-	mov x13, #0
-	mov x14, #0
-	mov x15, #0
-	mov x16, #0
-	mov x17, #0
-	mov x18, #0
-	mov x19, #0
-	mov x20, #0
-	mov x21, #0
-	mov x22, #0
-	mov x23, #0
-	mov x24, #0
-	mov x25, #0
-	mov x26, #0
-	mov x27, #0
-	mov x28, #0
-	mov x29, #0
+	
+	bl      _clean_board_state
 .include "experiment/asm_setup1.h"
 	b	.L7
 .L6:
-	// clean experiment memory
-	bl _clean_experiment_memory
-	// create defined processor state
-	mov x0,  #0
-	mov x1,  #0
-	mov x2,  #0
-	mov x3,  #0
-	mov x4,  #0
-	mov x5,  #0
-	mov x6,  #0
-	mov x7,  #0
-	mov x8,  #0
-	mov x9,  #0
-	mov x10, #0
-	mov x11, #0
-	mov x12, #0
-	mov x13, #0
-	mov x14, #0
-	mov x15, #0
-	mov x16, #0
-	mov x17, #0
-	mov x18, #0
-	mov x19, #0
-	mov x20, #0
-	mov x21, #0
-	mov x22, #0
-	mov x23, #0
-	mov x24, #0
-	mov x25, #0
-	mov x26, #0
-	mov x27, #0
-	mov x28, #0
-	mov x29, #0
+	bl      _clean_board_state
 .include "experiment/asm_setup2.h"
 .L7:
 	bl	bounds_check
@@ -172,3 +152,4 @@ spectre:
 	ldrb	w0, [sp, 47]
 	ldp	x29, x30, [sp], 64
 	ret
+	.size	spectre, .-spectre
