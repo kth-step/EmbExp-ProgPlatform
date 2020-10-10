@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.7
 
 output_text = ""
 with open("Makefile.config", "r") as f:
