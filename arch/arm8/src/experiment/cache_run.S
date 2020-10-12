@@ -157,7 +157,7 @@ __enter_scamv_train_loop:
 	mov sp,  x0 /* what the heck is this */
 	adds x0, x1, x2
 
-// run the experiment code
+// run the experiment code (with training inputs)
 	blr x30
 	b __enter_scamv_train_loop
 
