@@ -8,13 +8,6 @@
 
 .section .experiment_code
 scamv_entry:
-// flush the cache
-	//flush_d_cache(0);
-	mov x0, #0
-	bl flush_d_cache
-	//flush_d_cache(1);
-	mov x0, #1
-	bl flush_d_cache
 	dsb sy
 	isb
 .include "experiment/asm.h"
@@ -28,9 +21,20 @@ _sp_store:
 .align 3
 _scamv_ret_store:
 	.quad 0
+.align 3
+_scamv_train_loop_cnt:
+	.quad 0
 
 
 .section .text
+
+_scamv_train:
+	ldr x0, =_scamv_ret_store
+	str x30, [x0]
+	mov x0,  #0
+	mov x30, #0
+.include "experiment/asm_train.h"
+	b scamv_entry
 
 _scamv_run1:
 	ldr x0, =_scamv_ret_store
@@ -95,6 +99,77 @@ _cache_run:
 	mov x1, sp
 	str x1, [x0]
 
+/* -------------------------------------- finish storing calling environment state before starting assembly mess */
+
+/* -------------------------------------- have a training loop before the actual experiment */
+/* NOTE: maybe we do not need to clean everything for the training, it depends on what we mean for train.h is an initial state */
+	ldr x0, =_scamv_train_loop_cnt
+	mov x1, #0
+	str x1, [x0]
+
+__enter_scamv_train_loop:
+	ldr x0, =_scamv_train_loop_cnt
+	ldr x1, [x0]
+	cmp x1, 6
+	b.ge __exit_scamv_train_loop
+	add x1, x1, #1
+	str x1, [x0]
+
+// restore SP register
+	ldr x0, =_sp_store
+	ldr x1, [x0]
+	mov sp, x1
+// clean experiment memory
+	bl _clean_experiment_memory
+// move _scamv_run to x30 (LR)
+	ldr x30, =_scamv_train
+// create defined processor state
+	mov x0,  #0
+	mov x1,  #0
+	mov x2,  #0
+	mov x3,  #0
+	mov x4,  #0
+	mov x5,  #0
+	mov x6,  #0
+	mov x7,  #0
+	mov x8,  #0
+	mov x9,  #0
+	mov x10, #0
+	mov x11, #0
+	mov x12, #0
+	mov x13, #0
+	mov x14, #0
+	mov x15, #0
+	mov x16, #0
+	mov x17, #0
+	mov x18, #0
+	mov x19, #0
+	mov x20, #0
+	mov x21, #0
+	mov x22, #0
+	mov x23, #0
+	mov x24, #0
+	mov x25, #0
+	mov x26, #0
+	mov x27, #0
+	mov x28, #0
+	mov x29, #0
+	mov sp,  x0 /* what the heck is this */
+	adds x0, x1, x2
+
+// run the experiment code
+	blr x30
+	b __enter_scamv_train_loop
+
+__exit_scamv_train_loop:
+
+/* -------------------------------------- require usable SP, clean cache before actual experiment */
+
+// restore SP register
+	ldr x0, =_sp_store
+	ldr x1, [x0]
+	mov sp, x1
+
 // flush the cache
 	//flush_d_cache(0);
 	mov x0, #0
@@ -102,6 +177,8 @@ _cache_run:
 	//flush_d_cache(1);
 	mov x0, #1
 	bl flush_d_cache
+
+/* -------------------------------------- start setting default state */
 // clean experiment memory
 	bl _clean_experiment_memory
 // move _scamv_run to x30 (LR)
@@ -137,11 +214,20 @@ _cache_run:
 	mov x27, #0
 	mov x28, #0
 	mov x29, #0
-	//mov sp,  x0 /* what the heck is this */
+	mov sp,  x0 /* what the heck is this */
 	adds x0, x1, x2
 
 // run the experiment code
 	blr x30
+
+
+/* -------------------------------------- finish running through one experiment round */
+
+
+
+
+/* -------------------------------------- finished with assembly mess, restore sp, quickly store cache state, restore calling environment state */
+
 // restore SP register
 	ldr x0, =_sp_store
 	ldr x1, [x0]

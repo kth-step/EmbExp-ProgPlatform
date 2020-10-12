@@ -81,18 +81,18 @@ void run_cache_experiment() {
 
 #ifdef RUN_2EXPS
   // run 2 cache experiments
-  #ifdef SPECTRE
+  /*#ifdef SPECTRE
   	//check if spectre effect exists on a72
   	diff += spectre(cache1, NUM_MUL_RUNS, 1); 
   	//print_cache_valid(cache1);
   	diff += spectre(cache2, NUM_MUL_RUNS, 2);
   	//print_cache_valid(cache2);
-  #else	
+  #else	*/
   	diff += cache_run_mult_compare(_scamv_run1, cache1, NUM_MUL_RUNS);
   	//print_cache_valid(cache1);
   	diff += cache_run_mult_compare(_scamv_run2, cache2, NUM_MUL_RUNS);
   	//print_cache_valid(cache2);
-  #endif	
+  //#endif	
   // debug_set(cache1[0], 0);
   // debug_set(cache2[0], 0);
 
