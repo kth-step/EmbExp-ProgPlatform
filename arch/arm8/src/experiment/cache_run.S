@@ -26,6 +26,7 @@ _scamv_train_loop_cnt:
 
 .section .text
 
+#if __has_include("experiment/asm_train.h")
 _scamv_train:
 	ldr x0, =_scamv_ret_store
 	str x30, [x0]
@@ -35,6 +36,7 @@ _scamv_train:
 	dsb sy
 	isb
 	b scamv_entry
+#endif
 
 _scamv_run1:
 	ldr x0, =_scamv_ret_store
@@ -104,7 +106,7 @@ _cache_run:
 	mov x1, sp
 	str x1, [x0]
 
-
+#if __has_include("experiment/asm_train.h")
 // ========================================================
 
 	ldr x0, =_scamv_train_loop_cnt
@@ -176,7 +178,7 @@ __enter_scamv_train_loop:
 __exit_scamv_train_loop:
 
 // ========================================================
-
+#endif
 
 // restore SP register
 	ldr x0, =_sp_store
