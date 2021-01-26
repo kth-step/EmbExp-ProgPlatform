@@ -26,13 +26,13 @@ _scamv_train_loop_cnt:
 
 .section .text
 
-#if __has_include("experiment/asm_train.h")
+#if __has_include("experiment/asm_setup_train.h")
 _scamv_train:
 	ldr x0, =_scamv_ret_store
 	str x30, [x0]
 	mov x0,  #0
 	mov x30, #0
-.include "experiment/asm_train.h"
+.include "experiment/asm_setup_train.h"
 	dsb sy
 	isb
 	b scamv_entry
@@ -43,7 +43,7 @@ _scamv_run1:
 	str x30, [x0]
 	mov x0,  #0
 	mov x30, #0
-.include "experiment/asm_setup1.h"
+.include "experiment/asm_setup_1.h"
 	dsb sy
 	isb
 	b scamv_entry
@@ -53,7 +53,7 @@ _scamv_run2:
 	str x30, [x0]
 	mov x0,  #0
 	mov x30, #0
-.include "experiment/asm_setup2.h"
+.include "experiment/asm_setup_2.h"
 	dsb sy
 	isb
 	b scamv_entry
@@ -106,7 +106,7 @@ _cache_run:
 	mov x1, sp
 	str x1, [x0]
 
-#if __has_include("experiment/asm_train.h")
+#if __has_include("experiment/asm_setup_train.h")
 // ========================================================
 
 	ldr x0, =_scamv_train_loop_cnt
