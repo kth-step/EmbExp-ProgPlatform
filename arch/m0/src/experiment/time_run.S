@@ -35,7 +35,7 @@ _time_run1:
 	mov r14, r0
 	mov r0,  #0
 	mov r1,  #0
-.include "experiment/asm_setup1.h"
+.include "experiment/asm_setup_1.h"
 	dmb
 	dsb
 	isb
@@ -62,7 +62,7 @@ _time_run2:
 	mov r14, r0
 	mov r0,  #0
 	mov r1,  #0
-.include "experiment/asm_setup2.h"
+.include "experiment/asm_setup_2.h"
 	dmb
 	dsb
 	isb
