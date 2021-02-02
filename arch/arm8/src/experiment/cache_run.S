@@ -2,9 +2,22 @@
 
 #ifdef RUN_CACHE
 
+#if !defined(__has_include)
+#  error "need __has_include"
+#endif
+
+#if (!__has_include("experiment/asm.h")) || (!__has_include("experiment/asm_setup_1.h"))
+#  error "need at least asm code to run and asm code to setup state 1"
+#endif
+
 .globl _cache_run
+
+// TODO: have _scamv_run not as argument for code directly, but a state index instead
+// followup on the TODO before: define possible index range based on h files found ("asm_setup_xyz.h")
 .globl _scamv_run1
+#if __has_include("experiment/asm_setup_2.h")
 .globl _scamv_run2
+#endif
 
 .section .experiment_code
 scamv_entry:
@@ -48,6 +61,7 @@ _scamv_run1:
 	isb
 	b scamv_entry
 
+#if __has_include("experiment/asm_setup_2.h")
 _scamv_run2:
 	ldr x0, =_scamv_ret_store
 	str x30, [x0]
@@ -57,6 +71,7 @@ _scamv_run2:
 	dsb sy
 	isb
 	b scamv_entry
+#endif
 
 scamv_exit:
 	dsb sy
