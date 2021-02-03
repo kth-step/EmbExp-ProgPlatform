@@ -1,5 +1,5 @@
-#ifndef _CACHE_RUN_H
-#define _CACHE_RUN_H
+#ifndef _EXP_CACHE_RUNNER_H
+#define _EXP_CACHE_RUNNER_H
 
 #include "cache.h"
 #include <stdint.h>

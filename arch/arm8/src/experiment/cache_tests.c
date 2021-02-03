@@ -6,7 +6,7 @@
 #include "mmu.h"
 #include "cache.h"
 
-#include "experiment/cache_run.h"
+#include "experiment/exp_cache_runner.h"
 
 
 #define __UNUSED __attribute__((unused))

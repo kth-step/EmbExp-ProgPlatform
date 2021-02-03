@@ -1,6 +1,6 @@
 #include "config.h"
 
-// TODO: rename this file. it's more an abstraction module for the low level assembly code cache_run.S
+// this is the abstraction module for the low level assembly code exp_cache_run_asm.S
 
 #ifdef RUN_CACHE
 
@@ -53,12 +53,6 @@ void _clean_experiment_memory_run2() {
   _clean_experiment_memory(EXPMEM_2_DEFAULT_VALUE);
 }
 #endif
-
-/*
-void _clean_experiment_memory_train();
-void _clean_experiment_memory_run1();
-void _clean_experiment_memory_run2();
-*/
 
 void _scamv_train();
 void _scamv_run1();
