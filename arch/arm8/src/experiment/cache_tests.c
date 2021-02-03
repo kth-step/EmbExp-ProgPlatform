@@ -53,18 +53,6 @@ static cache_state cache;
   #error "no experiment type selected"
 #endif
 
-static cache_state cache_temp;
-uint8_t cache_run_mult_compare(uint8_t _input_id, cache_state cache_, uint8_t n) {
-  uint8_t diff = 0;
-  _cache_run(_input_id, cache_);
-  for (uint8_t i = n; i > 0; i--) {
-    _cache_run(_input_id, cache_temp);
-    if (compare_cache(cache_, cache_temp) != 0)
-      diff++;
-  }
-  return diff;
-}
-
 
 #ifndef SINGLE_EXPERIMENTS
 void run_cache_experiment() {

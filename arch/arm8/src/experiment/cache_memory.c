@@ -1,5 +1,7 @@
 #include "config.h"
 
+// TODO: rename this file. it's more an abstraction module for the low level assembly code cache_run.S
+
 #ifdef RUN_CACHE
 
 #if !defined(__has_include)
@@ -18,6 +20,7 @@
 #  define EXP_HAS_INPUT_2
 #endif
 
+#include "cache.h"
 #include <stdint.h>
 
 uint64_t expmem_byte_to_word(uint8_t v) {
@@ -35,27 +38,69 @@ void _clean_experiment_memory(uint64_t default_val) {
   }
 }
 
-void _clean_experiment_memory_for_input(uint8_t _input_id) {
-  switch (_input_id) {
 #ifdef EXP_HAS_INPUT_TRAIN
-    case 0:
-      // training
-      _clean_experiment_memory(0);
-      break;
+void _clean_experiment_memory_train() {
+  _clean_experiment_memory(0);
+}
 #endif
+
+void _clean_experiment_memory_run1() {
+  _clean_experiment_memory(0);
+}
+
+#ifdef EXP_HAS_INPUT_2
+void _clean_experiment_memory_run2() {
+  _clean_experiment_memory(0);
+}
+#endif
+
+/*
+void _clean_experiment_memory_train();
+void _clean_experiment_memory_run1();
+void _clean_experiment_memory_run2();
+*/
+
+void _scamv_train();
+void _scamv_run1();
+void _scamv_run2();
+
+void _cache_run(cache_state cache, void (*_clean_mem_run)(), void (*_scamv_run)(), void (*_clean_mem_train)(), void (*_scamv_train)());
+
+static cache_state cache_temp;
+uint8_t cache_run_mult_compare(uint8_t _input_id, cache_state cache_, uint8_t n) {
+  void (*_clean_mem_run)()   = 0;
+  void (*_scamv_run__)()     = 0;
+  void (*_clean_mem_train)() = 0;
+  void (*_scamv_train__)()   = 0;
+
+#ifdef EXP_HAS_INPUT_TRAIN
+  _clean_mem_train = _clean_experiment_memory_train;
+  _scamv_train__   = _scamv_train;
+#endif
+
+  switch (_input_id) {
     case 1:
-      // input 1
-      _clean_experiment_memory(0);
+      _clean_mem_run = _clean_experiment_memory_run1;
+      _scamv_run__   = _scamv_run1;
       break;
 #ifdef EXP_HAS_INPUT_2
     case 2:
-      // input 2
-      _clean_experiment_memory(0);
+      _clean_mem_run = _clean_experiment_memory_run2;
+      _scamv_run__   = _scamv_run2;
       break;
 #endif
     default:
       while (1);
   }
+
+  uint8_t diff = 0;
+  _cache_run(cache_, _clean_mem_run, _scamv_run__, _clean_mem_train, _scamv_train__);
+  for (uint8_t i = n; i > 0; i--) {
+    _cache_run(cache_temp, _clean_mem_run, _scamv_run__, _clean_mem_train, _scamv_train__);
+    if (compare_cache(cache_, cache_temp) != 0)
+      diff++;
+  }
+  return diff;
 }
 
 

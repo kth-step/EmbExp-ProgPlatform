@@ -4,7 +4,7 @@
 #include "cache.h"
 #include <stdint.h>
 
-void _cache_run(uint8_t _input_id, cache_state cache);
+uint8_t cache_run_mult_compare(uint8_t _input_id, cache_state cache_, uint8_t n);
 
 #endif
 

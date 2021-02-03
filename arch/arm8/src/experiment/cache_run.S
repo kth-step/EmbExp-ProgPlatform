@@ -20,6 +20,14 @@
 
 .globl _cache_run
 
+#ifdef EXP_HAS_INPUT_TRAIN
+.globl _scamv_train
+#endif
+.globl _scamv_run1
+#ifdef EXP_HAS_INPUT_2
+.globl _scamv_run2
+#endif
+
 .section .experiment_code
 scamv_entry:
 .include "experiment/asm.h"
@@ -85,11 +93,11 @@ scamv_exit:
 _cache_run:
 // save registers on stack
 	sub sp, sp, #(8 * 40)
-	str x0,  [sp, #(8 *  0)] // _input_id
-	str x1,  [sp, #(8 *  1)] // cache
-	str x2,  [sp, #(8 *  2)]
-	str x3,  [sp, #(8 *  3)]
-	str x4,  [sp, #(8 *  4)]
+	str x0,  [sp, #(8 *  0)] // cache
+	str x1,  [sp, #(8 *  1)] // _clean_mem_run
+	str x2,  [sp, #(8 *  2)] // _scamv_run
+	str x3,  [sp, #(8 *  3)] // _clean_mem_train
+	str x4,  [sp, #(8 *  4)] // _scamv_train
 	str x5,  [sp, #(8 *  5)]
 	str x6,  [sp, #(8 *  6)]
 	str x7,  [sp, #(8 *  7)]
@@ -149,11 +157,11 @@ __enter_scamv_train_loop:
 	//flush_d_cache(1);
 	mov x0, #1
 	bl flush_d_cache
-// clean experiment memory
-	mov x0, #0
-	bl _clean_experiment_memory_for_input
-// move _scamv_train to x30 (LR)
-	ldr x30, =_scamv_train
+// clean experiment memory: _clean_mem_run
+	ldr x30, [sp, #(8 *  3)]
+	blr x30
+// load _scamv_run in x30 (LR)
+	ldr x30, [sp, #(8 *  4)]
 // create defined processor state
 	mov x0,  #0
 	mov x1,  #0
@@ -209,31 +217,11 @@ __exit_scamv_train_loop:
 	//flush_d_cache(1);
 	mov x0, #1
 	bl flush_d_cache
-// move _input_id to x0 (argument to _clean_experiment_memory_for_input)
-	ldr x0, [sp, #(8 *  0)]
-// clean experiment memory
-	bl _clean_experiment_memory_for_input
-// process _input_id to _scamv_run in x30 (LR)
-	ldr x0, [sp, #(8 *  0)]
-	mov x2, #1
-	cmp x0, x2
-	b.eq __cntn_scamv_run1
-#ifdef EXP_HAS_INPUT_2
-	mov x2, #2
-	cmp x0, x2
-	b.eq __cntn_scamv_run2
-#endif // EXP_HAS_INPUT_2
-__input_error_input_id:
-	b __input_error_input_id
-__cntn_scamv_run1:
-	ldr x30, =_scamv_run1
-	b __cntn_scamv_run
-#ifdef EXP_HAS_INPUT_2
-__cntn_scamv_run2:
-	ldr x30, =_scamv_run2
-	b __cntn_scamv_run
-#endif // EXP_HAS_INPUT_2
-__cntn_scamv_run:
+// clean experiment memory: _clean_mem_run
+	ldr x30, [sp, #(8 *  1)]
+	blr x30
+// load _scamv_run in x30 (LR)
+	ldr x30, [sp, #(8 *  2)]
 // create defined processor state
 	mov x0,  #0
 	mov x1,  #0
@@ -277,13 +265,13 @@ __cntn_scamv_run:
 	mov sp, x1
 // save the cache state for run
 	//save_cache_state(cache);
-	ldr x0,  [sp, #(8 *  1)]
+	ldr x0,  [sp, #(8 *  0)]
 	bl save_cache_state
 
 /*
 // debug the first cache set
 	//debug_set(cache1[0]);
-	ldr x0,  [sp, #(8 *  1)]
+	ldr x0,  [sp, #(8 *  0)]
 	mov x1, #0
 	bl debug_set
 */
