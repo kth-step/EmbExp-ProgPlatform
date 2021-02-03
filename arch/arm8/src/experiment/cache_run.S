@@ -10,14 +10,15 @@
 #  error "need at least asm code to run and asm code to setup state 1"
 #endif
 
-.globl _cache_run
-
-// TODO: have _scamv_run not as argument for code directly, but a state index instead
-// followup on the TODO before: define possible index range based on h files found ("asm_setup_xyz.h")
-.globl _scamv_run1
-#if __has_include("experiment/asm_setup_2.h")
-.globl _scamv_run2
+#if __has_include("experiment/asm_setup_train.h")
+#  define EXP_HAS_INPUT_TRAIN
 #endif
+
+#if __has_include("experiment/asm_setup_2.h")
+#  define EXP_HAS_INPUT_2
+#endif
+
+.globl _cache_run
 
 .section .experiment_code
 scamv_entry:
@@ -39,7 +40,7 @@ _scamv_train_loop_cnt:
 
 .section .text
 
-#if __has_include("experiment/asm_setup_train.h")
+#ifdef EXP_HAS_INPUT_TRAIN
 _scamv_train:
 	ldr x0, =_scamv_ret_store
 	str x30, [x0]
@@ -49,7 +50,7 @@ _scamv_train:
 	dsb sy
 	isb
 	b scamv_entry
-#endif
+#endif // EXP_HAS_INPUT_TRAIN
 
 _scamv_run1:
 	ldr x0, =_scamv_ret_store
@@ -61,7 +62,7 @@ _scamv_run1:
 	isb
 	b scamv_entry
 
-#if __has_include("experiment/asm_setup_2.h")
+#ifdef EXP_HAS_INPUT_2
 _scamv_run2:
 	ldr x0, =_scamv_ret_store
 	str x30, [x0]
@@ -71,7 +72,7 @@ _scamv_run2:
 	dsb sy
 	isb
 	b scamv_entry
-#endif
+#endif // EXP_HAS_INPUT_2
 
 scamv_exit:
 	dsb sy
@@ -84,7 +85,7 @@ scamv_exit:
 _cache_run:
 // save registers on stack
 	sub sp, sp, #(8 * 40)
-	str x0,  [sp, #(8 *  0)] // _scamv_run
+	str x0,  [sp, #(8 *  0)] // _input_id
 	str x1,  [sp, #(8 *  1)] // cache
 	str x2,  [sp, #(8 *  2)]
 	str x3,  [sp, #(8 *  3)]
@@ -121,7 +122,7 @@ _cache_run:
 	mov x1, sp
 	str x1, [x0]
 
-#if __has_include("experiment/asm_setup_train.h")
+#ifdef EXP_HAS_INPUT_TRAIN
 // ========================================================
 
 	ldr x0, =_scamv_train_loop_cnt
@@ -149,7 +150,8 @@ __enter_scamv_train_loop:
 	mov x0, #1
 	bl flush_d_cache
 // clean experiment memory
-	bl _clean_experiment_memory
+	mov x0, #0
+	bl _clean_experiment_memory_for_input
 // move _scamv_train to x30 (LR)
 	ldr x30, =_scamv_train
 // create defined processor state
@@ -184,6 +186,7 @@ __enter_scamv_train_loop:
 	mov x28, #0
 	mov x29, #0
 	mov sp,  x0
+	// set all ALU flags to a defined state
 	adds x0, x1, x2
 
 // run the experiment code (with training inputs)
@@ -193,7 +196,7 @@ __enter_scamv_train_loop:
 __exit_scamv_train_loop:
 
 // ========================================================
-#endif
+#endif // EXP_HAS_INPUT_TRAIN
 
 // restore SP register
 	ldr x0, =_sp_store
@@ -206,10 +209,31 @@ __exit_scamv_train_loop:
 	//flush_d_cache(1);
 	mov x0, #1
 	bl flush_d_cache
+// move _input_id to x0 (argument to _clean_experiment_memory_for_input)
+	ldr x0, [sp, #(8 *  0)]
 // clean experiment memory
-	bl _clean_experiment_memory
-// move _scamv_run to x30 (LR)
-	ldr x30, [sp, #(8 *  0)]
+	bl _clean_experiment_memory_for_input
+// process _input_id to _scamv_run in x30 (LR)
+	ldr x0, [sp, #(8 *  0)]
+	mov x2, #1
+	cmp x0, x2
+	b.eq __cntn_scamv_run1
+#ifdef EXP_HAS_INPUT_2
+	mov x2, #2
+	cmp x0, x2
+	b.eq __cntn_scamv_run2
+#endif // EXP_HAS_INPUT_2
+__input_error_input_id:
+	b __input_error_input_id
+__cntn_scamv_run1:
+	ldr x30, =_scamv_run1
+	b __cntn_scamv_run
+#ifdef EXP_HAS_INPUT_2
+__cntn_scamv_run2:
+	ldr x30, =_scamv_run2
+	b __cntn_scamv_run
+#endif // EXP_HAS_INPUT_2
+__cntn_scamv_run:
 // create defined processor state
 	mov x0,  #0
 	mov x1,  #0
@@ -242,6 +266,7 @@ __exit_scamv_train_loop:
 	mov x28, #0
 	mov x29, #0
 	mov sp,  x0
+	// set all ALU flags to a defined state
 	adds x0, x1, x2
 
 // run the experiment code
