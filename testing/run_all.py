@@ -45,7 +45,7 @@ testcases.sort()
 all_successful = True
 for testcase in testcases:
 	print(f"Running '{testcase}'")
-	cmdl = ["./run_testcase.py", testcase]
+	cmdl = [os.path.join(os.path.dirname(__file__), "run_testcase.py"), testcase]
 	res = subprocess.call(cmdl, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 	# need cooldown between experiments, failing experiments cause some form of congestion if reusing the same board connection
 	# TODO: fix this issue in the experiment running makefile or similar
