@@ -73,10 +73,12 @@ def run_experiment(conn_mode = None):
 		maketarget = "runlog_reset"
 	else:
 		raise Exception(f"invalid conn_mode: {conn_mode}")
+	_call_make_cmd(["clean"], "error cleaning, somehow")
 	_call_make_cmd([maketarget], error_msg)
 	# read and return the uart output (binary)
 	with open(os.path.join(embexp_progplatform_dir, "temp/uart.log"), "r") as f:
 			uartlogdata = f.read()
+	_call_make_cmd(["clean"], "error cleaning, somehow")
 	return uartlogdata
 
 
