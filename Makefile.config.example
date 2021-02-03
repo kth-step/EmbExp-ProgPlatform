@@ -4,5 +4,5 @@ PROGPLAT_PARAMS       =nothing
 PROGPLAT_BOARD        =rpi3
 PROGPLAT_RUN_TIMEOUT  =6
 __PROGPLAT_MUL_RUNS__ =10
-__PROGPLAT_MEM_DEF__  =expmem_byte_to_word(0)
+__PROGPLAT_MEM_DEF_1__  =expmem_byte_to_word(0)
 

@@ -40,17 +40,17 @@ void _clean_experiment_memory(uint64_t default_val) {
 
 #ifdef EXP_HAS_INPUT_TRAIN
 void _clean_experiment_memory_train() {
-  _clean_experiment_memory(0);
+  _clean_experiment_memory(EXPMEM_TRAIN_DEFAULT_VALUE);
 }
 #endif
 
 void _clean_experiment_memory_run1() {
-  _clean_experiment_memory(0);
+  _clean_experiment_memory(EXPMEM_1_DEFAULT_VALUE);
 }
 
 #ifdef EXP_HAS_INPUT_2
 void _clean_experiment_memory_run2() {
-  _clean_experiment_memory(0);
+  _clean_experiment_memory(EXPMEM_2_DEFAULT_VALUE);
 }
 #endif
 
