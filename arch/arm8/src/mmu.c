@@ -34,6 +34,16 @@ uint64_t set_l1(void * l1) {
   return 0;
 }
 
+uint64_t get_l1() {
+  uint64_t l1_pt_add;
+  // l1_lage_table must be a 4KB-aligned address.
+  asm (
+       "MRS %x[out_i], TTBR0_EL3"
+       :[out_i] "=r" (l1_pt_add)
+       : 
+       );
+  return l1_pt_add;
+}
 
 void l1_set_translation(uint64_t * l1, uint64_t va, uint64_t pa, uint64_t cacheable) {
   uint64_t idx = (va / L1_PAGE_SIZE);

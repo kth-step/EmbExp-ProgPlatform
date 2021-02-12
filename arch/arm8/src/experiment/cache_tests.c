@@ -18,9 +18,9 @@
 /* page table memory */
 uint64_t page_table_l1[4] __ALIGN(PAGE_SIZE);
 
-void reset_cache_experiment() {
-  disable_mmu();
-}
+/* void reset_cache_experiment() { */
+/*   disable_mmu(); */
+/* } */
 
 static void basic_mmu() {
   init_mmu();
@@ -69,12 +69,11 @@ uint8_t cache_run_mult_compare(void (*_scamv_run_)(), cache_state cache_, uint8_
   return diff;
 }
 
-#ifndef SINGLE_EXPERIMENTS
+#ifdef SINGLE_EXPERIMENTS
 void run_cache_experiment() {
   uint16_t diff = 0;
   // setup and enable mmu
   basic_mmu();
-  
   // prime TLB
   volatile uint64_t v __UNUSED = 0;
   v = *((uint64_t *)(0x80000000));
