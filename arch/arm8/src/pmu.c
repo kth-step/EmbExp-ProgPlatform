@@ -66,7 +66,7 @@ unsigned int read_pmu(unsigned int counter)
 	asm volatile("msr pmselr_el0, %0" : : "r" (counter));
 	asm volatile("isb");
 	asm volatile("mrs %0, pmxevcntr_el0" : "=r" (val)); 
-	printf("Value of counter is %d \n", val);
+	// printf("Value of counter is %d \n", val);
 	// Disable all counters
 	disable_cpu_counters();
 

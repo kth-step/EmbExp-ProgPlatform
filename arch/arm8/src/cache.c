@@ -2,6 +2,7 @@
 #include "lib/printf.h"
 
 #define BARRIER_DSB_ISB() __asm__ __volatile__("DSB SY \t\n ISB \t\n")
+
 #define CORTEX_A72
 
 void flush_d_cache(uint64_t level) {

@@ -45,12 +45,65 @@ uint64_t get_l1() {
   return l1_pt_add;
 }
 
+
+void tlbiall_el1(void)
+{
+	__asm__ __volatile__("tlbi alle1\n\t" : : : "memory");
+}
+
+void tlbiall_el2(void)
+{
+	__asm__ __volatile__("tlbi alle2\n\t" : : : "memory");
+}
+
+void tlbiall_el3(void)
+{
+	__asm__ __volatile__("tlbi alle3\n\t" : : : "memory");
+}
+
+void switch_l1(void * table)
+{
+  uint64_t l1_pt_add = (uint64_t) table;
+  //printf("Switching page table from %x to %x \n", get_l1(), table);
+  unsigned int val;
+  val = 0xFF440400;
+  asm (
+       "MSR MAIR_EL3, %x[input_i]"
+       :
+       : [input_i] "r" (val)
+       );
+  // ATTR0 Device-nGnRnE ATTR1 Device.
+  // ATTR2 Normal Non-Cacheable. 
+  // ATTR3 Normal Cacheable.
+  tlbiall_el3();
+  val = 0x3520;
+  asm (
+       "MSR TCR_EL3, %x[input_i]"
+       :
+       : [input_i] "r" (val)
+       );
+  // 4GB space 4KB granularity for L2
+  // Inner-shareable.
+  // Normal Inner and Outer Cacheable.
+
+
+  asm volatile(
+	       "MSR TTBR0_EL3, %0" :
+	       : "r" (l1_pt_add)
+	       : "memory"
+	       );
+
+  asm volatile(
+	       "ISB"
+	       );
+}
+
 void l1_set_translation(uint64_t * l1, uint64_t va, uint64_t pa, uint64_t cacheable) {
   uint64_t idx = (va / L1_PAGE_SIZE);
   // the physical address to map to is the base entry value (aligning it to the l1 page size)
   uint64_t entry = (pa / L1_PAGE_SIZE) * L1_PAGE_SIZE;
   if (cacheable == 0)
-    entry |= 0x00000741;
+    entry |= 0x00000741; 
   else
     entry |= 0x0000074D;
   l1[idx] = entry;
