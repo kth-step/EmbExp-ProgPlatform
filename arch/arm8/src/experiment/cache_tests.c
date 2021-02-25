@@ -6,9 +6,6 @@
 #include "mmu.h"
 #include "cache.h"
 
-//#include "spectre.h"
-//#define SPECTRE
-
 #include "experiment/cache_run.h"
 
 
@@ -34,7 +31,7 @@ static void basic_mmu() {
   // R/W at all ELs secure memory
   // AttrIdx=000 Device-nGnRnE.
   // The third entry is 1GB block from 0x80000000 to 0xBFFFFFFF.
-  //l1_set_translation(page_table_l1, 0x80000000, 0, 1);
+  l1_set_translation(page_table_l1, 0x80000000, 0, 1);
   //l1_set_translation(page_table_l1, 0xC0000000, 0, 1);
 
   // TODO: dirty quick fix for rpi4, overwrites the last mapping, second cacheable alias
@@ -80,18 +77,10 @@ void run_cache_experiment() {
 
 #ifdef RUN_2EXPS
   // run 2 cache experiments
-  /*#ifdef SPECTRE
-  	//check if spectre effect exists on a72
-  	diff += spectre(cache1, NUM_MUL_RUNS, 1); 
-  	//print_cache_valid(cache1);
-  	diff += spectre(cache2, NUM_MUL_RUNS, 2);
-  	//print_cache_valid(cache2);
-  #else	*/
-  	diff += cache_run_mult_compare(_scamv_run1, cache1, NUM_MUL_RUNS);
-  	//print_cache_valid(cache1);
-  	diff += cache_run_mult_compare(_scamv_run2, cache2, NUM_MUL_RUNS);
-  	//print_cache_valid(cache2);
-  //#endif	
+  diff += cache_run_mult_compare(_scamv_run1, cache1, NUM_MUL_RUNS);
+  //print_cache_valid(cache1);
+  diff += cache_run_mult_compare(_scamv_run2, cache2, NUM_MUL_RUNS);
+  //print_cache_valid(cache2);
   // debug_set(cache1[0], 0);
   // debug_set(cache2[0], 0);
 
