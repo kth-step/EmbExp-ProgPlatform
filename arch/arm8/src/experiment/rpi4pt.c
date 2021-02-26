@@ -76,8 +76,8 @@ static void __basic_mmu__(void) {
 
 
 volatile uint64_t y = 0;
-uint64_t * cbl1_ptr = (uint64_t*)(CACHEABLE(&y, 0x40000000));
-uint64_t * cbl2_ptr = (uint64_t*)(CACHEABLE(&y, 0x80000000));
+uint64_t * cbl1_ptr = (uint64_t*)(CACHEABLE(y, 0x40000000));
+uint64_t * cbl2_ptr = (uint64_t*)(CACHEABLE(y, 0x80000000));
 
 
 #ifndef SINGLE_EXPERIMENTS
