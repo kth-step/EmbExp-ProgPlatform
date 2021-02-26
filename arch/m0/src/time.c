@@ -2,14 +2,14 @@
 #include "lib/printf.h"
 #include <stdint.h>
 
-#include "experiment/time_run.h"
+#include "experiment/exp_time_runner.h"
 
 #ifdef RUN_TIME
 
 void run_time_experiment(void)
 {
-    uint32_t t1 = _time_run(_time_run1);
-    uint32_t t2 = _time_run(_time_run2);
+    uint32_t t1 = time_run(1);
+    uint32_t t2 = time_run(2);
 
     if (t1 == t2) { printf("RESULT: EQUAL\n"); }
     else { printf("RESULT: UNEQUAL\n"); }

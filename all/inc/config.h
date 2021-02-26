@@ -56,5 +56,23 @@
   #define NUM_MUL_RUNS 10
 #endif
 
+#ifdef __PROGPLAT_MEM_DEF_1__
+  #define EXPMEM_1_DEFAULT_VALUE __PROGPLAT_MEM_DEF_1__
+#else
+  #define EXPMEM_1_DEFAULT_VALUE 0
+#endif
+
+#ifdef __PROGPLAT_MEM_DEF_2__
+  #define EXPMEM_2_DEFAULT_VALUE __PROGPLAT_MEM_DEF_2__
+#else
+  #define EXPMEM_2_DEFAULT_VALUE 0
+#endif
+
+#ifdef __PROGPLAT_MEM_DEF_TRAIN__
+  #define EXPMEM_TRAIN_DEFAULT_VALUE __PROGPLAT_MEM_DEF_TRAIN__
+#else
+  #define EXPMEM_TRAIN_DEFAULT_VALUE 0
+#endif
+
 #endif // CONFIG_H
 

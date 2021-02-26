@@ -6,7 +6,7 @@
 #include "mmu.h"
 #include "cache.h"
 
-#include "experiment/cache_run.h"
+#include "experiment/exp_cache_runner.h"
 
 
 #define __UNUSED __attribute__((unused))
@@ -53,18 +53,6 @@ static cache_state cache;
   #error "no experiment type selected"
 #endif
 
-static cache_state cache_temp;
-uint8_t cache_run_mult_compare(void (*_scamv_run_)(), cache_state cache_, uint8_t n) {
-  uint8_t diff = 0;
-  _cache_run(_scamv_run_, cache_);
-  for (uint8_t i = n; i > 0; i--) {
-    _cache_run(_scamv_run_, cache_temp);
-    if (compare_cache(cache_, cache_temp) != 0)
-      diff++;
-  }
-  return diff;
-}
-
 
 #ifndef SINGLE_EXPERIMENTS
 void run_cache_experiment() {
@@ -78,9 +66,9 @@ void run_cache_experiment() {
 
 #ifdef RUN_2EXPS
   // run 2 cache experiments
-  diff += cache_run_mult_compare(_scamv_run1, cache1, NUM_MUL_RUNS);
+  diff += cache_run_mult_compare(1, cache1, NUM_MUL_RUNS);
   //  print_cache_valid(cache1);
-  diff += cache_run_mult_compare(_scamv_run2, cache2, NUM_MUL_RUNS);
+  diff += cache_run_mult_compare(2, cache2, NUM_MUL_RUNS);
   //  print_cache_valid(cache2);
   //debug_set(cache1[0], 0);
   //debug_set(cache2[0], 0);
@@ -114,7 +102,7 @@ void run_cache_experiment() {
     printf("INCONCLUSIVE: %d\n", diff);
   }
 #elif defined RUN_1EXPS
-  diff += cache_run_mult_compare(_scamv_run1, cache, NUM_MUL_RUNS);
+  diff += cache_run_mult_compare(1, cache, NUM_MUL_RUNS);
   print_cache_valid(cache);
   if (diff != 0)
     printf("INCONCLUSIVE: %d\n", diff);

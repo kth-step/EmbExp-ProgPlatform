@@ -1,9 +1,23 @@
 #include "config.h"
+
 #ifdef RUN_TIME
 
+#if !defined(__has_include)
+#  error "need __has_include"
+#endif
+
+#if (!__has_include("experiment/asm.h")) || (!__has_include("experiment/asm_setup_1.h"))
+#  error "need at least asm code to run and asm code to setup state 1"
+#endif
+
 .globl _time_run
+
+// TODO: have _scamv_run not as argument for code directly, but a state index instead
+// followup on the TODO before: define possible index range based on h files found ("asm_setup_xyz.h")
 .globl _time_run1
+#if __has_include("experiment/asm_setup_2.h")
 .globl _time_run2
+#endif
 
 .section .experiment_code
 scamv_entry:
@@ -35,7 +49,7 @@ _time_run1:
 	mov r14, r0
 	mov r0,  #0
 	mov r1,  #0
-.include "experiment/asm_setup1.h"
+.include "experiment/asm_setup_1.h"
 	dmb
 	dsb
 	isb
@@ -53,6 +67,7 @@ _time_run1:
 	isb
 	bx r14
 
+#if __has_include("experiment/asm_setup_2.h")
 _time_run2:
 	ldr r0, =_scamv_ret_store
 	mov r1, r14
@@ -62,7 +77,7 @@ _time_run2:
 	mov r14, r0
 	mov r0,  #0
 	mov r1,  #0
-.include "experiment/asm_setup2.h"
+.include "experiment/asm_setup_2.h"
 	dmb
 	dsb
 	isb
@@ -79,6 +94,7 @@ _time_run2:
 	dsb
 	isb
 	bx r14
+#endif
 
 scamv_exit:
 	dmb
