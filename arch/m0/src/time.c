@@ -8,14 +8,19 @@
 
 void run_time_experiment(void)
 {
+#ifdef RUN_2EXPS
     uint32_t t1 = time_run(1);
     uint32_t t2 = time_run(2);
 
     if (t1 == t2) { printf("RESULT: EQUAL\n"); }
     else { printf("RESULT: UNEQUAL\n"); }
+#elif defined RUN_1EXPS
+    uint32_t t = time_run(1);
+    printf("T = %d\n", t);
+#else
+    #error "no experiment type selected"
+#endif
 
-    printf("T1 = %d\n", t1);
-    printf("T2 = %d\n", t2);
 }
 
 #endif // RUN_TIME
