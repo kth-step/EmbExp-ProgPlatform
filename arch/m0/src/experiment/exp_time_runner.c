@@ -33,9 +33,11 @@ uint32_t time_run(uint8_t _input_id) {
     case 1:
       _time_run__   = _time_run1;
       break;
+#ifdef RUN_2EXPS
     case 2:
       _time_run__   = _time_run2;
       break;
+#endif
     default:
       while (1);
   }
