@@ -1,9 +1,12 @@
 #include "cache.h"
 #include "lib/printf.h"
+#include "config_input.h"
 
 #define BARRIER_DSB_ISB() __asm__ __volatile__("DSB SY \t\n ISB \t\n")
 
+#ifndef __PROGPLAT_BOARD__RPI3
 #define CORTEX_A72
+#endif
 
 void flush_d_cache(uint64_t level) {
   uint64_t nways = (level == 0)?WAYS:WAYS_L2;

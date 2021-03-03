@@ -2,7 +2,7 @@
 
 void init_mmu() {
   // Initialize translation table control registers
-  unsigned int val = 0x3520;
+  unsigned int val = TCR_ATTR;
   asm (
        "MSR TCR_EL3, %x[input_i]"
        :
@@ -12,7 +12,7 @@ void init_mmu() {
   // Inner-shareable.
   // Normal Inner and Outer Cacheable.
 
-  val = 0xFF440400;
+  val = 0xFF4C0400;
   asm (
        "MSR MAIR_EL3, %x[input_i]"
        :
@@ -21,6 +21,11 @@ void init_mmu() {
   // ATTR0 Device-nGnRnE ATTR1 Device.
   // ATTR2 Normal Non-Cacheable. 
   // ATTR3 Normal Cacheable.
+  asm (
+       "ISB"
+       :
+       :
+       );
 }
 
 uint64_t set_l1(void * l1) {
@@ -64,19 +69,20 @@ void tlbiall_el3(void)
 void switch_l1(void * table)
 {
   uint64_t l1_pt_add = (uint64_t) table;
-  //printf("Switching page table from %x to %x \n", get_l1(), table);
+  /* //printf("Switching page table from %x to %x \n", get_l1(), table); */
   unsigned int val;
-  val = 0xFF440400;
+  val = 0xFF4C0400;
   asm (
        "MSR MAIR_EL3, %x[input_i]"
        :
        : [input_i] "r" (val)
        );
   // ATTR0 Device-nGnRnE ATTR1 Device.
-  // ATTR2 Normal Non-Cacheable. 
+  // ATTR2 Normal Non-Cacheable.
   // ATTR3 Normal Cacheable.
   tlbiall_el3();
-  val = 0x3520;
+
+  val = TCR_ATTR;
   asm (
        "MSR TCR_EL3, %x[input_i]"
        :
@@ -86,6 +92,11 @@ void switch_l1(void * table)
   // Inner-shareable.
   // Normal Inner and Outer Cacheable.
 
+  asm (
+       "ISB"
+       :
+       :
+       );
 
   asm volatile(
 	       "MSR TTBR0_EL3, %0" :
@@ -93,9 +104,11 @@ void switch_l1(void * table)
 	       : "memory"
 	       );
 
-  asm volatile(
-	       "ISB"
-	       );
+  asm (
+       "ISB"
+       :
+       :
+       );
 }
 
 void l1_set_translation(uint64_t * l1, uint64_t va, uint64_t pa, uint64_t cacheable) {

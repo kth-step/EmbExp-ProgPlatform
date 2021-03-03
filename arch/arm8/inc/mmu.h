@@ -32,32 +32,46 @@
 #define MEMORY_ATTR     (PMD_SECT_AF | PMD_SECT_INNER_SHARE /* | PMD_ATTRINDX(MT_NORMAL) */ | PMD_TYPE_SECT)
 
 
-#define BITS_PER_VA                33
-/*
- *TCR flags.
- */
-#define TCR_T0SZ(x)		((64 - (x)) << 0)
-#define TCR_IRGN_WBWA		(1 << 8)
-#define TCR_IRGN_WBNWA		(3 << 8)
-#define TCR_IRGN_MASK		(3 << 8)
-#define TCR_ORGN_NC		(0 << 10)
-#define TCR_ORGN_WBWA		(1 << 10)
-#define TCR_ORGN_WT		(2 << 10)
-#define TCR_ORGN_WBNWA		(3 << 10)
-#define TCR_ORGN_MASK		(3 << 10)
-#define TCR_SHARED_NON		(0 << 12)
-#define TCR_SHARED_OUTER	(2 << 12)
-#define TCR_SHARED_INNER	(3 << 12)
-#define TCR_TG0_4K		(0 << 14)
-#define TCR_EL3_IPS_BITS	(3 << 16)	/* 42 bits physical address */
-#define TCR_EL3_RSVD		(1 << 31 | 1 << 23)
 
-#define TCR_FLAGS	(TCR_TG0_4K | \
-		TCR_SHARED_OUTER | \
-		TCR_SHARED_INNER | \
-		TCR_IRGN_WBWA | \
-		TCR_ORGN_WBWA | \
-		TCR_T0SZ(BITS_PER_VA))
+/* TCR attributes */
+#define BITS_PER_VA                32
+#define TCR_TOSZ                   (64 - BITS_PER_VA)
+
+#define TCR_IRGN0_SHIFT            8
+#define TCR_IRGN0_NM_NC            (0x00 << TCR_IRGN0_SHIFT)
+#define TCR_IRGN0_NM_WBWAC         (0x01 << TCR_IRGN0_SHIFT)
+#define TCR_IRGN0_NM_WTC           (0x02 << TCR_IRGN0_SHIFT)
+#define TCR_IRGN0_NM_WBNWAC        (0x03 << TCR_IRGN0_SHIFT)
+
+#define TCR_ORGN0_SHIFT            10
+#define TCR_ORGN0_NM_NC            (0x00 << TCR_ORGN0_SHIFT)
+#define TCR_ORGN0_NM_WBWAC         (0x01 << TCR_ORGN0_SHIFT)
+#define TCR_ORGN0_NM_WTC           (0x02 << TCR_ORGN0_SHIFT)
+#define TCR_ORGN0_NM_WBNWAC        (0x03 << TCR_ORGN0_SHIFT)
+
+#define TCR_SH0_SHIFT              12
+#define TCR_SH0_NC                 (0x0 << TCR_SH0_SHIFT)
+#define TCR_SH0_OS                 (0x2 << TCR_SH0_SHIFT)
+#define TCR_SH0_IS                 (0x3 << TCR_SH0_SHIFT)
+
+#define TCR_TG0_SHIFT              14
+#define TCR_TG0_4KB                (0x0 << TCR_TG0_SHIFT)
+#define TCR_TG0_64KB               (0x1 << TCR_TG0_SHIFT)
+#define TCR_TG0_16KB               (0x2 << TCR_TG0_SHIFT)
+
+#define TCR_PS_SHIFT               16
+#define TCR_PS_4GB                 (0x0 << TCR_PS_SHIFT)
+#define TCR_PS_64GB                (0x1 << TCR_PS_SHIFT)
+#define TCR_PS_1TB                 (0x2 << TCR_PS_SHIFT)
+#define TCR_PS_4TB                 (0x3 << TCR_PS_SHIFT)
+#define TCR_PS_16TB                (0x4 << TCR_PS_SHIFT)
+#define TCR_PS_256TB               (0x5 << TCR_PS_SHIFT)
+
+#define TCR_TBI_SHIFT              20
+#define TCR_TBI_USED               (0x0 << TCR_TBI_SHIFT)
+#define TCR_TBI_IGNORED            (0x1 << TCR_TBI_SHIFT)
+
+#define  TCR_ATTR (TCR_TOSZ | TCR_IRGN0_NM_WBWAC | TCR_ORGN0_NM_WBWAC | TCR_SH0_IS | TCR_TG0_4KB | TCR_PS_256TB | TCR_TBI_USED)
 
 void init_mmu();
 uint64_t set_l1(void * l1);
@@ -65,5 +79,8 @@ void switch_l1(void * table);
 void l1_set_translation(uint64_t * l1, uint64_t va, uint64_t pa, uint64_t cacheable);
 void enable_mmu(void);
 void disable_mmu(void);
+
+/* CPU */
+extern void __drop_el2(uint64_t adr, uint64_t data);
 
 #endif
