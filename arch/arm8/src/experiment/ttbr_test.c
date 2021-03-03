@@ -80,7 +80,6 @@ uint64_t * cbl1_ptr = (uint64_t*)(CACHEABLE(secret0, 0x40000000));  // this is m
 uint64_t * cbl2_ptr = (uint64_t*)(CACHEABLE(secret0, 0x80000000));  // this is umapped adddress and raised exception
 
 void attack(uint64_t idx) {
-  uint64_t tmp;
   /* Set TTBR */
   switch_l1(idx);
 
@@ -92,7 +91,6 @@ void attack(uint64_t idx) {
   if (idx == _bound){
     asm volatile("ldr x6, [x10]");
   }
-
 }
 
 #ifndef SINGLE_EXPERIMENTS
