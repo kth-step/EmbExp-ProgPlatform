@@ -66,7 +66,7 @@ static void __basic_mmu__(void) {
   l1_set_translation(page_table1_l1, 0xC0000000, 0, 0);
   l1_set_translation(page_table2_l1, 0xC0000000, 0, 0);
 
-   tlbiall_el3();
+  tlbiall_el3();
   set_l1(page_table1_l1);
   enable_mmu();
 }
@@ -122,14 +122,11 @@ void run_cache_experiment()
 
       /* loading memory address into x10 which is passed to the victim, it is either training_x or malicious_x  */
       asm volatile ("mov x10, %0" : : "r" (x));
-      asm volatile ("mov x11, %0" : : "r" (&cbl1_ptr[1]));
-
     
       idx = (((j - 1) %  BRANCH_TRAINS) == BRANCH_TRAINS - 1)? &page_table2_l1 : page_table1_l1;
       printf("x = %x and idx = %x and bound = %x \n", x, idx, _bound);
 
       attack(idx);
-
     }
   }
 
