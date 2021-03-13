@@ -53,6 +53,16 @@ else ifeq ("$(PROGPLAT_ARCH)", "rv32imac")
   CFLAGS_EXTRA  = -g3 -ffreestanding -march=rv32imac -mabi=ilp32 -mno-relax
   LDFLAGS_PRE  += -melf32lriscv
   LDFLAGS_POST  = -L$(RVSYS) -L$(RVLIB) -lgcc
+else ifeq ("$(PROGPLAT_ARCH)", "rv64imac")
+  SFLAGS_EXTRA  = -march=rv64imac -mabi=lp64 -mno-relax
+  CFLAGS_EXTRA  = -g3 -ffreestanding -march=rv64imac -mabi=lp64 -mno-relax -mcmodel=medany -mexplicit-relocs
+  LDFLAGS_PRE  += -melf64lriscv
+  LDFLAGS_POST  = -L$(RVSYS) -L$(RVLIB) -lgcc
+else ifeq ("$(PROGPLAT_ARCH)", "rv64gc")
+  SFLAGS_EXTRA  = -march=rv64imafdc -mabi=lp64d -mno-relax
+  CFLAGS_EXTRA  = -g3 -ffreestanding -march=rv64imafdc -mabi=lp64d -mno-relax -mcmodel=medany -mexplicit-relocs
+  LDFLAGS_PRE  += -melf64lriscv
+  LDFLAGS_POST  = -L$(RVSYS) -L$(RVLIB) -lgcc
 endif
 
 INCFLAGS     = $(foreach d,$(CODE_DIRS),-I$d/inc)

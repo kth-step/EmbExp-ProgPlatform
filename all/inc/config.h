@@ -19,6 +19,12 @@
   #ifndef __PROGPLAT_ARCH__RV32IMAC
     #error "wrong architecture for selected board type"
   #endif
+#elif defined __PROGPLAT_BOARD__GENESYS_2__CVA6
+  #ifndef __PROGPLAT_ARCH__RV64GC
+    #ifndef __PROGPLAT_ARCH__RV64IMAC
+      #error "wrong architecture for selected board type"
+    #endif
+  #endif
 #else
   #error "no known board type selected"
 #endif

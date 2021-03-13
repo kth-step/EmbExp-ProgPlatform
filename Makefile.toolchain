@@ -29,6 +29,25 @@ ifndef EMBEXP_CROSS
       RVSYS = $(RVDIR)/riscv64-unknown-elf/lib/rv32imac/ilp32
       RVLIB = $(RVDIR)/lib/gcc/riscv64-unknown-elf/8.3.0/rv32imac/ilp32
     endif
+  else ifeq ("$(PROGPLAT_ARCH)", "rv64imac")
+    ifdef HOLBA_GCC_RISCV64_CROSS
+      EMBEXP_CROSS = ${HOLBA_GCC_RISCV64_CROSS}
+
+      RVDIR = $(dir $(EMBEXP_CROSS))..
+
+      RVSYS = $(RVDIR)/riscv64-unknown-elf/lib/rv64imac/lp64
+      RVLIB = $(RVDIR)/lib/gcc/riscv64-unknown-elf/8.3.0/rv64imac/lp64
+    endif
+  else ifeq ("$(PROGPLAT_ARCH)", "rv64gc")
+    # RV64GC is RV64IMAFDZicsrZifenceiC
+    ifdef HOLBA_GCC_RISCV64_CROSS
+      EMBEXP_CROSS = ${HOLBA_GCC_RISCV64_CROSS}
+
+      RVDIR = $(dir $(EMBEXP_CROSS))..
+
+      RVSYS = $(RVDIR)/riscv64-unknown-elf/lib/rv64imafdc/lp64d
+      RVLIB = $(RVDIR)/lib/gcc/riscv64-unknown-elf/8.3.0/rv64imafdc/lp64d
+    endif
   endif
 endif
 
