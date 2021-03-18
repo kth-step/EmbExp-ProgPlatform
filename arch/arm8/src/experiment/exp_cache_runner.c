@@ -61,7 +61,7 @@ void _scamv_run2();
 void _cache_run(cache_state cache, void (*_clean_mem_run)(), void (*_scamv_run)(), void (*_clean_mem_train)(), void (*_scamv_train)());
 
 static cache_state cache_temp;
-uint8_t cache_run_mult_compare(uint8_t _input_id, cache_state cache_, uint8_t n) {
+uint8_t cache_run_mult_compare(uint8_t _input_id, cache_state cache_, uint8_t n, uint8_t inconlusive_test) {
   void (*_clean_mem_run)()   = 0;
   void (*_scamv_run__)()     = 0;
   void (*_clean_mem_train)() = 0;
@@ -86,14 +86,27 @@ uint8_t cache_run_mult_compare(uint8_t _input_id, cache_state cache_, uint8_t n)
     default:
       while (1);
   }
-
+  
   uint8_t diff = 0;
+  if (inconlusive_test == 1) {
+  _cache_run(cache_, _clean_mem_run, _scamv_run__, _clean_mem_train, _scamv_train__);
+  print_cache_valid(cache_);
+  for (uint8_t i = n; i > 0; i--) {
+    _cache_run(cache_temp, _clean_mem_run, _scamv_run__, _clean_mem_train, _scamv_train__);
+    print_cache_valid(cache_temp);
+    if (compare_cache(cache_, cache_temp) != 0)
+      diff++;
+  }
+  }
+  else {
   _cache_run(cache_, _clean_mem_run, _scamv_run__, _clean_mem_train, _scamv_train__);
   for (uint8_t i = n; i > 0; i--) {
     _cache_run(cache_temp, _clean_mem_run, _scamv_run__, _clean_mem_train, _scamv_train__);
     if (compare_cache(cache_, cache_temp) != 0)
       diff++;
   }
+  }
+
   return diff;
 }
 
