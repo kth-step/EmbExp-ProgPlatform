@@ -96,7 +96,7 @@ uint8_t cache_run_mult_compare(uint8_t _input_id, cache_state cache_, uint8_t n,
     print_cache_valid(cache_temp);
     if (compare_cache(cache_, cache_temp) != 0)
       diff++;
-  }
+  	}
   }
   else {
   _cache_run(cache_, _clean_mem_run, _scamv_run__, _clean_mem_train, _scamv_train__);
@@ -104,7 +104,7 @@ uint8_t cache_run_mult_compare(uint8_t _input_id, cache_state cache_, uint8_t n,
     _cache_run(cache_temp, _clean_mem_run, _scamv_run__, _clean_mem_train, _scamv_train__);
     if (compare_cache(cache_, cache_temp) != 0)
       diff++;
-  }
+  	}
   }
 
   return diff;
