@@ -4,7 +4,7 @@ void init_mmu() {
   // Initialize translation table control registers
   unsigned int val = TCR_ATTR;
   asm (
-       "MSR TCR_EL3, %x[input_i]"
+       "MSR TCR_EL2, %x[input_i]"
        :
        : [input_i] "r" (val)
        );
@@ -14,7 +14,7 @@ void init_mmu() {
 
   val = 0xFF4C0400;
   asm (
-       "MSR MAIR_EL3, %x[input_i]"
+       "MSR MAIR_EL2, %x[input_i]"
        :
        : [input_i] "r" (val)
        );
@@ -32,7 +32,7 @@ uint64_t set_l1(void * l1) {
   uint64_t l1_pt_add = (uint64_t)l1;
   // l1_lage_table must be a 4KB-aligned address.
   asm (
-       "MSR TTBR0_EL3, %x[input_i]"
+       "MSR TTBR0_EL2, %x[input_i]"
        :
        : [input_i] "r" (l1_pt_add)
        );
@@ -124,32 +124,32 @@ void l1_set_translation(uint64_t * l1, uint64_t va, uint64_t pa, uint64_t cachea
 
 void enable_mmu(void) {
     // It is implemented in the CPUECTLR register.
-  uint64_t smp;
-  asm (
-       "MRS %x[result], S3_1_C15_C2_1"
-       : [result] "=r" (smp)
-       : 
-       );
-  smp |= (0x1 << 6); // The SMP bit.
-  asm (
-       "MSR S3_1_C15_C2_1, %x[input_i]"
-       :
-       : [input_i] "r" (smp)
-       );
+  /* uint64_t smp; */
+  /* asm ( */
+  /*      "MRS %x[result], S3_1_C15_C2_1" */
+  /*      : [result] "=r" (smp) */
+  /*      :  */
+  /*      ); */
+  /* smp |= (0x1 << 6); // The SMP bit. */
+  /* asm ( */
+  /*      "MSR S3_1_C15_C2_1, %x[input_i]" */
+  /*      : */
+  /*      : [input_i] "r" (smp) */
+  /*      ); */
   
   // Enable caches and the MMU.
   uint64_t sctl;
   asm (
-       "MRS %x[result], SCTLR_EL3"
+       "MRS %x[result], SCTLR_EL2"
        : [result] "=r" (sctl)
-       : 
+       :
        );
   sctl |= 0x1 << 0;  // The M bit (MMU).
   sctl |= 0x1 << 1;  // The A bit (alignment check for memory accesses).
   sctl |= 0x1 << 2;  // The C bit (data cache).
   sctl |= 0x1 << 12; // The I bit (instruction cache).
   asm (
-       "MSR SCTLR_EL3, %x[input_i]"
+       "MSR SCTLR_EL2, %x[input_i]"
        :
        : [input_i] "r" (sctl)
        );

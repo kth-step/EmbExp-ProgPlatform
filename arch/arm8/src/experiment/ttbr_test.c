@@ -1,4 +1,5 @@
 #include "config.h"
+#include "smc.h"
 
 #ifdef RUN_CACHE
 
@@ -39,6 +40,22 @@ void find_cache_valid(cache_state c) {
   printf("----\n");
 }
 
+/* CurrentEL */
+#define CURRENT_EL_SHIFT  2
+#define CURRENT_EL_MASK   0x3
+uint32_t raw_read_current_el(void)
+{
+	uint32_t current_el;
+	__asm__ __volatile__("mrs %0, CurrentEL\n\t" : "=r" (current_el) :  : "memory");
+	return current_el;
+}
+uint32_t get_current_el(void)
+{
+	uint32_t current_el = raw_read_current_el();
+	return ((current_el >> CURRENT_EL_SHIFT) & CURRENT_EL_MASK);
+}
+
+
 static void __basic_mmu__(void) {
   init_mmu();
   for(int i = 0; i < 4096; i++){
@@ -66,7 +83,7 @@ static void __basic_mmu__(void) {
   l1_set_translation(page_table1_l1, 0xC0000000, 0, 0);
   l1_set_translation(page_table2_l1, 0xC0000000, 0, 0);
 
-  tlbiall_el3();
+  //tlbiall_el3();
   set_l1(page_table1_l1);
   enable_mmu();
 }
@@ -93,8 +110,59 @@ void attack(uint64_t idx) {
   }
 }
 
+static void __basic_mmu__el2(void) {
+  init_mmu();
+  for(int i = 0; i < 4096; i++){
+    page_table1_l1[i] = 0;
+    page_table2_l1[i] = 0;
+  }
+  // Set up translation table entries in memory with looped store
+  // instructions.
+  // Set the level 1 translation table.
+  l1_set_translation(page_table1_l1, 0, 0, 0);
+  l1_set_translation(page_table2_l1, 0, 0, 0);
+  page_table2_l1[4] = 0x32;
+
+  l1_set_translation(page_table1_l1, 0x40000000, 0, 1);
+  l1_set_translation(page_table2_l1, 0x40000000, 0, 1);
+
+  // Executable Inner and Outer Shareable.
+  // R/W at all ELs secure memory
+  // AttrIdx=000 Device-nGnRnE.
+  // The third entry is 1GB block from 0x80000000 to 0xBFFFFFFF.
+  //l1_set_translation(page_table1_l1, 0x80000000, 0, 1);
+  //l1_set_translation(page_table2_l1, 0x80000000, 0, 1);
+
+  // TODO: dirty quick fix for rpi4, overwrites the last mapping, second cacheable alias
+  l1_set_translation(page_table1_l1, 0xC0000000, 0xC0000000, 0);
+  l1_set_translation(page_table2_l1, 0xC0000000, 0xC0000000, 0);
+
+  //tlbiall_el3();
+  set_l1(page_table1_l1);
+  enable_mmu();
+}
+void el2_mode ()
+{
+  printf("Exiting el%x level! \n", get_current_el());
+  __drop_el2();
+  __basic_mmu__el2();
+  printf("Hello from el%x level! \n", get_current_el());
+  printf("Test memory read %x \n", cbl1_ptr[0]);
+  printf("ByE! \n");
+  asm volatile ("smc  #0");
+
+}
+
+void smc_handler ()
+{
+  printf("Hello from el%x level! \n",get_current_el());
+  printf("Taking the secure monitor call! \n");
+  save_cache_state(cache);
+  find_cache_valid(cache);
+}
+
 #ifndef SINGLE_EXPERIMENTS
-void run_cache_experiment()
+void __run_cache_experiment()
 {
   unsigned int i,j, x, idx, tries;
   uint64_t malicious_x =  &cbl2_ptr[1], training_x = &cbl1_ptr[1], tmp;
@@ -130,6 +198,11 @@ void run_cache_experiment()
 
   save_cache_state(cache);
   find_cache_valid(cache);
+}
+
+void run_cache_experiment(){
+  printf("Testing the mode change\n");
+  el2_mode();
 }
 
 #endif // !SINGLE_EXPERIMENTS

@@ -1,5 +1,6 @@
 #include "uart.h"
 #include "cache.h"
+#include "smc.h"
 
 static cache_state cache;
 
@@ -30,11 +31,24 @@ void do_bad_error() {
 }
 
 void do_sync() {
-  uart_print_string("EXCEPTION: do_sync\n");
-  save_cache_state(cache);
-  find_cache_valid(cache);
-  experiment_complete_marker();
-  while (1);
+  uint32_t extn;
+  asm volatile ("mrs %0, ESR_EL3" : "=r" (extn) :  :);
+  if(extn == ESR_EL3_A64_SMC0)
+    {
+      smc_handler();
+      /* printf("In el%x mode\n",get_current_el()); */
+      /* save_cache_state(cache); */
+      /* find_cache_valid(cache); */
+      while (1);
+    }
+  else
+    {
+      uart_print_string("EXCEPTION: do_sync\n");
+      save_cache_state(cache);
+      find_cache_valid(cache);
+      experiment_complete_marker();
+      while (1);
+    }
 }
 
 void do_irq() {

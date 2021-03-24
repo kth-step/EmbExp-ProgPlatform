@@ -81,6 +81,6 @@ void enable_mmu(void);
 void disable_mmu(void);
 
 /* CPU */
-extern void __drop_el2(uint64_t adr, uint64_t data);
+extern void __drop_el2(void);
 
 #endif
