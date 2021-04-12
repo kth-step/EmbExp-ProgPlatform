@@ -7,8 +7,16 @@
   #ifndef __PROGPLAT_ARCH__ARM8
     #error "wrong architecture for selected board type"
   #endif
+#elif defined(__PROGPLAT_BOARD__RPI2)
+  #ifndef __PROGPLAT_ARCH__ARM7
+    #error "wrong architecture for selected board type"
+  #endif
 #elif defined __PROGPLAT_BOARD__LPC11C24
   #ifndef __PROGPLAT_ARCH__M0
+    #error "wrong architecture for selected board type"
+  #endif
+#elif defined __PROGPLAT_BOARD__ARTY_A7_100T__FE310
+  #ifndef __PROGPLAT_ARCH__RV32IMAC
     #error "wrong architecture for selected board type"
   #endif
 #else
@@ -35,6 +43,8 @@
 #elif defined __PROGPLAT_PARAMS__CACHE_MULTIW_SUBSET_PAGE_BOUNDARY
   #define RUN_CACHE
   #define RUN_CACHE_MULTIW_SUBSET_PAGE_BOUNDARY
+#elif defined __PROGPLAT_PARAMS__TIME
+  #define RUN_TIME
 #elif defined __PROGPLAT_PARAMS__NOTHING
 #else
   #error "no experiment parameters selected"
@@ -46,5 +56,22 @@
   #define NUM_MUL_RUNS 10
 #endif
 
-#endif // CONFIG_H
+#ifdef __PROGPLAT_MEM_DEF_1__
+  #define EXPMEM_1_DEFAULT_VALUE __PROGPLAT_MEM_DEF_1__
+#else
+  #define EXPMEM_1_DEFAULT_VALUE 0
+#endif
 
+#ifdef __PROGPLAT_MEM_DEF_2__
+  #define EXPMEM_2_DEFAULT_VALUE __PROGPLAT_MEM_DEF_2__
+#else
+  #define EXPMEM_2_DEFAULT_VALUE 0
+#endif
+
+#ifdef __PROGPLAT_MEM_DEF_TRAIN__
+  #define EXPMEM_TRAIN_DEFAULT_VALUE __PROGPLAT_MEM_DEF_TRAIN__
+#else
+  #define EXPMEM_TRAIN_DEFAULT_VALUE 0
+#endif
+
+#endif // CONFIG_H
