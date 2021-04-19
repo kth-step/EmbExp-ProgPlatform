@@ -115,6 +115,39 @@ void get_cache_line(cache_line *line, uint64_t set, uint64_t way) {
 }
 
 
+uint64_t get_secure_config_register() {
+  uint64_t volatile value;
+  asm (
+       "MRS %x[result], SCR_EL3"
+       : [result] "=r" (value)
+       : 
+       );
+  return value;
+}
+
+secure_config_register parse_secure_config_register(uint64_t conf) {
+  secure_config_register res;
+  res.SIF = (conf >> 9) & 0b1;
+  return res;
+}
+
+uint64_t set_secure_config_register(uint64_t conf, secure_config_register new_conf) {
+  uint64_t mask = ~((0b1<<9));
+  //printf("mask %b \n", mask);
+  conf &= mask;
+  conf |= (((uint64_t)new_conf.SIF) & 0b1) << 9;
+  printf("new_conf %b \n", conf);
+  
+  uint64_t volatile value = conf;
+  asm (
+       "MSR SCR_EL3, %x[input_i]"
+       :
+       : [input_i] "r" (value)
+       );
+  return conf;
+}
+
+
 uint64_t get_prefetching_conf() {
   uint64_t volatile value;
   asm (
