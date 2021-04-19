@@ -35,6 +35,13 @@ uint64_t get_prefetching_conf();
 prefetch_conf parse_prefetch_conf(uint64_t conf);
 uint64_t set_prefetching_conf(uint64_t conf, prefetch_conf new_conf);
 
+typedef struct secure_config_register_ {
+  _Bool SIF;
+} secure_config_register;
+uint64_t get_secure_config_register();
+secure_config_register parse_secure_config_register(uint64_t conf);
+uint64_t set_secure_config_register(uint64_t conf, secure_config_register new_conf);
+
 
 void flush_d_cache(uint64_t level);
 void get_cache_line(cache_line *line, uint64_t set, uint64_t way);
