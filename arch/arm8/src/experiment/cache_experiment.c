@@ -386,25 +386,38 @@ void access_sequence()
 void test_prefetching(void) {
   uint64_t value = get_prefetching_conf();
   prefetch_conf conf = parse_prefetch_conf(value);
-  printf("Conf for prefetching 1 %x\n", value);
-  printf("NPFSTRM %d\n", conf.NPFSTRM);
-  printf("STRIDE %d\n", conf.STRIDE);
-  printf("L1PCTL %d\n", conf.L1PCTL);
+  //printf("Conf for prefetching 1 %x\n", value);
+  //printf("NPFSTRM %d\n", conf.NPFSTRM);
+  //printf("STRIDE %d\n", conf.STRIDE);
+  //printf("L1PCTL %d\n", conf.L1PCTL);
+
+  conf.NPFSTRM = 1;
+  conf.STRIDE = 0;
+  conf.L1PCTL = 0;
+  value = set_prefetching_conf(value, conf);
+  //printf("New value is %x\n", value);
+
+  value = get_prefetching_conf();
+  conf = parse_prefetch_conf(value);
+  //printf("Conf for prefetching 2 %x\n", value);
+  //printf("NPFSTRM %d\n", conf.NPFSTRM);
+  //printf("STRIDE %d\n", conf.STRIDE);
+  //printf("L1PCTL %d\n", conf.L1PCTL);
 
   conf.NPFSTRM = 1;
   conf.STRIDE = 0;
   conf.L1PCTL = 5;
   value = set_prefetching_conf(value, conf);
-  printf("New value is %x\n", value);
+  //printf("New value is %x\n", value);
 
   value = get_prefetching_conf();
   conf = parse_prefetch_conf(value);
-  printf("Conf for prefetching 2 %x\n", value);
-  printf("NPFSTRM %d\n", conf.NPFSTRM);
-  printf("STRIDE %d\n", conf.STRIDE);
-  printf("L1PCTL %d\n", conf.L1PCTL);
+  //printf("Conf for prefetching 2 %x\n", value);
+  //printf("NPFSTRM %d\n", conf.NPFSTRM);
+  //printf("STRIDE %d\n", conf.STRIDE);
+  //printf("L1PCTL %d\n", conf.L1PCTL);
 
-
+/*
   uint64_t a1 = 0;
   uint64_t iset = 0;
   flush_d_cache(0);
@@ -422,7 +435,7 @@ void test_prefetching(void) {
   uint64_t tag = TAG_OF_ADDR(xP);
   uint64_t set = SET(xP);
   
-  volatile uint64_t x = *(xP);
+  volatile uint64_t x = *(xP);*/
   /* cause a prefetching of three lines */
   /* x += *((uint64_t*)(TAG_SET_TO_ADDR(tag, set+1))); */
   /* x += *((uint64_t*)(TAG_SET_TO_ADDR(tag, set+2))); */
@@ -470,7 +483,7 @@ void test_prefetching(void) {
   /* x += *((uint64_t*)(TAG_SET_TO_ADDR(tag, set+4))); */
 
   /* Does not prefetch the second sequence */
-  x += *((uint64_t*)(TAG_SET_TO_ADDR(tag, set+1)));
+/*  x += *((uint64_t*)(TAG_SET_TO_ADDR(tag, set+1)));
   x += *((uint64_t*)(TAG_SET_TO_ADDR(tag, set+2)));
   x += *((uint64_t*)(TAG_SET_TO_ADDR(tag, set+3)));
   for (iset=0; iset<1000000; iset++) {
@@ -492,7 +505,7 @@ void test_prefetching(void) {
   for (iset=0; iset<50; iset++) {
     printf("%d > ", iset);
     debug_set_info(cache1[SET(CACHEABLE(memory[a1])) + iset]);
-  }
+  }*/
 }
 
 #ifdef SINGLE_EXPERIMENTS
