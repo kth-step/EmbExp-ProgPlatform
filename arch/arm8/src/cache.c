@@ -174,9 +174,9 @@ uint64_t set_prefetching_conf(uint64_t conf, prefetch_conf new_conf) {
   conf |= (((uint64_t)new_conf.NPFSTRM) & 0b11) << 19;
   conf |= (((uint64_t)new_conf.STRIDE) & 0b1) << 17;
   uint64_t new_L1PCTL = (((uint64_t)new_conf.L1PCTL) & 0b111) << 13;
-  printf("new_L1PCTL %b \n", new_L1PCTL);
+  ////printf("new_L1PCTL %b \n", new_L1PCTL);
   conf = conf | new_L1PCTL;
-  printf("new_conf %b \n", conf);
+  ////printf("new_conf %b \n", conf);
   
   uint64_t volatile value = conf;
   asm (
