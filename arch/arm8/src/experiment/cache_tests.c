@@ -59,6 +59,7 @@ void run_cache_experiment() {
   uint16_t diff = 0;
   // setup and enable mmu
   basic_mmu();
+  test_prefetching();
 
   // prime TLB
   volatile uint64_t v __UNUSED = 0;
@@ -66,10 +67,8 @@ void run_cache_experiment() {
 
 #ifdef RUN_2EXPS
   // run 2 cache experiments
-  test_prefetching();
   diff += cache_run_mult_compare(1, cache1, NUM_MUL_RUNS, PRINT_CACHE_STATES);
   //  print_cache_valid(cache1);
-  test_prefetching();
   diff += cache_run_mult_compare(2, cache2, NUM_MUL_RUNS, PRINT_CACHE_STATES);
   //  print_cache_valid(cache2);
   //debug_set(cache1[0], 0);

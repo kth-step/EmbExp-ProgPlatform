@@ -393,20 +393,7 @@ void test_prefetching(void) {
 
   conf.NPFSTRM = 1;
   conf.STRIDE = 0;
-  conf.L1PCTL = 0;
-  value = set_prefetching_conf(value, conf);
-  //printf("New value is %x\n", value);
-
-  value = get_prefetching_conf();
-  conf = parse_prefetch_conf(value);
-  //printf("Conf for prefetching 2 %x\n", value);
-  //printf("NPFSTRM %d\n", conf.NPFSTRM);
-  //printf("STRIDE %d\n", conf.STRIDE);
-  //printf("L1PCTL %d\n", conf.L1PCTL);
-
-  conf.NPFSTRM = 1;
-  conf.STRIDE = 0;
-  conf.L1PCTL = 5;
+  conf.L1PCTL = 4;
   value = set_prefetching_conf(value, conf);
   //printf("New value is %x\n", value);
 
