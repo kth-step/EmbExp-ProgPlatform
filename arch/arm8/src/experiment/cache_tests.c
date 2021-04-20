@@ -67,13 +67,9 @@ void run_cache_experiment() {
 #ifdef RUN_2EXPS
   // run 2 cache experiments
   test_prefetching();
-  reset_cache_experiment();
-  basic_mmu();
   diff += cache_run_mult_compare(1, cache1, NUM_MUL_RUNS, PRINT_CACHE_STATES);
   //  print_cache_valid(cache1);
   test_prefetching();
-  reset_cache_experiment();
-  basic_mmu();
   diff += cache_run_mult_compare(2, cache2, NUM_MUL_RUNS, PRINT_CACHE_STATES);
   //  print_cache_valid(cache2);
   //debug_set(cache1[0], 0);
