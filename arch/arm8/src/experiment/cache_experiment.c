@@ -393,7 +393,7 @@ void test_prefetching(void) {
 
   conf.NPFSTRM = 1;
   conf.STRIDE = 0;
-  conf.L1PCTL = 4;
+  conf.L1PCTL = 5;
   value = set_prefetching_conf(value, conf);
   //printf("New value is %x\n", value);
 
