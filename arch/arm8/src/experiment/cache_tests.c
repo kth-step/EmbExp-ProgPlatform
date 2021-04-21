@@ -59,7 +59,6 @@ void run_cache_experiment() {
   uint16_t diff = 0;
   // setup and enable mmu
   basic_mmu();
-  test_prefetching();
 
   // prime TLB
   volatile uint64_t v __UNUSED = 0;
