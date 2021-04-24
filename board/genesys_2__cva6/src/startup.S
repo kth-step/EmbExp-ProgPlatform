@@ -15,5 +15,3 @@ _embexp_entry:
   csrr a0, mhartid
   li s1, DRAM_BASE
   jr s1
-
-

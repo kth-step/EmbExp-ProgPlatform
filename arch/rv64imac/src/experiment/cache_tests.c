@@ -1,174 +1,45 @@
 #include "config.h"
-
 #ifdef RUN_CACHE
-
 #include "lib/printf.h"
-//#include "mmu.h"
 #include "cache.h"
 #include <stdint.h>
 
-
-
 //#include "experiment/exp_cache_runner.h"
-
 
 #define __UNUSED __attribute__((unused))
 #define __ALIGN(x) __attribute__ ((aligned (x)))
 #define PAGE_SIZE (4096)
-/* page table memory */
-//uint64_t page_table_l1[4] __ALIGN(PAGE_SIZE);
+// Need to tinker this dependingon start area. +0x20000000 assumes for 0x80000000.
+#define CACHEABLE(x) ((void *)(((uint64_t)(&x)) + 0x20000000))
+#define ALIAS(x)     ((void *)(((uint64_t)(&x)) + 0x00000000))
 
-// Move to util later
-// uint64_t get_cycles(){
-//   uint64_t cycles;
-//   asm volatile("csrr %0, mcycle" : "=r"(cycles));
-//   return cycles;
-// }
-
-
-//End move to util
-
+// Changed for RISC-V, Ariane.
+// Only for RUN_1EXPS at the moment.
 
 void reset_cache_experiment() {
   printf("Performing: Reseting cache\n");
+  flush_cache(); // resets cache, replacement, and more..
 }
-
-static void basic_mmu() {
-  printf("Performing: basic mmu\n");
-}
-
-#define CACHEABLE(x) ((void *)(((uint64_t)(&x)) + 0x80000000))
-#define ALIAS(x)     ((void *)(((uint64_t)(&x)) + 0x40000000))
 
 // allocated data for cache state data structures
 #ifdef RUN_2EXPS
-static cache_state cache1;
-static cache_state cache2;
+static cache_sets cache1;
+static cache_sets cache2;
 #elif defined RUN_1EXPS
-//static cache_state cache;
+static cache_sets cache;
 #else
   #error "no experiment type selected"
 #endif
-
-unsigned int array1_size = 16;
-	uint8_t unused1[64];
-	uint8_t array1[160] = {
-	1,
-	2,
-	3,
-	4,
-	5,
-	6,
-	7,
-	8,
-	9,
-	10,
-	11,
-	12,
-	13,
-	14,
-	15,
-	16
-	};
-	uint8_t unused2[64];
-  uint8_t array2[128*100];
 
 
 #ifndef SINGLE_EXPERIMENTS
 void run_cache_experiment() {
   printf("Performing: run cache experiment\n");
-  //uint16_t diff = 0;
-  int diff = 0;
-// setup and enable mmu
-  basic_mmu();
 
-  // prime TLB
-  //volatile uint64_t v __UNUSED = 0;
-  //v = *((uint64_t *)(0x80000000));
+  uint16_t diff = 0;
 
-  uint64_t cycles;
-  int tmpr;
-  int tmp1;
-  //asm volatile("rdcycle %0" : "=r"(cycles));
-  //cycles = get_cycles();
-
-  //probe_cache3(array2, 256, 512);
-
-  //evict_cache();
-
-  //cache_size_test();
-
-  volatile uint8_t * addr = & array2[50 * 128];
-  tmpr = * addr;
-  probe_cache3(array2, 100, 128);
-  tmp1 = tmpr;
-  //probe_cache3(array2, 100, 128);
-  // probe_cache3_misses(array2, 100, 128);
-
-  // cycles = get_cycles();
-  //
-  // volatile uint8_t * addr = & array2[1 * 512];
-  //
-  // int integerarray[100];
-  // int tmpr;
-  // uint64_t cycle0 = get_cycles();
-  // tmpr = * addr;
-  // //tmpr = &integerarray[0];
-  // uint64_t cycle1 = get_cycles();
-  // uint64_t cycle_used = cycle1 - cycle0;
-  // printf("Cycles (0th): %d\n", cycle_used);
-  //
-  // addr = & array2[1 * 512];
-  // cycle0 = get_cycles();
-  // tmpr = * addr;
-  // cycle1 = get_cycles();
-  // cycle_used = cycle1 - cycle0;
-  // printf("Cycles (0th): %d\n", cycle_used);
-  //
-  // addr = & array2[70 * 512];
-  // cycle0 = get_cycles();
-  // tmpr = * addr;
-  // cycle1 = get_cycles();
-  // cycle_used = cycle1 - cycle0;
-  // printf("Cycles (70'th): %d\n", cycle_used);
-  //
-  //
-  // evict_cache();
-  //
-  // addr = & array2[1 * 512];
-  // cycle0 = get_cycles();
-  // tmpr = * addr;
-  // cycle1 = get_cycles();
-  // cycle_used = cycle1 - cycle0;
-  // printf("Cycles (0''th, after evict): %d\n", cycle_used);
-  //
-  // printf("Before first probe.\n");
-  // probe_cache2();
-  // printf("End first probe.\n");
-  // addr = & array2[50 * 512];
-  // cycle0 = get_cycles();
-  // tmpr = * addr;
-  // cycle1 = get_cycles();
-  // cycle_used = cycle1 - cycle0;
-  // printf("Cycles for 50*512: %d\n", cycle_used);
-  // printf("Before second probe.\n");
-  // probe_cache2();
-  // printf("After second probe.\n");
-  // addr = & array2[50 * 512];
-  // cycle0 = get_cycles();
-  // tmpr = * addr;
-  // cycle1 = get_cycles();
-  // cycle_used = cycle1 - cycle0;
-  // printf("Cycles for 50*512: %d\n", cycle_used);
-  // addr = & array2[50 * 512];
-  // cycle0 = get_cycles();
-  // tmpr = * addr;
-  // cycle1 = get_cycles();
-  // cycle_used = cycle1 - cycle0;
-  // printf("Cycles for 50*512: %d\n", cycle_used);
-  //
-  //
-  // probe_cache3(array2);
+  // used to test the test cases
+  cache_exp_all();
 
 
 #ifdef RUN_2EXPS
@@ -211,7 +82,7 @@ void run_cache_experiment() {
 #elif defined RUN_1EXPS
   printf("Performing: before comparing caches\n");
   //diff += cache_run_mult_compare(1, cache, NUM_MUL_RUNS);
-  //print_cache_valid(cache);
+  //print_cache_sets(&cache);
   if (diff != 0)
     printf("INCONCLUSIVE: %d\n", diff);
 #else
