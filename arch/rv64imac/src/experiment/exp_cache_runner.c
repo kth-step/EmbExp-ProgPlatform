@@ -108,33 +108,25 @@ void _cache_run(cache_state *cache_, func_type _clean_mem_run, func_type _scamv_
   for(int i = 0; i < 0; i++){ // TODO: adjust to train more
     // prepare
     _clean_mem_train();
-    asm volatile("fence iorw, iorw;\n");
 
     // TODO: remove flush if not testing. // make function which does not flush the brain predictor
     //flush_cache();
-    //asm volatile("fence iorw, iorw;\n");
 
     // training here
     _scamv_train__();
-    asm volatile("fence iorw, iorw;\n");
   }
   #endif
 
   // prepare and prime
   _clean_mem_run();
-  asm volatile("fence iorw, iorw;\n");
   flush_cache(); // remove flush if not testing. (but we need to flush here?! this is the actual experiment!)
-  asm volatile("fence iorw, iorw;\n");
   cache_func_prime();
-  asm volatile("fence iorw, iorw;\n");
 
   // actual experiment here
   _scamv_run__();
-  asm volatile("fence iorw, iorw;\n");
 
   // probe
-  cache_func_probe_save(cache_);
-  asm volatile("fence iorw, iorw;\n");
+  cache_func_probe(cache_);
 }
 
 #endif

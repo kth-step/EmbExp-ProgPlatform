@@ -57,15 +57,18 @@ void flush_cache() {
 }
 
 void cache_func_prime() {
+  asm volatile("fence iorw, iorw");
   for (int way = 0; way < WAYS; way++) {
     for (int set = 0; set < SETS; set++) {
       if (set >= 0)
         prime_set_way(set, way);
     }
   }
+  asm volatile("fence iorw, iorw");
 }
 
-void cache_func_probe_save(cache_state* cache_state) {
+void cache_func_probe(cache_state* cache_state) {
+  asm volatile("fence iorw, iorw");
   for (int way = 0; way < WAYS; way++) {
     for (int set = 0; set < SETS; set++) {
       if (set >= 0)
@@ -74,17 +77,7 @@ void cache_func_probe_save(cache_state* cache_state) {
         cache_state->evicted[set][way] = 0;
     }
   }
-}
-
-void cache_func_probe_print() {
-  for (int way = 0; way < WAYS; way++) {
-    for (int set = 0; set < SETS; set++) {
-      uint8_t miss = probe_set_way_miss(set, way);
-      if (miss) {
-        printf("Miss for (%d, %d).\n", set, way);
-      }
-    }
-  }
+  asm volatile("fence iorw, iorw");
 }
 
 uint8_t compare_cache(cache_state* c1, cache_state* c2) {

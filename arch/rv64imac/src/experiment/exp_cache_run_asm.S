@@ -60,23 +60,23 @@ _scamv_train:
 #endif // EXP_HAS_INPUT_TRAIN
 
 _scamv_run1:
-la t0, _scamv_ret_store
-sd ra, 0(t0)
-mv t0, zero
-mv ra, zero
+	la t0, _scamv_ret_store
+	sd ra, 0(t0)
+	mv t0, zero
+	mv ra, zero
 .include "experiment/asm_setup_1.h"
-fence iorw, iorw
-j scamv_entry
+	fence iorw, iorw
+	j scamv_entry
 
 #ifdef EXP_HAS_INPUT_2
 _scamv_run2:
-la t0, _scamv_ret_store
-sd ra, 0(t0)
-mv t0, zero
-mv ra, zero
+	la t0, _scamv_ret_store
+	sd ra, 0(t0)
+	mv t0, zero
+	mv ra, zero
 .include "experiment/asm_setup_2.h"
-fence iorw, iorw
-j scamv_entry
+	fence iorw, iorw
+	j scamv_entry
 #endif // EXP_HAS_INPUT_2
 
 scamv_exit:
