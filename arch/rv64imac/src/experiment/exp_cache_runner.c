@@ -99,9 +99,33 @@ uint8_t cache_run_mult_compare(uint8_t _input_id, cache_sets* cache_, uint8_t n)
 #define as_c_function
 #ifdef as_c_function
 typedef void (*clean_func_type)();
+#if __has_include("experiment/asm_setup_train.h")
+#  define EXP_HAS_INPUT_TRAIN
+#endif
 
 void _cache_run(cache_sets *cache_, clean_func_type _clean_mem_run, clean_func_type _scamv_run__, clean_func_type _clean_mem_train, clean_func_type _scamv_train__){
   //printf("experiment: cache_exp_primeandprobe_two_executions\n");
+  #ifdef EXP_HAS_INPUT_TRAIN
+  for(int i = 0; i < 20; i++){ // adjust to train more
+    // prepare
+    _clean_mem_train();
+    asm volatile("fence iorw, iorw;\n");
+    //flush_cache(); // remove flush if not testing. // make function which does not flush the brain predictor
+    //asm volatile("fence iorw, iorw;\n");
+    // end prepare
+
+    // experiment here
+
+
+    _scamv_train__();
+
+
+    asm volatile("fence iorw, iorw;\n");
+    // experiment end
+
+  }
+
+  #endif
 
   // prepare
   _clean_mem_run();
@@ -113,7 +137,7 @@ void _cache_run(cache_sets *cache_, clean_func_type _clean_mem_run, clean_func_t
   // end prepare
 
   // experiment here
-  
+
 
   _scamv_run__();
 
