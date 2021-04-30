@@ -18,31 +18,27 @@
 
 void reset_cache_experiment() {
   // Only runs when the board is starting.
-  printf("Performing: Reseting cache\n");
-  flush_cache(); // resets cache, replacement, and more..
-
 }
 
 // allocated data for cache state data structures
 #ifdef RUN_2EXPS
-static cache_sets cache1;
-static cache_sets cache2;
+static cache_state cache1;
+static cache_state cache2;
 #elif defined RUN_1EXPS
-static cache_sets cache;
+static cache_state cache;
 #else
   #error "no experiment type selected"
 #endif
 
+extern volatile uint8_t _experiment_memory;
+extern volatile uint8_t _probing_memory;
 
 #ifndef SINGLE_EXPERIMENTS
 void run_cache_experiment() {
-  printf("Performing: run cache experiment\n");
-
   uint16_t diff = 0;
 
-  // used to test the test cases
-  // cache_exp_all();
-
+  validate_cache_aligned_memory("_experiment_memory", (uint64_t)&_experiment_memory);
+  validate_cache_aligned_memory("_probing_memory", (uint64_t)&_probing_memory);
 
 #ifdef RUN_2EXPS
   // run 2 cache experiments
@@ -82,9 +78,8 @@ void run_cache_experiment() {
     printf("INCONCLUSIVE: %d\n", diff);
   }
 #elif defined RUN_1EXPS
-  printf("Performing: before comparing caches\n");
   diff += cache_run_mult_compare(1, &cache, NUM_MUL_RUNS);
-  print_cache_sets(&cache); // works
+  print_cache_state(&cache); // works
   if (diff != 0)
     printf("INCONCLUSIVE: %d\n", diff);
 #else

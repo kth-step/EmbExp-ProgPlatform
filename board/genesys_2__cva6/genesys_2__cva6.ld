@@ -4,9 +4,12 @@ SECTIONS
 {
     ROM_BASE = 0x80000000; /* DRAM_BASE */
 
+    __cacheable_memory_start = 0xa0000000;
+    __CACHE_SIZE = 0x8000; /* 32 * 1024 bytes */
+
     /*__experiment_code_loc   =   0x2000;*/
-  	__experiment_memory_loc = 0xa0000000;
-  	__experiment_memory_len =  0x40000;/* 32 * 1024 * 8 bytes */
+    __experiment_memory_loc = 0xa0000000;
+    __experiment_memory_len = __CACHE_SIZE * 8;
 
     . = ROM_BASE;
 
@@ -44,10 +47,19 @@ SECTIONS
     }
 
 
+    /* cacheable memory starts */
+    . = __cacheable_memory_start;
 
     .experiment_memory __experiment_memory_loc :
     {
       _experiment_memory = . ;
-      . += __experiment_memory_len ;/* 32 * 1024 * 8 bytes */
+      . += __experiment_memory_len;
+    }
+
+    .probing_memory :
+    {
+      . = ALIGN(__CACHE_SIZE);
+      _probing_memory = . ;
+      . += __CACHE_SIZE;
     }
 }
