@@ -117,8 +117,9 @@ void _cache_run(cache_sets *cache_, clean_func_type _clean_mem_run, clean_func_t
   // volatile uint64_t xNew = 0;
   // xNew = 0x1337;
   // access a cacheable value
-  volatile uint64_t * xPNew = _experiment_memory + 0;
-  uint64_t tmp = *xPNew;
+  //volatile uint64_t * xPNew = _experiment_memory + 0;
+  // uint64_t tmp = *xPNew;
+  asm volatile("la t0, _experiment_memory\nld t1, 0(t0)\n");
 
   asm volatile("fence iorw, iorw;\n");
   // experiment end
@@ -127,7 +128,7 @@ void _cache_run(cache_sets *cache_, clean_func_type _clean_mem_run, clean_func_t
 
   asm volatile("fence iorw, iorw;\n");
 
-  check_address_is_in_cache((uint64_t)(xPNew));
+  //check_address_is_in_cache((uint64_t)(xPNew));
 
 }
 
