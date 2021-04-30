@@ -43,9 +43,4 @@ uint64_t get_number_mispredictions();
 void print_perf();
 
 
-// basic experiment
-// ------------------------------
-uint8_t check_address_is_in_cache(uint64_t x);
-
-
 #endif

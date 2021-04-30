@@ -5,6 +5,156 @@
 // The results of the test cases ( cache_exp_all() ), can be found in the appendix of the thesis.
 
 
+#include <stdint.h>
+
+#include "cache.h"
+#include "lib/printf.h"
+
+uint8_t probe_set_way_miss(int set, int way);
+
+// basic experiments
+// ------------------------------------------------------------------------
+void check_cacheability_print(uint8_t flushfirst, uint64_t addr) {
+  uint64_t dcache_misses0 = 0;
+  uint64_t cycles0 = 0;
+
+  if (flushfirst) {
+    asm volatile(
+     //".word 0x1111100b;\n" //fence.t
+     "fence iorw, iorw\n"
+     ".word 0x1111100b\n"
+     "fence iorw, iorw\n");
+  }
+
+  asm volatile(
+     //".word 0x1111100b;\n" //fence.t
+     "fence iorw, iorw\n"
+     "csrr t1, 0xb04;\n"
+     "csrr t2, 0xb00;\n"
+     "lb t0, 0(%2);\n"
+     "csrr t3, 0xb00;\n"
+     "csrr t4, 0xb04;\n"
+     "sub %0, t4, t1;\n"
+     "sub %1, t3, t2;\n"
+     "fence iorw, iorw;\n"
+     : "=r"(dcache_misses0), "=r"(cycles0)
+     : "r"(addr)
+     :
+   );
+   printf("[Exp time: l1dc miss: %d, cycles: %d. Address: 0x%x] \n", dcache_misses0, cycles0, addr);
+}
+
+uint8_t load8now(uint64_t addr) {
+  uint8_t v;
+  asm volatile(
+     "lb %0, 0(%1)"
+     : "=r"(v)
+     : "r"(addr)
+     :
+   );
+  return v;
+}
+
+uint8_t load8now2(uint64_t addr) {
+  uint8_t volatile * p = (uint8_t volatile *) addr;
+  uint8_t v = *p;
+  return v;
+}
+
+uint8_t load8now3(uint64_t addr) {
+  volatile uint8_t * p = (uint8_t *) addr;
+  *p;
+  return 0;
+}
+
+uint8_t check_address_is_in_cache(uint64_t x){
+  uint64_t dcache_misses0 = 0;
+  uint64_t cycles0 = 0;
+
+  flush_cache();
+
+
+  uint64_t addr1_0 = 0x90000000;
+  uint64_t addr2_0 = 0xA0000000;
+
+
+  printf("\n\n\n");
+
+  printf("\nprime:\n");
+  for (int i = 0; i < 8; i++) {
+    //uint64_t addr = addr2_0 + (i * SETS * LINE_LEN);
+    //volatile uint8_t * p = (uint8_t *) addr;
+    // *p;
+    //load8now3(addr);
+    //printf("0x%x\n", addr);
+    //prime_set_way(0, i);
+    printf("%d\n", probe_set_way_miss(0, i));
+    //check_cacheability_print(0, addr);
+  }
+
+  printf("\nvictim:\n");
+  check_cacheability_print(0, addr1_0);
+  check_cacheability_print(0, addr2_0);
+  check_cacheability_print(0, addr1_0);
+  check_cacheability_print(0, addr1_0);
+
+  printf("\nprobe:\n");
+  for (int i = 0; i < 8; i++) {
+    printf("%d\n", probe_set_way_miss(0, i));
+    //check_cacheability_print(0, addr2_0 + (i * SETS * LINE_LEN));
+  }
+
+
+  printf("\n\n\n");
+
+/*
+  printf("\n\n\n");
+
+  volatile uint8_t* _experiment_memory = (uint8_t*)0xA0000000;
+
+#define addr_of_way(way) (way * SETS * LINE_LEN)
+
+  for (int way = 0; way < 1; way++) {
+    uint64_t addr = addr_of_way(way%1);
+    printf("addr = 0x%x (0x%x)\n", addr, _experiment_memory+addr);
+    volatile uint8_t* pxyz = _experiment_memory+addr;
+    *pxyz;
+    // *(_experiment_memory + addr) = 1;
+  }
+  x = (uint64_t) _experiment_memory;
+
+  check_cacheability_print(0, x);
+  printf("\n\n\n");
+*/
+  asm volatile(
+     //".word 0x1111100b;\n" //fence.t
+     "fence iorw, iorw;\n"
+     "csrr t1, 0xb04;\n"
+     "csrr t2, 0xb00;\n"
+     "fence iorw, iorw;\n"
+     "lw t0, 0(%2);\n"
+     "fence iorw, iorw;\n"
+     "csrr t3, 0xb00;\n"
+     "csrr t4, 0xb04;\n"
+     "sub %0, t4, t1;\n"
+     "sub %1, t3, t2;\n"
+     "fence iorw, iorw;\n"
+     : "=r"(dcache_misses0), "=r"(cycles0)
+     : "r"(x)
+     :
+   );
+
+   printf("[Exp time: l1dc miss: %d, cycles: %d. Address: 0x%x] \n", dcache_misses0, cycles0, x);
+  printf("\n\n\n");
+   if(dcache_misses0){ // 1 == true
+     return 0; // if miss, it is in not in cache
+   }else{
+     return 1; // if hit, it was in the cache
+   }
+}
+
+
+
 // experiment definitions
 // ------------------------------------------------------------------------
 /*
