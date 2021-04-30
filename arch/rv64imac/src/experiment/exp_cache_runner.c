@@ -119,7 +119,7 @@ void _cache_run(cache_state *cache_, clean_func_type _clean_mem_run, clean_func_
     // experiment here
 
 
-    //_scamv_train__();
+    _scamv_train__();
 
 
     asm volatile("fence iorw, iorw;\n");
@@ -152,9 +152,7 @@ void _cache_run(cache_state *cache_, clean_func_type _clean_mem_run, clean_func_
 
   asm volatile("fence iorw, iorw;\n");
 
-  check_address_is_in_cache((uint64_t)(_experiment_memory));
-
-  printf("exp memory is @0x%x\n", _experiment_memory);
+  //check_address_is_in_cache((uint64_t)(_experiment_memory));
 
 }
 

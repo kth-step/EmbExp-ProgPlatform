@@ -30,6 +30,7 @@ uint8_t compare_cache(cache_state* c1, cache_state* c2);
 
 void cache_func_probe_print();
 void print_cache_state(cache_state* c);
+void validate_cache_aligned_memory(char* name, uint64_t addr);
 
 
 // utility cache functions (fence and performance counters)
