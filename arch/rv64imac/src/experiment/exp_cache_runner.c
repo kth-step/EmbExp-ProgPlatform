@@ -142,7 +142,7 @@ void _cache_run(cache_state *cache_, clean_func_type _clean_mem_run, clean_func_
   // experiment here
 
 
-  //_scamv_run__();
+  _scamv_run__();
 
 
   asm volatile("fence iorw, iorw;\n");

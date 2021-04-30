@@ -5,7 +5,7 @@
 // reserved memory used for prime and probe
 // ------------------------------------------------------------------------
 #define __ALIGN(x) __attribute__ ((aligned (x)))
-extern uint8_t _probing_memory[CACHE_SIZE];
+extern volatile uint8_t _probing_memory[CACHE_SIZE];
 // stipulated access mapping of _probing_memory (i.e., each way is mapped out in subsequent (SETS * LINE_LEN) blocks)
 #define CACHEABLE(x) ((void *)(((uint64_t)(&x)) + 0x18000000))
 #define CACHEABLE_ADDR(x) ((void *)(((uint64_t)(x)) + 0x18000000))
@@ -40,7 +40,9 @@ uint8_t probe_set_way_miss(int set, int way) {
   //printf("probing (%d, %d) @0x%x\n", set, way, addr);
   *addr; // read
 
-  dcache_misses0 = dcache_misses0 - get_number_dcache_read_misses();
+  dcache_misses0 = get_number_dcache_read_misses() - dcache_misses0;
+
+  //printf("probing (%d, %d) @0x%x  ==>> %d\n", set, way, addr, dcache_misses0);
 
   // evaluation if it was a miss (then it is in not in cache)
   return dcache_misses0 > 0;
@@ -60,8 +62,8 @@ void flush_cache() {
 void cache_func_prime() {
   for (int way = 0; way < WAYS; way++) {
     for (int set = 0; set < SETS; set++) {
-      if (set == 0)
-      prime_set_way(set, way);
+      if (set >= 0)
+        prime_set_way(set, way);
     }
   }
 }
@@ -69,7 +71,7 @@ void cache_func_prime() {
 void cache_func_probe_save(cache_state* cache_state) {
   for (int way = 0; way < WAYS; way++) {
     for (int set = 0; set < SETS; set++) {
-      if (set == 0)
+      if (set >= 0)
         cache_state->evicted[set][way] = probe_set_way_miss(set, way);
       else
         cache_state->evicted[set][way] = 0;
@@ -170,7 +172,8 @@ uint8_t check_address_is_in_cache(uint64_t x){
   uint64_t dcache_misses0 = 0;
   uint64_t cycles0 = 0;
 
-  //flush_cache();
+  flush_cache();
+
 
   uint64_t addr1_0 = 0x90000000;
   uint64_t addr2_0 = 0xA0000000;
@@ -178,38 +181,52 @@ uint8_t check_address_is_in_cache(uint64_t x){
 
   printf("\n\n\n");
 
-  check_cacheability_print(1, addr1_0);
-  check_cacheability_print(1, addr2_0);
-
-  printf("\nfill:\n");
-  for (int i = 0; i < 9; i++) {
-    uint64_t addr = addr2_0 + (i * SETS * LINE_LEN);
-    volatile uint8_t * p = (uint8_t *) addr;
-    *p;
+  printf("\nprime:\n");
+  for (int i = 0; i < 8; i++) {
+    //uint64_t addr = addr2_0 + (i * SETS * LINE_LEN);
+    //volatile uint8_t * p = (uint8_t *) addr;
+    // *p;
     //load8now3(addr);
-    printf("0x%x\n", addr);
+    //printf("0x%x\n", addr);
+    //prime_set_way(0, i);
+    printf("%d\n", probe_set_way_miss(0, i));
     //check_cacheability_print(0, addr);
   }
 
-  printf("\nreload:\n");
+  printf("\nvictim:\n");
+  check_cacheability_print(0, addr1_0);
+  check_cacheability_print(0, addr2_0);
+  check_cacheability_print(0, addr1_0);
+  check_cacheability_print(0, addr1_0);
+
+  printf("\nprobe:\n");
   for (int i = 0; i < 8; i++) {
-    check_cacheability_print(0, addr2_0 + (i * SETS * LINE_LEN));
+    printf("%d\n", probe_set_way_miss(0, i));
+    //check_cacheability_print(0, addr2_0 + (i * SETS * LINE_LEN));
   }
 
 
+  printf("\n\n\n");
+
+/*
   printf("\n\n\n");
 
   volatile uint8_t* _experiment_memory = (uint8_t*)0xA0000000;
 
 #define addr_of_way(way) (way * SETS * LINE_LEN)
 
-  for (int way = 0; way < 10; way++) {
+  for (int way = 0; way < 1; way++) {
     uint64_t addr = addr_of_way(way%1);
     printf("addr = 0x%x (0x%x)\n", addr, _experiment_memory+addr);
-    _experiment_memory[addr] = 1;
+    volatile uint8_t* pxyz = _experiment_memory+addr;
+    *pxyz;
+    // *(_experiment_memory + addr) = 1;
   }
   x = (uint64_t) _experiment_memory;
 
+  check_cacheability_print(0, x);
+  printf("\n\n\n");
+*/
   asm volatile(
      //".word 0x1111100b;\n" //fence.t
      "fence iorw, iorw;\n"
@@ -228,7 +245,8 @@ uint8_t check_address_is_in_cache(uint64_t x){
      :
    );
 
-   printf("[Exp time: l1dc miss: %d, cycles: %d. Address: %x] \n", dcache_misses0, cycles0, x);
+   printf("[Exp time: l1dc miss: %d, cycles: %d. Address: 0x%x] \n", dcache_misses0, cycles0, x);
+  printf("\n\n\n");
    if(dcache_misses0){ // 1 == true
      return 0; // if miss, it is in not in cache
    }else{
