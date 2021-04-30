@@ -98,62 +98,43 @@ uint8_t cache_run_mult_compare(uint8_t _input_id, cache_state* cache_, uint8_t n
 }
 #define as_c_function
 #ifdef as_c_function
-typedef void (*clean_func_type)();
-#if __has_include("experiment/asm_setup_train.h")
-#  define EXP_HAS_INPUT_TRAIN
-#endif
+typedef void (*func_type)();
 
 #include "lib/printf.h"
 
-void _cache_run(cache_state *cache_, clean_func_type _clean_mem_run, clean_func_type _scamv_run__, clean_func_type _clean_mem_train, clean_func_type _scamv_train__){
-
+void _cache_run(cache_state *cache_, func_type _clean_mem_run, func_type _scamv_run__, func_type _clean_mem_train, func_type _scamv_train__){
+  // training loop
   #ifdef EXP_HAS_INPUT_TRAIN
-  for(int i = 0; i < 0; i++){ // adjust to train more
+  for(int i = 0; i < 0; i++){ // TODO: adjust to train more
     // prepare
     _clean_mem_train();
     asm volatile("fence iorw, iorw;\n");
-    //flush_cache(); // remove flush if not testing. // make function which does not flush the brain predictor
+
+    // TODO: remove flush if not testing. // make function which does not flush the brain predictor
+    //flush_cache();
     //asm volatile("fence iorw, iorw;\n");
-    // end prepare
 
-    // experiment here
-
-
+    // training here
     _scamv_train__();
-
-
     asm volatile("fence iorw, iorw;\n");
-    // experiment end
-
   }
-
   #endif
 
-  // prepare
+  // prepare and prime
   _clean_mem_run();
-  //asm volatile("\n");
   asm volatile("fence iorw, iorw;\n");
-  flush_cache(); // remove flush if not testing.
+  flush_cache(); // remove flush if not testing. (but we need to flush here?! this is the actual experiment!)
   asm volatile("fence iorw, iorw;\n");
   cache_func_prime();
   asm volatile("fence iorw, iorw;\n");
-  // end prepare
 
-  // experiment here
-
-
+  // actual experiment here
   _scamv_run__();
-
-
   asm volatile("fence iorw, iorw;\n");
-  // experiment end
 
+  // probe
   cache_func_probe_save(cache_);
-
   asm volatile("fence iorw, iorw;\n");
-
-  //check_address_is_in_cache((uint64_t)(_experiment_memory));
-
 }
 
 #endif
