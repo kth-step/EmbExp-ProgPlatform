@@ -25,10 +25,10 @@ void reset_cache_experiment() {
 
 // allocated data for cache state data structures
 #ifdef RUN_2EXPS
-static cache_sets cache1;
-static cache_sets cache2;
+static cache_state cache1;
+static cache_state cache2;
 #elif defined RUN_1EXPS
-static cache_sets cache;
+static cache_state cache;
 #else
   #error "no experiment type selected"
 #endif
@@ -84,7 +84,7 @@ void run_cache_experiment() {
 #elif defined RUN_1EXPS
   printf("Performing: before comparing caches\n");
   diff += cache_run_mult_compare(1, &cache, NUM_MUL_RUNS);
-  print_cache_sets(&cache); // works
+  print_cache_state(&cache); // works
   if (diff != 0)
     printf("INCONCLUSIVE: %d\n", diff);
 #else

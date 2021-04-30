@@ -2,154 +2,143 @@
 #include "lib/printf.h"
 
 
-#define __UNUSED __attribute__((unused))
+// reserved memory used for prime and probe
+// ------------------------------------------------------------------------
 #define __ALIGN(x) __attribute__ ((aligned (x)))
-#define CACHEABLE(x) ((void *)(((uint64_t)(&x)) + 0x20000000))
-#define ALIAS(x)     ((void *)(((uint64_t)(&x)) + 0x00000000))
+extern uint8_t _probing_memory[CACHE_SIZE];
+// stipulated access mapping of _probing_memory (i.e., each way is mapped out in subsequent (SETS * LINE_LEN) blocks)
+#define CACHEABLE(x) ((void *)(((uint64_t)(&x)) + 0x18000000))
+#define CACHEABLE_ADDR(x) ((void *)(((uint64_t)(x)) + 0x18000000))
+#define _probing_memory_ADDR(set, way) (_probing_memory + (way * SETS * LINE_LEN) + (set * LINE_LEN))
 
-// uint64_t big_array[250*16];
-// uint8_t big_array8[250*16*8*512];
 
-// only used for experiments
-uint64_t memory[32 * 1024 * 8 / 8];
-
-// used for prime and probe.
-uint128 memory_array[SETS * WAYS];
-
+// TODO
+// ------------------------------------------------------------------------
 // todo: Move non-experiment code to another file, like test cases. Include this file should be enough?
 // Do I want the results in appendix? The code can be linked from thesis to github. Maybe only use prime and probe code in report.
 // The results of the test cases ( cache_exp_all() ), can be found in the appendix of the thesis.
 
-void access_set_0(int i){
-  // access set, not exact set number == i, but will give same set(i) for each i during each execution.
-  uint64_t a2 = 0;
-  volatile uint128 * xP;
-  volatile uint128 x __UNUSED;
-  volatile uint128 tmp;
-  a2 = i + 255;// + 255 to move one word.
-  tmp.upperpart = i;
-  memory_array[a2] = tmp;
-  xP = (uint128 * )CACHEABLE(memory_array[a2]);
-  x = *(xP);
-  //printf("idx %d = %x. ", i, xP);
+
+// priming and probing of a way in a set
+// ------------------------------------------------------------------------
+
+void prime_set_way(int set, int way) {
+  // access set set & way by index
+  volatile uint8_t* addr = _probing_memory_ADDR(set, way);
+  //printf("priming (%d, %d) @0x%x\n", set, way, addr);
+  *addr; // read
 }
 
-_Bool access_set_miss(int i){
-  // access set, return true if miss
+uint8_t probe_set_way_miss(int set, int way) {
+  // access for set & way, and measure misses
+  // - return 1 if miss, otherwise 0
+
   uint64_t dcache_misses0 = get_number_dcache_read_misses();
-  access_set_0(i);
+
+  // the actual access
+  volatile uint8_t* addr = _probing_memory_ADDR(set, way);
+  //printf("probing (%d, %d) @0x%x\n", set, way, addr);
+  *addr; // read
+
   dcache_misses0 = dcache_misses0 - get_number_dcache_read_misses();
 
-  if(dcache_misses0){ // 1 == true
-    return 1; // if miss, it is in not in cache
-  }else{
-    return 0; // if hit, it was in the cache
-  }
+  // evaluation if it was a miss (then it is in not in cache)
+  return dcache_misses0 > 0;
 }
 
-void fill_set_0(int i){
-  // uses access_set and test_eigth_ways combined.
-  // fills a set's ways.
 
-  volatile uint128 x;
-  volatile uint128 tmp;
-  tmp.upperpart = 0;
-
-  uint64_t aarry[WAYS];
-
-  aarry[0] = i + 255;
-  memory_array[0] = tmp;
-  for(int i = 1; i < WAYS; i++){
-    aarry[i] = aarry[i-1] + 32 * 1024 * i / 8;
-    tmp.upperpart = memory_array[aarry[i-1]].upperpart + 0x123;
-    memory_array[aarry[i]] = tmp;
-  }
-
-  {
-  // For debug
-  // printf("addresses ");
-  // for(int i = 0; i < WAYS; i++){
-  //   printf("%x ", &(memory_array[aarry[i]]));
-  // }
-  // printf("\n");
-  }
-
-  for(int i = 0; i < 8; i++){
-    volatile uint128 * xP = (uint128 * )CACHEABLE(memory_array[aarry[i]]);
-    volatile uint128 x = *(xP);
-    tmp.upperpart = x.upperpart;
-  }
-
-  // Don't compile away
-  x.upperpart = tmp.upperpart;
-  tmp.upperpart = x.upperpart;
+// main interface functions
+// ------------------------------------------------------------------------
+void flush_cache() {
+  //Use Wistoff et al.'s implemented flush hw-instruction.
+  //Needs correct bitstream on fpga, https://github.com/niwis/ariane/tree/fence-t
+  asm volatile("fence iorw, iorw");
+  asm volatile(".word 0x1111100b");
+  asm volatile("fence iorw, iorw");
 }
 
-_Bool fill_set_0_miss(int i){
-  // access set, return true if miss
-  uint64_t dcache_misses0 = get_number_dcache_read_misses();
-  fill_set_0(i);
-  dcache_misses0 = dcache_misses0 - get_number_dcache_read_misses();
-
-  if(dcache_misses0){ // more than 0
-    return 1; // if any miss, it is in not in cache
-  }else{
-    return 0; // if all hit, it was in the cache
-  }
-}
-
-void cache_func_prime(){
-
-  for(int i = 0; i < SETS; i++){
-    fill_set_0(i); // This fills the cache.
-  }
-}
-
-void cache_func_probe_save(cache_sets *cache_sets){
-
-  for(int i = 0; i < SETS; i++){
-    cache_sets->evicted[i] = fill_set_0_miss(i);
-  }
-}
-
-void cache_func_probe(){
-  for(int i = 0; i < SETS; i++){
-    _Bool miss = fill_set_0_miss(i);
-    if(miss){
-      printf("There was a miss at index %d.\n", i);
+void cache_func_prime() {
+  for (int way = 0; way < WAYS; way++) {
+    for (int set = 0; set < SETS; set++) {
+      if (set == 0)
+      prime_set_way(set, way);
     }
   }
-  printf("There was NO miss.\n");
 }
 
-uint64_t compare_cache(cache_sets *c1, cache_sets *c2){
-  for(int i = 0; i < SETS; i++){
-    if(c1->evicted[i] != c2->evicted[i]){
-      return 1;
+void cache_func_probe_save(cache_state* cache_state) {
+  for (int way = 0; way < WAYS; way++) {
+    for (int set = 0; set < SETS; set++) {
+      if (set == 0)
+        cache_state->evicted[set][way] = probe_set_way_miss(set, way);
+      else
+        cache_state->evicted[set][way] = 0;
+    }
+  }
+}
+
+void cache_func_probe_print() {
+  for (int way = 0; way < WAYS; way++) {
+    for (int set = 0; set < SETS; set++) {
+      uint8_t miss = probe_set_way_miss(set, way);
+      if (miss) {
+        printf("Miss for (%d, %d).\n", set, way);
+      }
+    }
+  }
+}
+
+uint8_t compare_cache(cache_state* c1, cache_state* c2) {
+  for (int way = 0; way < WAYS; way++) {
+    for (int set = 0; set < SETS; set++) {
+      if (c1->evicted[set][way] != c2->evicted[set][way]) {
+        return 1;
+      }
     }
   }
   return 0; // no difference
 }
 
-void print_cache_sets(cache_sets *cache_sets){
+void print_cache_state(cache_state* c) {
   printf("Printing evicted cache sets \n");
-  for(int i = 0; i < SETS; i++){
-    if(cache_sets->evicted[i]){
-      printf("Set: %d \n", i);
+  printf("_probing_memory is @0x%x\n", _probing_memory);
+  for (int set = 0; set < SETS; set++) {
+    for (int way = 0; way < WAYS; way++) {
+       if (c->evicted[set][way]) {
+         printf("line at (%d,%d)\n", set, way);
+       }
     }
   }
-  printf("\nDone printing. \n");
 }
 
-_Bool check_address_is_in_cache(uint64_t x){
+// basic experiment
+// ------------------------------------------------------------------------
+
+uint8_t check_address_is_in_cache(uint64_t x){
   uint64_t dcache_misses0 = 0;
   uint64_t cycles0 = 0;
+
+  //flush_cache();
+
+  volatile uint8_t* _experiment_memory = (uint8_t*)0xA0000000;
+
+#define addr_of_way(way) (way * SETS * LINE_LEN)
+
+  for (int way = 0; way < 10; way++) {
+    uint64_t addr = addr_of_way(way%1);
+    printf("addr = 0x%x (0x%x)\n", addr, _experiment_memory+addr);
+    _experiment_memory[addr] = 1;
+  }
+  x = (uint64_t) _experiment_memory;
+
   asm volatile(
      //".word 0x1111100b;\n" //fence.t
      "fence iorw, iorw;\n"
      "csrr t1, 0xb04;\n"
      "csrr t2, 0xb00;\n"
+     "fence iorw, iorw;\n"
      "lw t0, 0(%2);\n"
+     "fence iorw, iorw;\n"
      "csrr t3, 0xb00;\n"
      "csrr t4, 0xb04;\n"
      "sub %0, t4, t1;\n"
@@ -168,33 +157,35 @@ _Bool check_address_is_in_cache(uint64_t x){
    }
 }
 
-// utility cache functions START
-
-void flush_cache(){
-  //Use Wistoff et al.'s implemented flush hw-instruction.
-  //Needs correct bitstream on fpga, https://github.com/niwis/ariane/tree/fence-t
-  asm volatile("fence iorw, iorw");
-  asm volatile(".word 0x1111100b");
-  asm volatile("fence iorw, iorw");
-}
-
-void asm_fench(){
-  asm volatile("fence iorw, iorw"); // i/o, read, write // everything
-}
-
-uint64_t get_cycles(){
+// utility cache functions
+// ------------------------------------------------------------------------
+uint64_t get_cycles() {
   uint64_t cycles;
   asm volatile("csrr %0, mcycle" : "=r"(cycles));
   return cycles;
 }
 
-uint64_t get_number_mispredictions(){
+uint64_t get_number_dcache_read_misses() {
+  //might return an unsigned long, check this
+  uint64_t dcache_misses;
+  asm volatile("csrr %0, 0xb04" : "=r"(dcache_misses));
+  //asm volatile("csrr %0, 0xB04" : "=r"(dcache_misses));
+  return dcache_misses;
+}
+
+uint64_t get_number_icache_misses() {
+  uint64_t icache_misses;
+  asm volatile("csrr %0, 0xB03" : "=r"(icache_misses));
+  return icache_misses;
+}
+
+uint64_t get_number_mispredictions() {
   uint64_t cycles;
   asm volatile("csrr %0, 0xB0E" : "=r"(cycles));
   return cycles;
 }
 
-void cache_print_misses(){
+void print_perf() {
   uint64_t temp;
   temp = get_number_dcache_read_misses();
   printf("get_number_dcache_read_misses: %d\n", temp);
@@ -204,21 +195,7 @@ void cache_print_misses(){
   printf("get_number_mispredictions: %d\n", temp);
 }
 
-uint64_t get_number_icache_misses(){
-  uint64_t icache_misses;
-  asm volatile("csrr %0, 0xB03" : "=r"(icache_misses));
-  return icache_misses;
-}
-
-uint64_t get_number_dcache_read_misses(){
-  //might return an unsigned long, check this
-  uint64_t dcache_misses;
-  asm volatile("csrr %0, 0xb04" : "=r"(dcache_misses));
-  //asm volatile("csrr %0, 0xB04" : "=r"(dcache_misses));
-  return dcache_misses;
-}
-
-// uint64_t addi_instruction(){
+// uint64_t addi_instruction() {
 //   uint64_t cycle0 = get_cycles();
 //   asm volatile("addi a0, a0, 1");
 //   uint64_t cycle1 = get_cycles();
@@ -226,14 +203,24 @@ uint64_t get_number_dcache_read_misses(){
 //   return cycle_used;
 // }
 
-// utility cache functions END
+
+// experiment definitions
+// ------------------------------------------------------------------------
+/*
+
+#define __UNUSED __attribute__((unused))
+
+// reserved memory used for basic experiments
+uint64_t memory[CACHE_SIZE * 8 / 8] __ALIGN(CACHE_SIZE);
+
 
 // experiments and test cases START
+// ------------------------------------------------------------------------
 
 void cache_exp_primeandprobe_two_executions(){
   printf("experiment: cache_exp_primeandprobe_two_executions\n");
-  cache_sets cache_sets0;
-  cache_sets cache_sets1;
+  cache_state cache_state0;
+  cache_state cache_state1;
 
   flush_cache(); // remove flush if not testing.
   cache_func_prime();
@@ -242,8 +229,8 @@ void cache_exp_primeandprobe_two_executions(){
   xNew = 0x1337;
   // access a cacheable value
   volatile uint64_t * xPNew = (uint64_t * )CACHEABLE(xNew);
-  __UNUSED _Bool tmp = check_address_is_in_cache((uint64_t)(xPNew));
-  cache_func_probe_save(&cache_sets0);
+  __UNUSED uint8_t tmp = check_address_is_in_cache((uint64_t)(xPNew));
+  cache_func_probe_save(&cache_state0);
 
   printf("saved cache, flushing and executing again...\n");
   flush_cache(); // remove flush if not testing.
@@ -254,10 +241,10 @@ void cache_exp_primeandprobe_two_executions(){
   // access a cacheable value
   volatile uint64_t * yPNew = (uint64_t * )CACHEABLE(yNew);
   tmp = check_address_is_in_cache((uint64_t)(yPNew));
-  cache_func_probe_save(&cache_sets1);
+  cache_func_probe_save(&cache_state1);
 
   printf("saved cache, comparing cache...\n");
-  _Bool equal = compare_cache(&cache_sets0, &cache_sets1);
+  uint8_t equal = compare_cache(&cache_state0, &cache_state1);
   if(equal){
     printf("Equal caches.\n");
   }else{
@@ -265,17 +252,17 @@ void cache_exp_primeandprobe_two_executions(){
   }
   // print the sets
   printf("rinting cache...\n");
-  printf("cache_sets0:\n");
-  print_cache_sets(&cache_sets0);
-  printf("cache_sets1:\n");
-  print_cache_sets(&cache_sets1);
+  printf("cache_state0:\n");
+  print_cache_state(&cache_state0);
+  printf("cache_state1:\n");
+  print_cache_state(&cache_state1);
 }
 
 void cache_exp_primeandprobe(){
   printf("experiment: cache_exp_primeandprobe\n");
   flush_cache(); // remove flush if not testing.
 
-  cache_sets cache_sets;
+  cache_state cache_state;
 
   cache_func_prime();
 
@@ -284,11 +271,11 @@ void cache_exp_primeandprobe(){
   xNew = 0x1337;
   // access a cacheable value
   volatile uint64_t * xPNew = (uint64_t * )CACHEABLE(xNew);
-  __UNUSED _Bool tmp = check_address_is_in_cache((uint64_t)(xPNew));
+  __UNUSED uint8_t tmp = check_address_is_in_cache((uint64_t)(xPNew));
 
   // This is probe
-  cache_func_probe_save(&cache_sets);
-  print_cache_sets(&cache_sets);
+  cache_func_probe_save(&cache_state);
+  print_cache_state(&cache_state);
 }
 
 void cache_exp_cachesets_fill_with_access_inbetween(){
@@ -319,7 +306,7 @@ void cache_exp_cachesets_fill_with_access_inbetween(){
 
   // This is probe
   for(int i = 0; i < SETS; i++){
-    _Bool miss = fill_set_0_miss(i);
+    uint8_t miss = fill_set_0_miss(i);
     if(miss){
       printf("There was a miss at index %d.\n", i);
     }
@@ -336,7 +323,7 @@ void cache_exp_cachesets_fill(){
   }
 
   for(int i = 0; i < SETS; i++){
-    _Bool miss = fill_set_0_miss(i);
+    uint8_t miss = fill_set_0_miss(i);
     if(miss){
       printf("There was a miss.\n");
       return;
@@ -354,7 +341,7 @@ void cache_exp_cachesets(){
   }
 
   for(int i = 0; i < SETS; i++){
-    _Bool miss = access_set_miss(i);
+    uint8_t miss = access_set_miss(i);
     if(miss){
       printf("There was a miss.\n");
       return;
@@ -600,7 +587,7 @@ void test_two_ways() {
   //Note experiment memory not changed at all, yet.
   flush_cache();
   uint64_t a1 = 0;
-  uint64_t a2 = a1 + 32 * 1024 * 1 / 8;
+  uint64_t a2 = a1 + CACHE_SIZE * 1 / 8;
 
   memory[a1] = 0x123;
   memory[a2] = 0x456;
@@ -637,7 +624,7 @@ void test_eight_ways() {
   aarry[0] = 0;
   memory[0] = 0x123;
   for(int i = 1; i < 8; i++){
-    aarry[i] = aarry[i-1] + 32 * 1024 * i / 8;
+    aarry[i] = aarry[i-1] + CACHE_SIZE * i / 8;
     memory[aarry[i]] = memory[aarry[i-1]] + 0x123;
   }
 
@@ -680,7 +667,7 @@ void test_nine_ways() {
   aarry[0] = 0;
   memory[0] = 0x123;
   for(int i = 1; i < 9; i++){
-    aarry[i] = aarry[i-1] + 32 * 1024 * i / 8;
+    aarry[i] = aarry[i-1] + CACHE_SIZE * i / 8;
     memory[aarry[i]] = memory[aarry[i-1]] + 0x123;
   }
 
@@ -767,3 +754,5 @@ void cache_exp_all(){
 //Could add normal flush instructions as experiment?
 //fence_i_o,          // flush I$ and pipeline
 //fence_o,            // flush D$ and pipeline
+
+*/

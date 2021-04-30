@@ -58,10 +58,10 @@ void _scamv_train();
 void _scamv_run1();
 void _scamv_run2();
 
-void _cache_run(cache_sets* cache, void (*_clean_mem_run)(), void (*_scamv_run)(), void (*_clean_mem_train)(), void (*_scamv_train)());
+void _cache_run(cache_state* cache, void (*_clean_mem_run)(), void (*_scamv_run)(), void (*_clean_mem_train)(), void (*_scamv_train)());
 
-static cache_sets cache_temp;
-uint8_t cache_run_mult_compare(uint8_t _input_id, cache_sets* cache_, uint8_t n) {
+static cache_state cache_temp;
+uint8_t cache_run_mult_compare(uint8_t _input_id, cache_state* cache_, uint8_t n) {
   void (*_clean_mem_run)()   = 0;
   void (*_scamv_run__)()     = 0;
   void (*_clean_mem_train)() = 0;
@@ -103,10 +103,12 @@ typedef void (*clean_func_type)();
 #  define EXP_HAS_INPUT_TRAIN
 #endif
 
-void _cache_run(cache_sets *cache_, clean_func_type _clean_mem_run, clean_func_type _scamv_run__, clean_func_type _clean_mem_train, clean_func_type _scamv_train__){
-  //printf("experiment: cache_exp_primeandprobe_two_executions\n");
+#include "lib/printf.h"
+
+void _cache_run(cache_state *cache_, clean_func_type _clean_mem_run, clean_func_type _scamv_run__, clean_func_type _clean_mem_train, clean_func_type _scamv_train__){
+
   #ifdef EXP_HAS_INPUT_TRAIN
-  for(int i = 0; i < 20; i++){ // adjust to train more
+  for(int i = 0; i < 0; i++){ // adjust to train more
     // prepare
     _clean_mem_train();
     asm volatile("fence iorw, iorw;\n");
@@ -117,7 +119,7 @@ void _cache_run(cache_sets *cache_, clean_func_type _clean_mem_run, clean_func_t
     // experiment here
 
 
-    _scamv_train__();
+    //_scamv_train__();
 
 
     asm volatile("fence iorw, iorw;\n");
@@ -129,6 +131,7 @@ void _cache_run(cache_sets *cache_, clean_func_type _clean_mem_run, clean_func_t
 
   // prepare
   _clean_mem_run();
+  //asm volatile("\n");
   asm volatile("fence iorw, iorw;\n");
   flush_cache(); // remove flush if not testing.
   asm volatile("fence iorw, iorw;\n");
@@ -139,7 +142,7 @@ void _cache_run(cache_sets *cache_, clean_func_type _clean_mem_run, clean_func_t
   // experiment here
 
 
-  _scamv_run__();
+  //_scamv_run__();
 
 
   asm volatile("fence iorw, iorw;\n");
@@ -149,7 +152,9 @@ void _cache_run(cache_sets *cache_, clean_func_type _clean_mem_run, clean_func_t
 
   asm volatile("fence iorw, iorw;\n");
 
-  //check_address_is_in_cache((uint64_t)(xPNew));
+  check_address_is_in_cache((uint64_t)(_experiment_memory));
+
+  printf("exp memory is @0x%x\n", _experiment_memory);
 
 }
 
