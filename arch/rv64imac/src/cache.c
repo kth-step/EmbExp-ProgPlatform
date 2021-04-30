@@ -113,12 +113,91 @@ void print_cache_state(cache_state* c) {
 
 // basic experiment
 // ------------------------------------------------------------------------
+void check_cacheability_print(uint8_t flushfirst, uint64_t addr) {
+  uint64_t dcache_misses0 = 0;
+  uint64_t cycles0 = 0;
+
+  if (flushfirst) {
+    asm volatile(
+     //".word 0x1111100b;\n" //fence.t
+     "fence iorw, iorw\n"
+     ".word 0x1111100b\n"
+     "fence iorw, iorw\n");
+  }
+
+  asm volatile(
+     //".word 0x1111100b;\n" //fence.t
+     "fence iorw, iorw\n"
+     "csrr t1, 0xb04;\n"
+     "csrr t2, 0xb00;\n"
+     "lb t0, 0(%2);\n"
+     "csrr t3, 0xb00;\n"
+     "csrr t4, 0xb04;\n"
+     "sub %0, t4, t1;\n"
+     "sub %1, t3, t2;\n"
+     "fence iorw, iorw;\n"
+     : "=r"(dcache_misses0), "=r"(cycles0)
+     : "r"(addr)
+     :
+   );
+   printf("[Exp time: l1dc miss: %d, cycles: %d. Address: 0x%x] \n", dcache_misses0, cycles0, addr);
+}
+
+uint8_t load8now(uint64_t addr) {
+  uint8_t v;
+  asm volatile(
+     "lb %0, 0(%1)"
+     : "=r"(v)
+     : "r"(addr)
+     :
+   );
+  return v;
+}
+
+uint8_t load8now2(uint64_t addr) {
+  uint8_t volatile * p = (uint8_t volatile *) addr;
+  uint8_t v = *p;
+  return v;
+}
+
+uint8_t load8now3(uint64_t addr) {
+  volatile uint8_t * p = (uint8_t *) addr;
+  *p;
+  return 0;
+}
 
 uint8_t check_address_is_in_cache(uint64_t x){
   uint64_t dcache_misses0 = 0;
   uint64_t cycles0 = 0;
 
   //flush_cache();
+
+  uint64_t addr1_0 = 0x90000000;
+  uint64_t addr2_0 = 0xA0000000;
+
+
+  printf("\n\n\n");
+
+  check_cacheability_print(1, addr1_0);
+  check_cacheability_print(1, addr2_0);
+
+  printf("\nfill:\n");
+  for (int i = 0; i < 9; i++) {
+    uint64_t addr = addr2_0 + (i * SETS * LINE_LEN);
+    volatile uint8_t * p = (uint8_t *) addr;
+    *p;
+    //load8now3(addr);
+    printf("0x%x\n", addr);
+    //check_cacheability_print(0, addr);
+  }
+
+  printf("\nreload:\n");
+  for (int i = 0; i < 8; i++) {
+    check_cacheability_print(0, addr2_0 + (i * SETS * LINE_LEN));
+  }
+
+
+  printf("\n\n\n");
 
   volatile uint8_t* _experiment_memory = (uint8_t*)0xA0000000;
 
