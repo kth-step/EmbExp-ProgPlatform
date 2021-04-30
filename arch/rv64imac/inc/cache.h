@@ -49,6 +49,6 @@ void access_set(int i);
 
 void cache_exp_all();
 
-_Bool compare_cache(cache_sets *c1, cache_sets *c2);
+uint64_t compare_cache(cache_sets *c1, cache_sets *c2);
 
 #endif

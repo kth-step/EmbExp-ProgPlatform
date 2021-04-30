@@ -114,8 +114,8 @@ void _cache_run(cache_sets *cache_, clean_func_type _clean_mem_run, clean_func_t
 
   // experiment here
   // Arbitary Access
-  volatile uint64_t xNew = 0;
-  xNew = 0x1337;
+  // volatile uint64_t xNew = 0;
+  // xNew = 0x1337;
   // access a cacheable value
   volatile uint64_t * xPNew = _experiment_memory + 0;
   uint64_t tmp = *xPNew;

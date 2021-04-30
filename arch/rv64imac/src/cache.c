@@ -122,13 +122,13 @@ void cache_func_probe(){
   printf("There was NO miss.\n");
 }
 
-_Bool compare_cache(cache_sets *c1, cache_sets *c2){
+uint64_t compare_cache(cache_sets *c1, cache_sets *c2){
   for(int i = 0; i < SETS; i++){
     if(c1->evicted[i] != c2->evicted[i]){
-      return FALSE;
+      return 1;
     }
   }
-  return TRUE;
+  return 0; // no difference
 }
 
 void print_cache_sets(cache_sets *cache_sets){
