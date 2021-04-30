@@ -69,18 +69,18 @@ uint8_t cache_run_mult_compare(uint8_t _input_id, cache_sets* cache_, uint8_t n)
 
 #ifdef EXP_HAS_INPUT_TRAIN
   _clean_mem_train = _clean_experiment_memory_train;
-//  _scamv_train__   = _scamv_train;
+  _scamv_train__   = _scamv_train;
 #endif
 
   switch (_input_id) {
     case 1:
       _clean_mem_run = _clean_experiment_memory_run1;
-  //    _scamv_run__   = _scamv_run1;
+      _scamv_run__   = _scamv_run1;
       break;
 #ifdef EXP_HAS_INPUT_2
     case 2:
       _clean_mem_run = _clean_experiment_memory_run2;
-    //  _scamv_run__   = _scamv_run2;
+      _scamv_run__   = _scamv_run2;
       break;
 #endif
     default:
@@ -104,7 +104,7 @@ void _cache_run(cache_sets *cache_, clean_func_type _clean_mem_run, clean_func_t
   //printf("experiment: cache_exp_primeandprobe_two_executions\n");
 
   // prepare
-  ((clean_func_type)_clean_mem_run)();
+  _clean_mem_run();
   asm volatile("fence iorw, iorw;\n");
   flush_cache(); // remove flush if not testing.
   asm volatile("fence iorw, iorw;\n");
@@ -113,13 +113,10 @@ void _cache_run(cache_sets *cache_, clean_func_type _clean_mem_run, clean_func_t
   // end prepare
 
   // experiment here
-  // Arbitary Access
-  // volatile uint64_t xNew = 0;
-  // xNew = 0x1337;
-  // access a cacheable value
-  //volatile uint64_t * xPNew = _experiment_memory + 0;
-  // uint64_t tmp = *xPNew;
-  asm volatile("la t0, _experiment_memory\nld t1, 0(t0)\n");
+  
+
+  _scamv_run__();
+
 
   asm volatile("fence iorw, iorw;\n");
   // experiment end
