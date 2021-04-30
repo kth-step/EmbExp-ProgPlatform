@@ -15,7 +15,7 @@ SECTIONS
 
 	__experiment_code_loc   =   0x2000;
 	__experiment_memory_loc = 0x100000;
-	__experiment_memory_len =  0x40000;/* 32 * 1024 * 8 */
+	__experiment_memory_len =  0x40000;/* 32 * 1024 * 8 bytes */
 
 
 	. = __boot_loc;

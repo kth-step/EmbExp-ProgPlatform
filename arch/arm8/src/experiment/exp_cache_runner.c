@@ -30,7 +30,7 @@ uint64_t expmem_byte_to_word(uint8_t v) {
 }
 
 // memory space allocated for experiments
-extern uint64_t _experiment_memory[32 * 1024 * 8 / 8];
+extern uint64_t _experiment_memory[32 * 1024 * 8 / 8]; // 32 * 8 kB
 void _clean_experiment_memory(uint64_t default_val) {
   int length = sizeof(_experiment_memory)/sizeof(uint64_t);
   for (int i = 0; i < length; i++) {
@@ -99,4 +99,3 @@ uint8_t cache_run_mult_compare(uint8_t _input_id, cache_state cache_, uint8_t n)
 
 
 #endif // RUN_CACHE
-
