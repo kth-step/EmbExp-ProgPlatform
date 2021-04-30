@@ -4,7 +4,7 @@
 #include "cache.h"
 #include <stdint.h>
 
-//#include "experiment/exp_cache_runner.h"
+#include "experiment/exp_cache_runner.h"
 
 #define __UNUSED __attribute__((unused))
 #define __ALIGN(x) __attribute__ ((aligned (x)))
@@ -17,8 +17,10 @@
 // Only for RUN_1EXPS at the moment.
 
 void reset_cache_experiment() {
+  // Only runs when the board is starting.
   printf("Performing: Reseting cache\n");
   flush_cache(); // resets cache, replacement, and more..
+
 }
 
 // allocated data for cache state data structures
@@ -39,14 +41,14 @@ void run_cache_experiment() {
   uint16_t diff = 0;
 
   // used to test the test cases
-  cache_exp_all();
+  // cache_exp_all();
 
 
 #ifdef RUN_2EXPS
   // run 2 cache experiments
-  diff += cache_run_mult_compare(1, cache1, NUM_MUL_RUNS);
+  diff += cache_run_mult_compare(1, &cache1, NUM_MUL_RUNS);
   //  print_cache_valid(cache1);
-  diff += cache_run_mult_compare(2, cache2, NUM_MUL_RUNS);
+  diff += cache_run_mult_compare(2, &cache2, NUM_MUL_RUNS);
   //  print_cache_valid(cache2);
   //debug_set(cache1[0], 0);
   //debug_set(cache2[0], 0);
@@ -72,7 +74,7 @@ void run_cache_experiment() {
 #endif
   if (diff == 0) {
     // compare and print result of comparison
-    if (CACHE_EQ_FUN(cache1, cache2, CACHE_SET_LOWER, CACHE_SET_UPPER) == 0)
+    if (CACHE_EQ_FUN(&cache1, &cache2, CACHE_SET_LOWER, CACHE_SET_UPPER) == 0)
       printf("RESULT: EQUAL\n");
     else
       printf("RESULT: UNEQUAL\n");
@@ -81,8 +83,8 @@ void run_cache_experiment() {
   }
 #elif defined RUN_1EXPS
   printf("Performing: before comparing caches\n");
-  //diff += cache_run_mult_compare(1, cache, NUM_MUL_RUNS);
-  //print_cache_sets(&cache);
+  diff += cache_run_mult_compare(1, &cache, NUM_MUL_RUNS);
+  print_cache_sets(&cache); // works
   if (diff != 0)
     printf("INCONCLUSIVE: %d\n", diff);
 #else

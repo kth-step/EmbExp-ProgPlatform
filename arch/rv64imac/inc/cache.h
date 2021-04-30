@@ -38,6 +38,8 @@ void cache_exp_miss_and_hit();
 void cache_exp_cachesets();
 void cache_exp_branch_specload();
 void cache_exp_straight_spec();
+void cache_func_prime();
+void cache_func_probe_save(cache_sets *c);
 
 void test_value_in_cache();
 void test_two_ways();

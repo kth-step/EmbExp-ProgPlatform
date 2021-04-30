@@ -4,6 +4,10 @@ SECTIONS
 {
     ROM_BASE = 0x80000000; /* DRAM_BASE */
 
+    /*__experiment_code_loc   =   0x2000;*/
+  	__experiment_memory_loc = 0xa0000000;
+  	__experiment_memory_len =  0x40000;/* 32 * 1024 * 8 bytes */
+
     . = ROM_BASE;
 
     .text.init : { *(.text.init) }
@@ -37,5 +41,13 @@ SECTIONS
         *(.rodata)
         *(.rodata*)
     _RODATA_END_ = .;
+    }
+
+
+
+    .experiment_memory __experiment_memory_loc :
+    {
+      _experiment_memory = . ;
+      . += __experiment_memory_len ;/* 32 * 1024 * 8 bytes */
     }
 }
