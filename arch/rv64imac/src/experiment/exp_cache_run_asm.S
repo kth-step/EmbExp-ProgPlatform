@@ -4,6 +4,8 @@
 // https://www.cs.cornell.edu/courses/cs3410/2019sp/riscv/interpreter/
 // https://riscv.org/wp-content/uploads/2017/05/riscv-spec-v2.2.pdf
 
+#define TRAINING_ROUNDS 6
+
 #ifdef RUN_CACHE
 
 #if !defined(__has_include)
@@ -59,7 +61,6 @@ _scamv_train:
 	mv t0, zero
 	mv ra, zero
 .include "experiment/asm_setup_train.h"
-	fence iorw, iorw
 	j scamv_entry
 #endif // EXP_HAS_INPUT_TRAIN
 
@@ -140,7 +141,7 @@ _cache_run:
 __enter_scamv_train_loop:
 	la	t0, _scamv_train_loop_cnt
 	ld	t1, 0(t0)
-	li	t2, 6
+	li	t2, TRAINING_ROUNDS
 	bge	t1, t2, __exit_scamv_train_loop
 	addi	t1, t1, 1
 	sd	t1, 0(t0)
@@ -151,13 +152,6 @@ __enter_scamv_train_loop:
 // clean experiment memory: _clean_mem_train
 	// TODO: need to set input memory here as well!!!
 	ld	x1, (8 * 13)(sp)
-	jalr	x1
-// flush the cache now
-	fence iorw, iorw
-	// flush here!
-	.word 0x1111100b
-// prime for measurement
-	la	x1, cache_func_prime
 	jalr	x1
 // load _scamv_train in x1 (RA)
 	ld	x1, (8 * 14)(sp)
