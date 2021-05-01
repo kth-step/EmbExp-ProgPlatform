@@ -1,5 +1,9 @@
 #include "config.h"
 
+// https://github.com/riscv/riscv-asm-manual/blob/master/riscv-asm.md
+// https://www.cs.cornell.edu/courses/cs3410/2019sp/riscv/interpreter/
+// https://riscv.org/wp-content/uploads/2017/05/riscv-spec-v2.2.pdf
+
 #ifdef RUN_CACHE
 
 #if !defined(__has_include)
@@ -85,184 +89,183 @@ scamv_exit:
 	ld ra, 0(t0)
 	ret
 
-/*
+
 _cache_run:
 // save registers on stack
-	sub sp, sp, #(8 * 40)
-	str x0,  [sp, #(8 *  0)] // cache
-	str x1,  [sp, #(8 *  1)] // _clean_mem_run
-	str x2,  [sp, #(8 *  2)] // _scamv_run
-	str x3,  [sp, #(8 *  3)] // _clean_mem_train
-	str x4,  [sp, #(8 *  4)] // _scamv_train
-	str x5,  [sp, #(8 *  5)]
-	str x6,  [sp, #(8 *  6)]
-	str x7,  [sp, #(8 *  7)]
-	str x8,  [sp, #(8 *  8)]
-	str x9,  [sp, #(8 *  9)]
-	str x10, [sp, #(8 * 10)]
-	str x11, [sp, #(8 * 11)]
-	str x12, [sp, #(8 * 12)]
-	str x13, [sp, #(8 * 13)]
-	str x14, [sp, #(8 * 14)]
-	str x15, [sp, #(8 * 15)]
-	str x16, [sp, #(8 * 16)]
-	str x17, [sp, #(8 * 17)]
-	str x18, [sp, #(8 * 18)]
-	str x19, [sp, #(8 * 19)]
-	str x20, [sp, #(8 * 20)]
-	str x21, [sp, #(8 * 21)]
-	str x22, [sp, #(8 * 22)]
-	str x23, [sp, #(8 * 23)]
-	str x24, [sp, #(8 * 24)]
-	str x25, [sp, #(8 * 25)]
-	str x26, [sp, #(8 * 26)]
-	str x27, [sp, #(8 * 27)]
-	str x28, [sp, #(8 * 28)]
-	str x29, [sp, #(8 * 29)] // FP
-	str x30, [sp, #(8 * 30)] // LR
+	addi	sp, sp, (8 * -40)
+	sd	 x1, (8 *  1)(sp) // RA
+	sd	 x2, (8 *  2)(sp) // SP
+	sd	 x3, (8 *  3)(sp)
+	sd	 x4, (8 *  4)(sp)
+	sd	 x5, (8 *  5)(sp)
+	sd	 x6, (8 *  6)(sp)
+	sd	 x7, (8 *  7)(sp)
+	sd	 x8, (8 *  8)(sp)
+	sd	 x9, (8 *  9)(sp)
+	sd	x10, (8 * 10)(sp) // cache
+	sd	x11, (8 * 11)(sp) // _clean_mem_run
+	sd	x12, (8 * 12)(sp) // _scamv_run
+	sd	x13, (8 * 13)(sp) // _clean_mem_train
+	sd	x14, (8 * 14)(sp) // _scamv_train
+	sd	x15, (8 * 15)(sp)
+	sd	x16, (8 * 16)(sp)
+	sd	x17, (8 * 17)(sp)
+	sd	x18, (8 * 18)(sp)
+	sd	x19, (8 * 19)(sp)
+	sd	x20, (8 * 20)(sp)
+	sd	x21, (8 * 21)(sp)
+	sd	x22, (8 * 22)(sp)
+	sd	x23, (8 * 23)(sp)
+	sd	x24, (8 * 24)(sp)
+	sd	x25, (8 * 25)(sp)
+	sd	x26, (8 * 26)(sp)
+	sd	x27, (8 * 27)(sp)
+	sd	x28, (8 * 28)(sp)
+	sd	x29, (8 * 29)(sp)
+	sd	x30, (8 * 30)(sp)
+	sd	x31, (8 * 31)(sp)
 
 // store SP register
-	ldr x0, =_sp_store
-	mov x1, sp
-	str x1, [x0]
+	la	t0, _sp_store
+	sd	sp, 0(t0)
+
 
 #ifdef EXP_HAS_INPUT_TRAIN
 // ========================================================
 
-	ldr x0, =_scamv_train_loop_cnt
-	mov x1, #0
-	str x1, [x0]
+	la	t0, _scamv_train_loop_cnt
+	mv	t1, zero
+	sd	t1, 0(t0)
 
 __enter_scamv_train_loop:
-	ldr x0, =_scamv_train_loop_cnt
-	ldr x1, [x0]
-	mov x2, #6
-	cmp x1, x2
-	b.ge __exit_scamv_train_loop
-	add x1, x1, #1
-	str x1, [x0]
+	la	t0, _scamv_train_loop_cnt
+	ld	t1, 0(t0)
+	li	t2, 6
+	bge	t1, t2, __exit_scamv_train_loop
+	addi	t1, t1, 1
+	sd	t1, 0(t0)
 
 // restore SP register
-	ldr x0, =_sp_store
-	ldr x1, [x0]
-	mov sp, x1
-// flush the cache
-	//flush_d_cache(0);
-	mov x0, #0
-	bl flush_d_cache
-	//flush_d_cache(1);
-	mov x0, #1
-	bl flush_d_cache
-// clean experiment memory: _clean_mem_run
-	ldr x30, [sp, #(8 *  3)]
-	blr x30
-// load _scamv_run in x30 (LR)
-	ldr x30, [sp, #(8 *  4)]
+	la	t0, _sp_store
+	ld	sp, 0(t0)
+// clean experiment memory: _clean_mem_train
+	// TODO: need to set input memory here as well!!!
+	ld	x1, (8 * 13)(sp)
+	jalr	x1
+// flush the cache now
+	fence iorw, iorw
+	// flush here!
+	.word 0x1111100b
+// prime for measurement
+	la	x1, cache_func_prime
+	jalr	x1
+// load _scamv_train in x1 (RA)
+	ld	x1, (8 * 14)(sp)
 // create defined processor state
-	mov x0,  #0
-	mov x1,  #0
-	mov x2,  #0
-	mov x3,  #0
-	mov x4,  #0
-	mov x5,  #0
-	mov x6,  #0
-	mov x7,  #0
-	mov x8,  #0
-	mov x9,  #0
-	mov x10, #0
-	mov x11, #0
-	mov x12, #0
-	mov x13, #0
-	mov x14, #0
-	mov x15, #0
-	mov x16, #0
-	mov x17, #0
-	mov x18, #0
-	mov x19, #0
-	mov x20, #0
-	mov x21, #0
-	mov x22, #0
-	mov x23, #0
-	mov x24, #0
-	mov x25, #0
-	mov x26, #0
-	mov x27, #0
-	mov x28, #0
-	mov x29, #0
-	mov sp,  x0
-	// set all ALU flags to a defined state
-	adds x0, x1, x2
+	mv	 x2, zero
+	mv	 x3, zero
+	mv	 x4, zero
+	mv	 x5, zero
+	mv	 x6, zero
+	mv	 x7, zero
+	mv	 x8, zero
+	mv	 x9, zero
+	mv	x10, zero
+	mv	x11, zero
+	mv	x12, zero
+	mv	x13, zero
+	mv	x14, zero
+	mv	x15, zero
+	mv	x16, zero
+	mv	x17, zero
+	mv	x18, zero
+	mv	x19, zero
+	mv	x20, zero
+	mv	x21, zero
+	mv	x22, zero
+	mv	x23, zero
+	mv	x24, zero
+	mv	x25, zero
+	mv	x26, zero
+	mv	x27, zero
+	mv	x28, zero
+	mv	x29, zero
+	mv	x30, zero
+	mv	x31, zero
+	// TODO: are there ALU flags that should be set to a defined state?
+	// like ARM "adds x0, x1, x2"
 
 // run the experiment code (with training inputs)
-	blr x30
-	b __enter_scamv_train_loop
+	jalr	x1
+
+// go back into to the loop entry
+	j __enter_scamv_train_loop
 
 __exit_scamv_train_loop:
 
 // ========================================================
 #endif // EXP_HAS_INPUT_TRAIN
 
+
 // restore SP register
-	ldr x0, =_sp_store
-	ldr x1, [x0]
-	mov sp, x1
-// flush the cache
-	//flush_d_cache(0);
-	mov x0, #0
-	bl flush_d_cache
-	//flush_d_cache(1);
-	mov x0, #1
-	bl flush_d_cache
+	la	t0, _sp_store
+	ld	sp, 0(t0)
 // clean experiment memory: _clean_mem_run
-	ldr x30, [sp, #(8 *  1)]
-	blr x30
-// load _scamv_run in x30 (LR)
-	ldr x30, [sp, #(8 *  2)]
+	// TODO: need to set input memory here as well!!!
+	ld	x1, (8 * 11)(sp)
+	jalr	x1
+// flush the cache now
+	fence iorw, iorw
+	// flush here!
+	.word 0x1111100b
+// prime for measurement
+	la	x1, cache_func_prime
+	jalr	x1
+// load _scamv_run in x1 (RA)
+	ld	x1, (8 * 12)(sp)
 // create defined processor state
-	mov x0,  #0
-	mov x1,  #0
-	mov x2,  #0
-	mov x3,  #0
-	mov x4,  #0
-	mov x5,  #0
-	mov x6,  #0
-	mov x7,  #0
-	mov x8,  #0
-	mov x9,  #0
-	mov x10, #0
-	mov x11, #0
-	mov x12, #0
-	mov x13, #0
-	mov x14, #0
-	mov x15, #0
-	mov x16, #0
-	mov x17, #0
-	mov x18, #0
-	mov x19, #0
-	mov x20, #0
-	mov x21, #0
-	mov x22, #0
-	mov x23, #0
-	mov x24, #0
-	mov x25, #0
-	mov x26, #0
-	mov x27, #0
-	mov x28, #0
-	mov x29, #0
-	mov sp,  x0
-	// set all ALU flags to a defined state
-	adds x0, x1, x2
+	mv	 x2, zero
+	mv	 x3, zero
+	mv	 x4, zero
+	mv	 x5, zero
+	mv	 x6, zero
+	mv	 x7, zero
+	mv	 x8, zero
+	mv	 x9, zero
+	mv	x10, zero
+	mv	x11, zero
+	mv	x12, zero
+	mv	x13, zero
+	mv	x14, zero
+	mv	x15, zero
+	mv	x16, zero
+	mv	x17, zero
+	mv	x18, zero
+	mv	x19, zero
+	mv	x20, zero
+	mv	x21, zero
+	mv	x22, zero
+	mv	x23, zero
+	mv	x24, zero
+	mv	x25, zero
+	mv	x26, zero
+	mv	x27, zero
+	mv	x28, zero
+	mv	x29, zero
+	mv	x30, zero
+	mv	x31, zero
+	// TODO: are there ALU flags that should be set to a defined state?
+	// like ARM "adds x0, x1, x2"
 
 // run the experiment code
-	blr x30
+	jalr	x1
 // restore SP register
-	ldr x0, =_sp_store
-	ldr x1, [x0]
-	mov sp, x1
-// save the cache state for run
-	//save_cache_state(cache);
-	ldr x0,  [sp, #(8 *  0)]
-	bl save_cache_state
+	la	t0, _sp_store
+	ld	sp, 0(t0)
+// probe for measurement, and save the cache state for this run
+	la	x1, cache_func_probe
+	ld	a0, (8 * 10)(sp)
+	jalr	x1
 
 /*
 // debug the first cache set
@@ -270,44 +273,44 @@ __exit_scamv_train_loop:
 	ldr x0,  [sp, #(8 *  0)]
 	mov x1, #0
 	bl debug_set
-/
+*/
 
 // restore registers from stack
-	ldr x0,  [sp, #(8 *  0)]
-	ldr x1,  [sp, #(8 *  1)]
-	ldr x2,  [sp, #(8 *  2)]
-	ldr x3,  [sp, #(8 *  3)]
-	ldr x4,  [sp, #(8 *  4)]
-	ldr x5,  [sp, #(8 *  5)]
-	ldr x6,  [sp, #(8 *  6)]
-	ldr x7,  [sp, #(8 *  7)]
-	ldr x8,  [sp, #(8 *  8)]
-	ldr x9,  [sp, #(8 *  9)]
-	ldr x10, [sp, #(8 * 10)]
-	ldr x11, [sp, #(8 * 11)]
-	ldr x12, [sp, #(8 * 12)]
-	ldr x13, [sp, #(8 * 13)]
-	ldr x14, [sp, #(8 * 14)]
-	ldr x15, [sp, #(8 * 15)]
-	ldr x16, [sp, #(8 * 16)]
-	ldr x17, [sp, #(8 * 17)]
-	ldr x18, [sp, #(8 * 18)]
-	ldr x19, [sp, #(8 * 19)]
-	ldr x20, [sp, #(8 * 20)]
-	ldr x21, [sp, #(8 * 21)]
-	ldr x22, [sp, #(8 * 22)]
-	ldr x23, [sp, #(8 * 23)]
-	ldr x24, [sp, #(8 * 24)]
-	ldr x25, [sp, #(8 * 25)]
-	ldr x26, [sp, #(8 * 26)]
-	ldr x27, [sp, #(8 * 27)]
-	ldr x28, [sp, #(8 * 28)]
-	ldr x29, [sp, #(8 * 29)]
-	ldr x30, [sp, #(8 * 30)]
-	add sp, sp, #(8 * 40)
+	ld	 x1, (8 *  1)(sp)
+	ld	 x2, (8 *  2)(sp)
+	ld	 x3, (8 *  3)(sp)
+	ld	 x4, (8 *  4)(sp)
+	ld	 x5, (8 *  5)(sp)
+	ld	 x6, (8 *  6)(sp)
+	ld	 x7, (8 *  7)(sp)
+	ld	 x8, (8 *  8)(sp)
+	ld	 x9, (8 *  9)(sp)
+	ld	x10, (8 * 10)(sp)
+	ld	x11, (8 * 11)(sp)
+	ld	x12, (8 * 12)(sp)
+	ld	x13, (8 * 13)(sp)
+	ld	x14, (8 * 14)(sp)
+	ld	x15, (8 * 15)(sp)
+	ld	x16, (8 * 16)(sp)
+	ld	x17, (8 * 17)(sp)
+	ld	x18, (8 * 18)(sp)
+	ld	x19, (8 * 19)(sp)
+	ld	x20, (8 * 20)(sp)
+	ld	x21, (8 * 21)(sp)
+	ld	x22, (8 * 22)(sp)
+	ld	x23, (8 * 23)(sp)
+	ld	x24, (8 * 24)(sp)
+	ld	x25, (8 * 25)(sp)
+	ld	x26, (8 * 26)(sp)
+	ld	x27, (8 * 27)(sp)
+	ld	x28, (8 * 28)(sp)
+	ld	x29, (8 * 29)(sp)
+	ld	x30, (8 * 30)(sp)
+	ld	x31, (8 * 31)(sp)
+	addi	sp, sp, (8 * 40)
 
+// return to the caller
 	ret
 
-*/
 
 #endif // RUN_CACHE

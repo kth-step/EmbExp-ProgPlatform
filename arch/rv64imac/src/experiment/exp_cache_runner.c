@@ -102,7 +102,21 @@ typedef void (*func_type)();
 
 #include "lib/printf.h"
 
-void _cache_run(cache_state *cache_, func_type _clean_mem_run, func_type _scamv_run__, func_type _clean_mem_train, func_type _scamv_train__){
+//void _cache_run_(cache_state* cache, void (*_clean_mem_run)(), void (*_scamv_run)(), void (*_clean_mem_train)(), void (*_scamv_train)());
+
+void _cache_run_(cache_state *cache_, func_type _clean_mem_run, func_type _scamv_run__, func_type _clean_mem_train, func_type _scamv_train__){
+/*
+  flush_cache();
+  cache_func_prime();
+  cache_func_probe(cache_);
+
+  printf("0x%x\n", cache_);
+  uint64_t r = _cache_run_(cache_, _clean_mem_run, _scamv_run__, _clean_mem_train, _scamv_train);
+  printf("0x%x\n", r);
+
+  return;
+*/
+
   // training loop
   #ifdef EXP_HAS_INPUT_TRAIN
   for(int i = 0; i < 0; i++){ // TODO: adjust to train more
