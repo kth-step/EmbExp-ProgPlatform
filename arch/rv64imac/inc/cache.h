@@ -11,7 +11,7 @@
 #define LINE_LEN (16)
 
 //(32 * 1024)
-#define CACHE_SIZE (WAYS * SETS * LINE_LEN) 
+#define CACHE_SIZE (WAYS * SETS * LINE_LEN)
 
 
 // cache state structure
@@ -24,6 +24,7 @@ typedef struct cache_state {
 // cache interface functions (flushing, priming, probing, comparing, and printing)
 // ------------------------------
 void flush_cache();
+void flush_cache_not_bp();
 void cache_func_prime();
 void cache_func_probe(cache_state* c);
 uint8_t compare_cache(cache_state* c1, cache_state* c2);

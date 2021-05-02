@@ -4,7 +4,7 @@
 // https://www.cs.cornell.edu/courses/cs3410/2019sp/riscv/interpreter/
 // https://riscv.org/wp-content/uploads/2017/05/riscv-spec-v2.2.pdf
 
-#define TRAINING_ROUNDS 6
+#define TRAINING_ROUNDS 15
 
 #ifdef RUN_CACHE
 
@@ -210,8 +210,8 @@ __exit_scamv_train_loop:
 	jalr	x1
 // flush the cache now
 	fence iorw, iorw
-	// flush here!
-	.word 0x1111100b
+	// flush here! tried with 7 now.
+	.word 0xff7ff00b
 // prime for measurement
 	la	x1, cache_func_prime
 	jalr	x1

@@ -20,14 +20,14 @@ void check_cacheability_print(uint8_t flushfirst, uint64_t addr) {
 
   if (flushfirst) {
     asm volatile(
-     //".word 0x1111100b;\n" //fence.t
+     //".word 0xfffff00b;\n" //fence.t
      "fence iorw, iorw\n"
      ".word 0xfffff00b\n"
      "fence iorw, iorw\n");
   }
 
   asm volatile(
-     //".word 0x1111100b;\n" //fence.t
+     //".word 0xfffff00b;\n" //fence.t
      "fence iorw, iorw\n"
      "csrr t1, 0xb04;\n"
      "csrr t2, 0xb00;\n"
@@ -127,7 +127,7 @@ uint8_t check_address_is_in_cache2(uint64_t x){
   printf("\n\n\n");
 */
   asm volatile(
-     //".word 0x1111100b;\n" //fence.t
+     //"0xfffff00b;\n" //fence.t
      "fence iorw, iorw;\n"
      "csrr t1, 0xb04;\n"
      "csrr t2, 0xb00;\n"
@@ -159,7 +159,7 @@ uint8_t check_address_is_in_cache(uint64_t x){
   uint64_t cycles0 = 0;
 
   asm volatile(
-     //".word 0x1111100b;\n" //fence.t
+     //"0xfffff00b;\n" //fence.t
      "fence iorw, iorw;\n"
      "csrr t1, 0xb04;\n"
      "csrr t2, 0xb00;\n"
@@ -193,7 +193,7 @@ uint8_t check_address_is_in_cache(uint64_t x){
 
 // reserved memory used for basic experiments
 uint64_t memory[CACHE_SIZE * 8 / 8] __ALIGN(CACHE_SIZE);
-
+uint64_t somevalue = 512;
 
 // experiments and test cases START
 // ------------------------------------------------------------------------
@@ -306,7 +306,7 @@ void test_value_in_cache2() {
   uint64_t cycles0 = 0;
 
   asm volatile(
-     //".word 0x1111100b;\n" //fence.t
+     //"0xfffff00b;\n" //fence.t
      "fence iorw, iorw\n"
      "csrr t1, 0xb04;\n"
      "csrr t2, 0xb00;\n"
@@ -323,7 +323,7 @@ void test_value_in_cache2() {
    printf("[Exp time: l1dc miss: %d, cycles: %d. Address: 0x%x] \n", dcache_misses0, cycles0, addr);
 
    asm volatile(
-      //".word 0x1111100b;\n" //fence.t
+      //"0xfffff00b;\n" //fence.t
       "fence iorw, iorw\n"
       "csrr t1, 0xb04;\n"
       "csrr t2, 0xb00;\n"
@@ -359,7 +359,7 @@ void test_value_in_cache3() {
 
   for(int i = 0; i < 10; i++){
   asm volatile(
-     //".word 0x1111100b;\n" //fence.t
+     //"0xfffff00b;\n" //fence.t
      "fence iorw, iorw;\n"
      "csrr t1, 0xb04;\n"
      "csrr t2, 0xb00;\n"
@@ -595,8 +595,6 @@ void test_eight_ways() {
   //Note experiment memory not changed at all, yet.
   flush_cache();
 
-  cache_state cache_state;
-  cache_func_prime();
 
   uint64_t aarry[8];
 
@@ -621,17 +619,17 @@ void test_eight_ways() {
   }
   printf("\n");
 
-  // for(int i = 0; i < 8; i++){
-  //   volatile uint64_t * xP = (uint64_t * )CACHEABLE2(memory[aarry[i]]);
-  //   if(check_address_is_in_cache((uint64_t)(xP))){
-  //     printf(" a%d is in the cache. ", i);
-  //   }else{
-  //     printf(" a%d is NOT in the cache. ", i);
-  //   }
-  // }
-  // printf("\n");
-  cache_func_probe(&cache_state);
-  print_cache_state(&cache_state);
+  for(int i = 0; i < 8; i++){
+    volatile uint64_t * xP = (uint64_t * )CACHEABLE2(memory[aarry[i]]);
+    if(check_address_is_in_cache((uint64_t)(xP))){
+      printf(" a%d is in the cache. ", i);
+    }else{
+      printf(" a%d is NOT in the cache. ", i);
+    }
+  }
+  printf("\n");
+  // cache_func_probe(&cache_state);
+  // print_cache_state(&cache_state);
 }
 
 void test_nine_ways() {
@@ -642,8 +640,6 @@ void test_nine_ways() {
   //Modified from cache_experiment.c
   //Note experiment memory not changed at all, yet.
   flush_cache();
-  cache_state cache_state;
-  cache_func_prime();
 
   uint64_t aarry[9];
 
@@ -668,125 +664,20 @@ void test_nine_ways() {
   }
   printf("\n");
 
-  // for(int i = 0; i < 9; i++){
-  //   volatile uint64_t * xP = (uint64_t * )CACHEABLE2(memory[aarry[i]]);
-  //   if(check_address_is_in_cache((uint64_t)(xP))){
-  //     printf(" a%d is in the cache. ", i);
-  //   }else{
-  //     printf(" a%d is NOT in the cache. ", i);
-  //   }
-  // }
+  for(int i = 0; i < 9; i++){
+    volatile uint64_t * xP = (uint64_t * )CACHEABLE2(memory[aarry[i]]);
+    if(check_address_is_in_cache((uint64_t)(xP))){
+      printf(" a%d is in the cache. ", i);
+    }else{
+      printf(" a%d is NOT in the cache. ", i);
+    }
+  }
   printf("\n");
 
-  cache_func_probe(&cache_state);
-  print_cache_state(&cache_state);
-}
-/*
-void cache_exp_cachesets_fill_with_access_inbetween(){
-  printf("experiment: cache_exp_cachesets_fill_with_access_inbetween\n");
-  flush_cache(); // remove flush if not testing.
-
-  // This is prime
-  for(int i = 0; i < SETS; i++){
-    fill_set_0(i); // This fills the cache.
-  }
-
-  // Arbitary Access
-  volatile uint64_t xNew = 0;
-  xNew = 0x1337;
-  // access a cacheable value
-  volatile uint64_t * xPNew = (uint64_t * )CACHEABLE(xNew);
-
-  if(check_address_is_in_cache((uint64_t)(xPNew))){
-    printf(" x is in the cache \n");
-  }else{
-    printf(" x is NOT in the cache \n");
-  }
-  if(check_address_is_in_cache((uint64_t)(xPNew))){
-    printf(" x is in the cache \n");
-  }else{
-    printf(" x is NOT in the cache \n");
-  }
-
-  // This is probe
-  for(int i = 0; i < SETS; i++){
-    uint8_t miss = fill_set_0_miss(i);
-    if(miss){
-      printf("There was a miss at index %d.\n", i);
-    }
-  }
-  printf("There was NO miss.\n");
+  // cache_func_probe(&cache_state);
+  // print_cache_state(&cache_state);
 }
 
-void cache_exp_cachesets_fill(){
-  printf("experiment: cache_exp_cachesets_fill\n");
-  flush_cache(); // remove flush if not testing.
-
-  for(int i = 0; i < SETS; i++){
-    fill_set_0(i); // This fills the cache.
-  }
-
-  for(int i = 0; i < SETS; i++){
-    uint8_t miss = fill_set_0_miss(i);
-    if(miss){
-      printf("There was a miss.\n");
-      return;
-    }
-  }
-  printf("There was NO miss.\n");
-}
-
-void cache_exp_cachesets(){
-  printf("experiment: cache_exp_cachesets\n");
-  flush_cache(); // remove flush if not testing.
-
-  for(int i = 0; i < SETS; i++){
-    access_set_0(i);
-  }
-
-  for(int i = 0; i < SETS; i++){
-    uint8_t miss = access_set_miss(i);
-    if(miss){
-      printf("There was a miss.\n");
-      return;
-    }
-  }
-  printf("There was NO miss.\n");
-}
-
-void cache_exp_miss_and_hit_from_base(){
-  printf("experiment: cache_exp_miss_and_hit_from_base\n");
-  // cache_exp_miss_and_hit_from_base(); // This test shows miss and miss, when starting at 8000 0000, in uncacheable area
-  uint64_t dcache_misses0;
-  uint64_t dcache_misses1;
-  uint64_t cycles0;
-  uint64_t cycles1;
-
-  asm volatile(
-     ".word 0x1111100b;\n" //fence.t
-     "fence iorw, iorw;\n"
-     "csrr t1, 0xb04;\n"
-     "csrr t2, 0xb00;\n"
-     "lw t0, 256(sp);\n"
-     "csrr t3, 0xb00;\n"
-     "csrr t4, 0xb04;\n"
-     "sub %0, t4, t1;\n"
-     "sub %1, t3, t2;\n"
-     "fence iorw, iorw;\n"
-     "csrr t1, 0xb04;\n"
-     "csrr t2, 0xb00;\n"
-     "lw t0, 256(sp);\n"
-     "csrr t3, 0xb00;\n"
-     "csrr t4, 0xb04;\n"
-     "sub %2, t4, t1;\n"
-     "sub %3, t3, t2;\n"
-     : "=r"(dcache_misses0), "=r"(cycles0), "=r"(dcache_misses1), "=r"(cycles1)
-     :
-     :
-   );
-
-  printf("[First load: l1dc miss: %d, cycles: %d.] [Second load: l1dc miss: %d, cycles: %d.] \n", dcache_misses0, cycles0, dcache_misses1, cycles1);
-}
 
 void cache_exp_flushinbetween(){
   printf("experiment: cache_exp_flushinbetween\n");
@@ -796,7 +687,7 @@ void cache_exp_flushinbetween(){
   uint64_t cycles1;
 
   asm volatile(
-     ".word 0x1111100b;\n" //fence.t
+     ".word 0xfffff00b;\n" //fence.t
      "fence iorw, iorw;\n"
      "csrr t1, 0xb04;\n"
      "csrr t2, 0xb00;\n"
@@ -805,7 +696,7 @@ void cache_exp_flushinbetween(){
      "csrr t4, 0xb04;\n"
      "sub %0, t4, t1;\n"
      "sub %1, t3, t2;\n"
-     ".word 0x1111100b;\n" //fence.t
+     ".word 0xfffff00b;\n" //fence.t
      "fence iorw, iorw;\n"
      "csrr t1, 0xb04;\n"
      "csrr t2, 0xb00;\n"
@@ -821,6 +712,334 @@ void cache_exp_flushinbetween(){
 
   printf("[First load: l1dc miss: %d, cycles: %d.] [Second load: l1dc miss: %d, cycles: %d.] \n", dcache_misses0, cycles0, dcache_misses1, cycles1);
 }
+
+void cache_exp_mispredict_counters_0(){
+  printf("experiment: cache_exp_mispredict_counters_0\n");
+
+  flush_cache();
+
+  uint64_t dcache_misses0 = 0;
+  uint64_t cycles0 = 0;
+  uint64_t mispredicts = 0;
+  uint64_t dcache_misses1 = 0;
+  uint64_t cycles1 = 0;
+  uint64_t mispredict1 = 0;
+
+  asm volatile(
+    "csrr %2, 0xb0e;\n"
+    "csrr %0, 0xb04;\n"
+    "csrr %1, 0xb00;\n"
+     : "=r"(dcache_misses0), "=r"(cycles0), "=r"(mispredicts)
+     :
+     :
+   );
+
+  asm volatile(
+    "csrr %2, 0xb0e;\n"
+    "csrr %0, 0xb04;\n"
+    "csrr %1, 0xb00;\n"
+     : "=r"(dcache_misses1), "=r"(cycles1), "=r"(mispredict1)
+     :
+     :
+   );
+
+   printf("[Exp time: l1dc miss: %d, cycles: %d, mispredicts: %d.] \n", dcache_misses1 - dcache_misses0, cycles1 - cycles0, mispredict1 - mispredicts);
+}
+
+void cache_exp_mispredict_counters_loop(){
+  printf("experiment: cache_exp_mispredict_counters_loop\n");
+
+  flush_cache();
+
+  uint64_t dcache_misses0 = 0;
+  uint64_t cycles0 = 0;
+  uint64_t mispredicts = 0;
+  uint64_t dcache_misses1 = 0;
+  uint64_t cycles1 = 0;
+  uint64_t mispredict1 = 0;
+
+  asm volatile(
+    "csrr %2, 0xb0e;\n"
+    "csrr %0, 0xb04;\n"
+    "csrr %1, 0xb00;\n"
+     : "=r"(dcache_misses0), "=r"(cycles0), "=r"(mispredicts)
+     :
+     :
+   );
+
+   int i,j;
+   int c = 0;
+   for(i = 0; i < 1000; i++){
+     for (j = 0; j < 4; j++) {
+       c++;
+     }
+   }
+
+  asm volatile(
+    "csrr %2, 0xb0e;\n"
+    "csrr %0, 0xb04;\n"
+    "csrr %1, 0xb00;\n"
+     : "=r"(dcache_misses1), "=r"(cycles1), "=r"(mispredict1)
+     :
+     :
+   );
+
+   printf("[Exp time: l1dc miss: %d, cycles: %d, mispredicts: %d.] \n", dcache_misses1 - dcache_misses0, cycles1 - cycles0, mispredict1 - mispredicts);
+}
+
+void cache_exp_mispredict_counters_if_1(){
+  printf("experiment: cache_exp_mispredict_counters_if_1\n");
+
+  flush_cache();
+
+  uint64_t dcache_misses0 = 0;
+  uint64_t cycles0 = 0;
+  uint64_t mispredicts = 0;
+  uint64_t dcache_misses1 = 0;
+  uint64_t cycles1 = 0;
+  uint64_t mispredict1 = 0;
+
+  asm volatile(
+    "csrr %2, 0xb0e;\n"
+    "csrr %0, 0xb04;\n"
+    "csrr %1, 0xb00;\n"
+     : "=r"(dcache_misses0), "=r"(cycles0), "=r"(mispredicts)
+     :
+     :
+   );
+
+ int i = 0;
+ int j = 0;
+ if(i == j){
+   i++;
+ }
+ if(i != j){
+   i++;
+ }
+
+  asm volatile(
+    "csrr %2, 0xb0e;\n"
+    "csrr %0, 0xb04;\n"
+    "csrr %1, 0xb00;\n"
+     : "=r"(dcache_misses1), "=r"(cycles1), "=r"(mispredict1)
+     :
+     :
+   );
+
+   printf("[Exp time: l1dc miss: %d, cycles: %d, mispredicts: %d.] \n", dcache_misses1 - dcache_misses0, cycles1 - cycles0, mispredict1 - mispredicts);
+}
+
+void cache_exp_mispredict_counters_if_2(){
+  printf("experiment: cache_exp_mispredict_counters_if_2\n");
+
+  flush_cache();
+
+  uint64_t dcache_misses0 = 0;
+  uint64_t cycles0 = 0;
+  uint64_t mispredicts = 0;
+  uint64_t dcache_misses1 = 0;
+  uint64_t cycles1 = 0;
+  uint64_t mispredict1 = 0;
+
+  asm volatile(
+    "csrr %2, 0xb0e;\n"
+    "csrr %0, 0xb04;\n"
+    "csrr %1, 0xb00;\n"
+     : "=r"(dcache_misses0), "=r"(cycles0), "=r"(mispredicts)
+     :
+     :
+   );
+
+ int i = 0;
+ int j = 0;
+ if(i == j){
+   i++;
+ }
+ if(i == j){
+   i++;
+ }
+  asm volatile(
+    "csrr %2, 0xb0e;\n"
+    "csrr %0, 0xb04;\n"
+    "csrr %1, 0xb00;\n"
+     : "=r"(dcache_misses1), "=r"(cycles1), "=r"(mispredict1)
+     :
+     :
+   );
+
+   printf("[Exp time: l1dc miss: %d, cycles: %d, mispredicts: %d.] \n", dcache_misses1 - dcache_misses0, cycles1 - cycles0, mispredict1 - mispredicts);
+}
+
+void cache_exp_mispredict_counters_load(){
+  printf("experiment: cache_exp_mispredict_counters_load\n");
+
+  flush_cache();
+
+  uint64_t dcache_misses0 = 0;
+  uint64_t cycles0 = 0;
+  uint64_t mispredicts = 0;
+  uint64_t dcache_misses1 = 0;
+  uint64_t cycles1 = 0;
+  uint64_t mispredict1 = 0;
+
+
+
+  memory[0] = 0x456;
+  volatile uint64_t * xP = (uint64_t * )CACHEABLE2(memory[0]);
+
+
+  asm volatile(
+    "csrr %2, 0xb0e;\n"
+    "csrr %0, 0xb04;\n"
+    "csrr %1, 0xb00;\n"
+     : "=r"(dcache_misses0), "=r"(cycles0), "=r"(mispredicts)
+     :
+     :
+   );
+
+ int i = 0;
+ int j = 0;
+ if(i == j){
+   i++;
+ }
+ if(i != j){
+   uint64_t x = *(xP);
+ }
+
+  asm volatile(
+    "csrr %2, 0xb0e;\n"
+    "csrr %0, 0xb04;\n"
+    "csrr %1, 0xb00;\n"
+     : "=r"(dcache_misses1), "=r"(cycles1), "=r"(mispredict1)
+     :
+     :
+   );
+
+   printf("[Exp time: l1dc miss: %d, cycles: %d, mispredicts: %d.] \n", dcache_misses1 - dcache_misses0, cycles1 - cycles0, mispredict1 - mispredicts);
+}
+
+void cache_helper_spec(int value){
+  //uint64_t* addr = 0xA0000000;
+  if(value < 256){
+    return;//*addr;
+  }
+  //*addr;
+}
+
+void cache_exp_mispredict_counters_train(){
+  printf("experiment: cache_exp_mispredict_counters_train\n");
+
+  flush_cache();
+
+  uint64_t dcache_misses0 = 0;
+  uint64_t cycles0 = 0;
+  uint64_t mispredicts = 0;
+  uint64_t dcache_misses1 = 0;
+  uint64_t cycles1 = 0;
+  uint64_t mispredict1 = 0;
+
+  cache_state cache_state;
+  cache_func_prime();
+
+
+
+  asm volatile(
+    "csrr %2, 0xb0e;\n"
+    "csrr %0, 0xb04;\n"
+    "csrr %1, 0xb00;\n"
+     : "=r"(dcache_misses0), "=r"(cycles0), "=r"(mispredicts)
+     :
+     :
+   );
+
+   int abc = 0;
+   abc=999;
+   cache_helper_spec(abc);
+
+
+  asm volatile(
+     "csrr %2, 0xb0e;\n"
+     "csrr %0, 0xb04;\n"
+     "csrr %1, 0xb00;\n"
+     : "=r"(dcache_misses1), "=r"(cycles1), "=r"(mispredict1)
+     :
+     :
+   );
+
+   printf("[Exp time: l1dc miss: %d, cycles: %d, mispredicts: %d.] \n", dcache_misses1 - dcache_misses0, cycles1 - cycles0, mispredict1 - mispredicts);
+
+   cache_func_probe(&cache_state);
+   print_cache_state(&cache_state);
+}
+
+void cache_helper_spec2(int value, uint64_t* x){
+  if(value < 256){
+    *(x);
+  }
+  //printf("%x\n", x);
+  //*addr;
+}
+
+void cache_exp_mispredict_counters(){
+  //experiment: cache_exp_mispredict_counters_train2
+// [Exp time: l1dc miss: 0, cycles: 948, mispredicts: 2.]
+// set 0
+// - way 7
+
+  printf("experiment: cache_exp_mispredict_counters_train2\n");
+
+  flush_cache();
+
+  uint64_t dcache_misses0 = 0;
+  uint64_t cycles0 = 0;
+  uint64_t mispredicts = 0;
+  uint64_t dcache_misses1 = 0;
+  uint64_t cycles1 = 0;
+  uint64_t mispredict1 = 0;
+
+  uint64_t addr1 = 0x80000200;
+  uint64_t addr = 0xA0000000;
+
+  volatile uint64_t * xP = (uint64_t * )CACHEABLE2(memory[0]);
+
+   uint64_t abc = 0;
+   abc=123;
+   for(int i = 0; i < 100; i++){
+    cache_helper_spec2(abc,xP);
+    }
+
+    cache_state cache_state;
+    cache_func_prime();
+
+    asm volatile(
+      "csrr %2, 0xb0e;\n"
+      "csrr %0, 0xb04;\n"
+      "csrr %1, 0xb00;\n"
+       : "=r"(dcache_misses0), "=r"(cycles0), "=r"(mispredicts)
+       :
+       :
+     );
+
+    abc=somevalue;
+    cache_helper_spec2(abc,xP);
+
+  asm volatile(
+    "csrr %2, 0xb0e;\n"
+    "csrr %0, 0xb04;\n"
+    "csrr %1, 0xb00;\n"
+     : "=r"(dcache_misses1), "=r"(cycles1), "=r"(mispredict1)
+     :
+     :
+   );
+
+   printf("[Exp time: l1dc miss: %d, cycles: %d, mispredicts: %d.] \n", dcache_misses1 - dcache_misses0, cycles1 - cycles0, mispredict1 - mispredicts);
+
+   cache_func_probe(&cache_state);
+   print_cache_state(&cache_state);
+}
+
+
+/*
 
 void cache_exp_branch_specload_part2(uint64_t x){
   //branch on a condition, try to see if a load is made while speculative,
@@ -895,7 +1114,7 @@ void cache_exp_branch_specload(){
   uint64_t mispredicts;
 
   asm volatile(
-     ".word 0x1111100b;\n" //fence.t
+     "0xfffff00b;\n" //fence.t
      "add t0, x0, 5;\n"
      "add a1, x0, 5;\n"
      "sw t0, 0(sp);\n"
@@ -932,7 +1151,7 @@ void cache_exp_straight_spec(){
   uint64_t mispredicts;
 
   asm volatile(
-     ".word 0x1111100b;\n" //fence.t
+     "0xfffff00b;\n" //fence.t
      "add t0, sp, 512;\n"
      "sw a0, 0(sp);\n"
      "fence iorw, iorw;\n"
@@ -957,49 +1176,29 @@ void cache_exp_straight_spec(){
    printf("[Exp time: l1dc miss: %d, cycles: %d, mispredicts: %d.] \n", dcache_misses0, cycles0, mispredicts);
 }
 
-void test_value_in_cache() {
-  // Basically shows that two accesses to the same memory address within the cacheable area will cause a miss and then a hit.
-  printf("experiment: test_value_in_cache\n");
-  //Modified from cache_experiment.c
-  // check memory alias
-  volatile uint64_t x = 0;
-
-  flush_cache();
-
-  x = 0x41;
-  // access a cacheable value
-  volatile uint64_t * xP = (uint64_t * )CACHEABLE(x);
-
-  if(check_address_is_in_cache((uint64_t)(xP))){
-    printf(" x is in the cache \n");
-  }else{
-    printf(" x is NOT in the cache \n");
-  }
-
-  if(check_address_is_in_cache((uint64_t)(xP))){
-    printf(" x is in the cache \n");
-  }else{
-    printf(" x is NOT in the cache \n");
-  }
-
-}
 
 */
 
 void cache_exp_all(){
 
-  // printf("== First experiment Start == \n");
-  // cache_exp_miss_and_hit_from_base(); // This test shows miss and miss, when starting at 8000 0000, in uncacheable area
-  // printf("== First experiment Done  == \n");
+  printf("== First experiment Start == \n");
+  cache_exp_flushinbetween(); // cache_exp_flushinbetween
+  printf("== First experiment Done  == \n");
   //
-  // printf("== Second experiment Start == \n");
-  // cache_exp_cachesets(); // Fills each set with one access
-  // printf("== Second experiment Done  == \n");
-  //
-  // printf("== Third experiment Start == \n");
-  // //cache_exp_branch_specload(); // Not done. Not sure if this work as intended due to pref counter.
-  // printf("== Third experiment Done  == \n");
-  //
+  printf("== Second experiment Start == \n");
+  cache_exp_mispredict_counters(); // Fills each set with one access
+  printf("== Second experiment Done  == \n");
+
+  printf("== Third experiment Start == \n");
+  cache_exp_mispredict_counters();
+  cache_exp_mispredict_counters_0();
+  cache_exp_mispredict_counters_if_1();
+  cache_exp_mispredict_counters_if_2();
+  cache_exp_mispredict_counters_load();
+  cache_exp_mispredict_counters_loop();
+  cache_exp_mispredict_counters_train();
+  printf("== Third experiment Done  == \n");
+
   // printf("== Forth experiment Start == \n");
   // //cache_exp_straight_spec(); // Not done. Not sure how to correctly do it. Will try constant jump.
   // printf("== Forth experiment Done  == \n");
