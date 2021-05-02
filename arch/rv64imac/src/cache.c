@@ -52,7 +52,18 @@ void flush_cache() {
   //Use Wistoff et al.'s implemented flush hw-instruction.
   //Needs correct bitstream on fpga, https://github.com/niwis/ariane/tree/fence-t
   asm volatile("fence iorw, iorw");
-  asm volatile(".word 0x1111100b");
+  asm volatile(".word 0xfffff00b");
+  asm volatile("fence iorw, iorw");
+}
+
+void flush_cache_not_bp() {
+  //Use Wistoff et al.'s implemented flush hw-instruction.
+  //Needs correct bitstream on fpga, https://github.com/niwis/ariane/tree/fence-t
+
+  //Flushes everything but the branch predictor.
+  //https://github.com/niwis/ariane/blob/67cd310439887e8d663c2e16d0d52b1105de3589/src/controller.sv#L151-L164
+  asm volatile("fence iorw, iorw");
+  asm volatile(".word 0xff7ff00b");
   asm volatile("fence iorw, iorw");
 }
 
@@ -156,6 +167,3 @@ void print_perf() {
 //   uint64_t cycle_used = cycle1 - cycle0;
 //   return cycle_used;
 // }
-
-
-
