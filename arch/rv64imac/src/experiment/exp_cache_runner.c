@@ -117,26 +117,36 @@ void _cache_run_(cache_state *cache_, func_type _clean_mem_run, func_type _scamv
   return;
 */
 
-  // training loop
+  // training loop start
   #ifdef EXP_HAS_INPUT_TRAIN
   for(int i = 0; i < 0; i++){ // TODO: adjust to train more
     // prepare
     _clean_mem_train();
 
-    // TODO: remove flush if not testing. // make function which does not flush the brain predictor
-    //flush_cache();
-
-    // training here
+    // Want to keep values in branch predictor, use special flush.
+    // TODO: Is this how we want it?
+    if(i == 0){
+      flush_cache();
+    }else{
+      flush_cache_not_bp();
+    }
+    // training
     _scamv_train__();
   }
   #endif
+  // training loop end
 
-  // prepare and prime
+  // prepare and prime start
   _clean_mem_run();
-  flush_cache(); // remove flush if not testing. (but we need to flush here?! this is the actual experiment!)
+  #ifdef EXP_HAS_INPUT_TRAIN
+  flush_cache_not_bp(); // Want to keep values in branch predictor, use special flush.
+  #else
+  flush_cache(); // no training - flush normally
+  #endif
   cache_func_prime();
+  // prepare and prime end
 
-  // actual experiment here
+  // run experiment
   _scamv_run__();
 
   // probe

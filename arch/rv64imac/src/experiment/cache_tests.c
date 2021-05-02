@@ -37,6 +37,7 @@ extern volatile uint8_t _probing_memory;
 void run_cache_experiment() {
   uint16_t diff = 0;
 
+
   validate_cache_aligned_memory("_experiment_memory", (uint64_t)&_experiment_memory);
   validate_cache_aligned_memory("_probing_memory", (uint64_t)&_probing_memory);
 
@@ -79,7 +80,8 @@ void run_cache_experiment() {
   }
 #elif defined RUN_1EXPS
   diff += cache_run_mult_compare(1, &cache, NUM_MUL_RUNS);
-  print_cache_state(&cache); // works
+  print_cache_state(&cache);
+  cache_exp_all(); //temp, remove this
   if (diff != 0)
     printf("INCONCLUSIVE: %d\n", diff);
 #else
