@@ -63,7 +63,7 @@ void flush_cache_not_bp() {
   //Flushes everything but the branch predictor.
   //https://github.com/niwis/ariane/blob/67cd310439887e8d663c2e16d0d52b1105de3589/src/controller.sv#L151-L164
   asm volatile("fence iorw, iorw");
-  asm volatile(".word 0xff7ff00b");
+  asm volatile(".word 0xfff7f00b");
   asm volatile("fence iorw, iorw");
 }
 

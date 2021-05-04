@@ -210,8 +210,8 @@ __exit_scamv_train_loop:
 	jalr	x1
 // flush the cache now
 	fence iorw, iorw
-	// flush here! tried with 7 now.
-	.word 0xff7ff00b
+	// flush here! tried with 7 now. With full fffff, we get also result.
+	.word 0xfff7f00b
 // prime for measurement
 	la	x1, cache_func_prime
 	jalr	x1
