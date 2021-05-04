@@ -190,6 +190,7 @@ uint8_t check_address_is_in_cache(uint64_t x){
 #define __ALIGN(x) __attribute__ ((aligned (x)))
 #define CACHEABLE(x) ((void *)(((uint64_t)(&x)) + 0x1c000090))
 #define CACHEABLE2(x) ((void *)(((uint64_t)(&x)) + 0x20000000))
+#define UNCACHEABLE(x) ((void *)(((uint64_t)(&x)) - 0x20000000))
 
 // reserved memory used for basic experiments
 uint64_t memory[CACHE_SIZE * 8 / 8] __ALIGN(CACHE_SIZE);
@@ -918,16 +919,22 @@ void cache_exp_mispredict_counters_load(){
    printf("[Exp time: l1dc miss: %d, cycles: %d, mispredicts: %d.] \n", dcache_misses1 - dcache_misses0, cycles1 - cycles0, mispredict1 - mispredicts);
 }
 
-void cache_helper_spec(int value){
-  //uint64_t* addr = 0xA0000000;
-  if(value < 256){
-    return;//*addr;
+
+uint64_t cache_helper_spec2_noload(int value, uint64_t* x){
+  uint64_t tmp = 0;
+  //printf("%x\n", (x+value));
+  tmp = memory[3];
+  if(value > 256){
+    //tmp = *(x);
+    tmp = 1;
   }
-  //*addr;
+  //printf("%d\n", tmp);
+  return tmp;
 }
 
-void cache_exp_mispredict_counters_train(){
-  printf("experiment: cache_exp_mispredict_counters_train\n");
+void cache_exp_mispredict_counters_speculative_noload(){
+  //experiment: cache_exp_mispredict_counters_speculative_load
+  printf("experiment: cache_exp_mispredict_counters_speculative_noload\n");
 
   flush_cache();
 
@@ -938,29 +945,39 @@ void cache_exp_mispredict_counters_train(){
   uint64_t cycles1 = 0;
   uint64_t mispredict1 = 0;
 
+  uint64_t * xP = (uint64_t * )CACHEABLE2(memory[0]);
+
+  uint64_t abc = 100;
+   abc=260;
+   for(int i = 0; i < 10; i++){
+    cache_helper_spec2_noload(abc,xP);
+    }
+  abc=64;
+
+  flush_cache_not_bp();
+
   cache_state cache_state;
   cache_func_prime();
 
-
-
   asm volatile(
+    "fence iorw, iorw;\n"
     "csrr %2, 0xb0e;\n"
     "csrr %0, 0xb04;\n"
     "csrr %1, 0xb00;\n"
+    "fence iorw, iorw;\n"
      : "=r"(dcache_misses0), "=r"(cycles0), "=r"(mispredicts)
      :
      :
    );
 
-   int abc = 0;
-   abc=999;
-   cache_helper_spec(abc);
-
+   cache_helper_spec2_noload(abc,xP);
 
   asm volatile(
-     "csrr %2, 0xb0e;\n"
-     "csrr %0, 0xb04;\n"
-     "csrr %1, 0xb00;\n"
+    "fence iorw, iorw;\n"
+    "csrr %2, 0xb0e;\n"
+    "csrr %0, 0xb04;\n"
+    "csrr %1, 0xb00;\n"
+    "fence iorw, iorw;\n"
      : "=r"(dcache_misses1), "=r"(cycles1), "=r"(mispredict1)
      :
      :
@@ -972,21 +989,27 @@ void cache_exp_mispredict_counters_train(){
    print_cache_state(&cache_state);
 }
 
-void cache_helper_spec2(int value, uint64_t* x){
-  if(value < 256){
-    *(x);
+uint64_t cache_helper_spec2(int value, uint64_t* x){
+  uint64_t tmp = 0;
+  //printf("%x\n", (x+value));
+  tmp = memory[3];
+  if(value > 256){
+    tmp = *(x);
   }
-  //printf("%x\n", x);
-  //*addr;
+  //printf("%d\n", tmp);
+  return tmp;
 }
 
-void cache_exp_mispredict_counters(){
-  //experiment: cache_exp_mispredict_counters_train2
-// [Exp time: l1dc miss: 0, cycles: 948, mispredicts: 2.]
-// set 0
-// - way 7
+void cache_exp_mispredict_counters_speculative_load(){
+  //experiment: cache_exp_mispredict_counters_speculative_load
+  /*
+  experiment: cache_exp_mispredict_counters_speculative_load
+[Exp time: l1dc miss: 0, cycles: 979, mispredicts: 2.]
+experiment: cache_exp_mispredict_counters_speculative_noload
+[Exp time: l1dc miss: 0, cycles: 979, mispredicts: 2.]
+  */
 
-  printf("experiment: cache_exp_mispredict_counters_train2\n");
+  printf("experiment: cache_exp_mispredict_counters_speculative_load\n");
 
   flush_cache();
 
@@ -997,20 +1020,259 @@ void cache_exp_mispredict_counters(){
   uint64_t cycles1 = 0;
   uint64_t mispredict1 = 0;
 
-  uint64_t addr1 = 0x80000200;
-  uint64_t addr = 0xA0000000;
 
-  volatile uint64_t * xP = (uint64_t * )CACHEABLE2(memory[0]);
+  uint64_t * xP = (uint64_t * )CACHEABLE2(memory[0]);
 
-   uint64_t abc = 0;
-   abc=123;
-   for(int i = 0; i < 100; i++){
+  uint64_t abc = 100;
+  memory[3] = 5;
+   abc=260;
+   for(int i = 0; i < 10; i++){
     cache_helper_spec2(abc,xP);
     }
+  abc=64;
+
+  flush_cache_not_bp();
 
     cache_state cache_state;
     cache_func_prime();
 
+    // asm volatile(
+    //   "fence iorw, iorw;\n"
+    //   "csrr %2, 0xb0e;\n"
+    //   "csrr %0, 0xb04;\n"
+    //   "csrr %1, 0xb00;\n"
+    //   "fence iorw, iorw;\n"
+    //    : "=r"(dcache_misses0), "=r"(cycles0), "=r"(mispredicts)
+    //    :
+    //    :
+    //  );
+
+     cache_helper_spec2(abc,xP);
+
+   //  asm volatile(
+   //    "fence iorw, iorw;\n"
+   //    "csrr %2, 0xb0e;\n"
+   //    "csrr %0, 0xb04;\n"
+   //    "csrr %1, 0xb00;\n"
+   //    "fence iorw, iorw;\n"
+   //     : "=r"(dcache_misses1), "=r"(cycles1), "=r"(mispredict1)
+   //     :
+   //     :
+   //   );
+   //
+   // printf("[Exp time: l1dc miss: %d, cycles: %d, mispredicts: %d.] \n", dcache_misses1 - dcache_misses0, cycles1 - cycles0, mispredict1 - mispredicts);
+   int tmp;
+   for(int i = 0; i < 1000; i++){
+     tmp++;
+   }
+   cache_func_probe(&cache_state);
+   print_cache_state(&cache_state);
+
+}
+
+
+void cache_helper_spec3(int value, uint64_t* x){
+  // change default, try to train
+  asm volatile(
+    "addi t0, x0, 0;\n"
+    "addi t1, x0, 0;\n"
+    "sw t1,  0(t0);\n"
+    "add t1, x0, %1;\n"
+    "sw t1,  16(t0);\n"
+    "lw t4,  0(t0);\n"
+    "lw t5, 16(t0);\n"
+    "bne t4, t5, viktorscrazylabel2;\n"
+    "lb t1, 256(%0);\n"
+    "viktorscrazylabel2:;\n"
+    "nop;"
+     :
+     : "r"(x), "r"(value)
+     :
+   );
+}
+
+void cache_exp_mispredict_counters(){
+  // if abc = 266;
+// experiment: cache_exp_mispredict_counters_train2
+// [Exp time: l1dc miss: 1, cycles: 996, mispredicts: 1.]
+// set 16
+// - way 0
+// - way 5
+
+//
+//
+// if abc = 0;
+// experiment: cache_exp_mispredict_counters_train2
+// [Exp time: l1dc miss: 1, cycles: 996, mispredicts: 1.]
+// set 16
+// - way 0
+// - way 6
+
+
+  printf("experiment: cache_exp_mispredict_counters_spec\n");
+
+  flush_cache();
+
+  uint64_t dcache_misses0 = 0;
+  uint64_t cycles0 = 0;
+  uint64_t mispredicts = 0;
+  uint64_t dcache_misses1 = 0;
+  uint64_t cycles1 = 0;
+  uint64_t mispredict1 = 0;
+
+
+  uint64_t * xP = (uint64_t * )CACHEABLE2(memory[0]);
+  // uint64_t * goodValue = &memory[1];
+  // memory[1] = 123;
+  //
+   uint64_t abc = 266;
+   abc=123;
+   for(int i = 0; i < 10; i++){
+    cache_helper_spec2(abc,xP);
+    }
+
+     abc=0; //if this is commented, onlt 1 mispredict
+
+    flush_cache_not_bp();
+
+
+    cache_state cache_state;
+    cache_func_prime();
+
+    cache_helper_spec3(abc,xP);
+
+   cache_func_probe(&cache_state);
+   print_cache_state(&cache_state);
+}
+
+void victim_function(uint64_t x)
+{
+  asm volatile(
+    "add t2, x0, %0;\n"
+    "addi t3, x0, 4;\n"
+    "la t0, _experiment_memory;\n"
+    "addi t0, t0, 0;\n"
+    "blt t3, t2, label;\n"
+    "lb t1, 32(t0);\n"
+    "nop;\n"
+    "nop;\n"
+    "nop;\n"
+    "nop;\n"
+    "label:\n"
+    "nop;\n"
+    "nop;\n"
+    "nop;\n"
+    "nop;\n"
+     :
+     : "r"(x)
+     :
+   );
+
+
+}
+
+void cache_exp_spec_tranfser(){
+  // if blt t2, t3
+  // experiment: cache_exp_spec_tranfser
+  // set 2
+  // - way 7
+  // if blt t3, t2
+  // experiment: cache_exp_spec_tranfser
+
+
+
+  printf("experiment: cache_exp_spec_tranfser\n");
+
+  flush_cache();
+
+   uint64_t abc = 1;
+   for(int i = 0; i < 100; i++){
+    victim_function(abc);
+    }
+
+     abc=17;
+
+    flush_cache_not_bp();
+
+
+    cache_state cache_state;
+    cache_func_prime();
+
+    victim_function(abc);
+
+   cache_func_probe(&cache_state);
+   print_cache_state(&cache_state);
+
+   printf("end experiment: cache_exp_spec_tranfser\n");
+}
+
+
+
+uint64_t cache_helper_train_helper(int value){
+//   experiment: cache_exp_predict_trainer
+// if "<" operator
+// == Second experiment Done  ==
+// experiment: cache_exp_predict_trainer
+//
+// experiment: train + no flush
+// [Exp time: l1dc miss: 0, cycles: 822, mispredicts: 1.]
+//
+// experiment: train + flush
+// [Exp time: l1dc miss: 0, cycles: 830, mispredicts: 1.]
+//
+// experiment: train + flush_without bp
+// [Exp time: l1dc miss: 0, cycles: 827, mispredicts: 1.]
+//
+// experiment: train + other value
+// [Exp time: l1dc miss: 0, cycles: 789, mispredicts: 2.]
+
+
+// if ">"
+// == Second experiment Done  ==
+// experiment: cache_exp_predict_trainer
+//
+// experiment: train + no flush
+// [Exp time: l1dc miss: 0, cycles: 762, mispredicts: 1.]
+//
+// experiment: train + flush
+// [Exp time: l1dc miss: 0, cycles: 779, mispredicts: 2.]
+//
+// experiment: train + flush_without bp
+// [Exp time: l1dc miss: 0, cycles: 752, mispredicts: 1.]
+//
+// experiment: train + other value
+// [Exp time: l1dc miss: 0, cycles: 904, mispredicts: 2.]
+
+  //uint64_t tmp = 0;
+  //printf("%x\n", (x+value));
+  if(value > 256){
+    value = value + 15;
+  }
+  //printf("%d\n", tmp);
+  return value;
+}
+
+void cache_exp_predict_trainer(){
+
+  printf("experiment: cache_exp_predict_trainer\n");
+  printf("\nexperiment: train + no flush\n");
+  flush_cache();
+
+  uint64_t dcache_misses0 = 0;
+  uint64_t cycles0 = 0;
+  uint64_t mispredicts = 0;
+  uint64_t dcache_misses1 = 0;
+  uint64_t cycles1 = 0;
+  uint64_t mispredict1 = 0;
+
+  uint64_t abc = 100;
+   abc=123;
+   for(int i = 0; i < 10; i++){
+    cache_helper_train_helper(abc);
+    }
+  //abc=260;
+
+  //flush_cache_not_bp();
     asm volatile(
       "csrr %2, 0xb0e;\n"
       "csrr %0, 0xb04;\n"
@@ -1020,22 +1282,144 @@ void cache_exp_mispredict_counters(){
        :
      );
 
-    abc=somevalue;
-    cache_helper_spec2(abc,xP);
+     cache_helper_train_helper(abc);
 
-  asm volatile(
-    "csrr %2, 0xb0e;\n"
-    "csrr %0, 0xb04;\n"
-    "csrr %1, 0xb00;\n"
-     : "=r"(dcache_misses1), "=r"(cycles1), "=r"(mispredict1)
-     :
-     :
-   );
+    asm volatile(
+      "csrr %2, 0xb0e;\n"
+      "csrr %0, 0xb04;\n"
+      "csrr %1, 0xb00;\n"
+       : "=r"(dcache_misses1), "=r"(cycles1), "=r"(mispredict1)
+       :
+       :
+     );
 
    printf("[Exp time: l1dc miss: %d, cycles: %d, mispredicts: %d.] \n", dcache_misses1 - dcache_misses0, cycles1 - cycles0, mispredict1 - mispredicts);
 
-   cache_func_probe(&cache_state);
-   print_cache_state(&cache_state);
+   printf("\nexperiment: train + flush\n");
+
+   flush_cache();
+
+   dcache_misses0 = 0;
+   cycles0 = 0;
+   mispredicts = 0;
+   dcache_misses1 = 0;
+   cycles1 = 0;
+   mispredict1 = 0;
+
+   abc = 100;
+    abc=123;
+    for(int i = 0; i < 10; i++){
+     cache_helper_train_helper(abc);
+     }
+   //abc=260;
+
+   flush_cache();
+
+     asm volatile(
+       "csrr %2, 0xb0e;\n"
+       "csrr %0, 0xb04;\n"
+       "csrr %1, 0xb00;\n"
+        : "=r"(dcache_misses0), "=r"(cycles0), "=r"(mispredicts)
+        :
+        :
+      );
+
+      cache_helper_train_helper(abc);
+
+     asm volatile(
+       "csrr %2, 0xb0e;\n"
+       "csrr %0, 0xb04;\n"
+       "csrr %1, 0xb00;\n"
+        : "=r"(dcache_misses1), "=r"(cycles1), "=r"(mispredict1)
+        :
+        :
+      );
+
+    printf("[Exp time: l1dc miss: %d, cycles: %d, mispredicts: %d.] \n", dcache_misses1 - dcache_misses0, cycles1 - cycles0, mispredict1 - mispredicts);
+
+    printf("\nexperiment: train + flush_without bp\n");
+
+    flush_cache();
+
+    dcache_misses0 = 0;
+    cycles0 = 0;
+    mispredicts = 0;
+    dcache_misses1 = 0;
+    cycles1 = 0;
+    mispredict1 = 0;
+
+    abc = 100;
+     abc=123;
+     for(int i = 0; i < 10; i++){
+      cache_helper_train_helper(abc);
+      }
+    //abc=260;
+
+    //flush_cache_not_bp(); did not work?
+      asm volatile(
+        ".word 0xfff7f00b;\n"
+        "csrr %2, 0xb0e;\n"
+        "csrr %0, 0xb04;\n"
+        "csrr %1, 0xb00;\n"
+         : "=r"(dcache_misses0), "=r"(cycles0), "=r"(mispredicts)
+         :
+         :
+       );
+
+       cache_helper_train_helper(abc);
+
+      asm volatile(
+        "csrr %2, 0xb0e;\n"
+        "csrr %0, 0xb04;\n"
+        "csrr %1, 0xb00;\n"
+         : "=r"(dcache_misses1), "=r"(cycles1), "=r"(mispredict1)
+         :
+         :
+       );
+
+     printf("[Exp time: l1dc miss: %d, cycles: %d, mispredicts: %d.] \n", dcache_misses1 - dcache_misses0, cycles1 - cycles0, mispredict1 - mispredicts);
+
+     printf("\nexperiment: train + other value\n");
+
+     flush_cache();
+
+     dcache_misses0 = 0;
+     cycles0 = 0;
+     mispredicts = 0;
+     dcache_misses1 = 0;
+     cycles1 = 0;
+     mispredict1 = 0;
+
+     abc = 100;
+      abc=123;
+      for(int i = 0; i < 10; i++){
+       cache_helper_train_helper(abc);
+       }
+     abc=260;
+
+     //flush_cache_not_bp();
+       asm volatile(
+         "csrr %2, 0xb0e;\n"
+         "csrr %0, 0xb04;\n"
+         "csrr %1, 0xb00;\n"
+          : "=r"(dcache_misses0), "=r"(cycles0), "=r"(mispredicts)
+          :
+          :
+        );
+
+        cache_helper_train_helper(abc);
+
+       asm volatile(
+         "csrr %2, 0xb0e;\n"
+         "csrr %0, 0xb04;\n"
+         "csrr %1, 0xb00;\n"
+          : "=r"(dcache_misses1), "=r"(cycles1), "=r"(mispredict1)
+          :
+          :
+        );
+
+      printf("[Exp time: l1dc miss: %d, cycles: %d, mispredicts: %d.] \n", dcache_misses1 - dcache_misses0, cycles1 - cycles0, mispredict1 - mispredicts);
+
 }
 
 
@@ -1179,70 +1563,75 @@ void cache_exp_straight_spec(){
 
 */
 
+
 void cache_exp_all(){
 
-  printf("== First experiment Start == \n");
-  cache_exp_flushinbetween(); // cache_exp_flushinbetween
-  printf("== First experiment Done  == \n");
+  // printf("== First experiment Start == \n");
+  // cache_exp_flushinbetween(); // cache_exp_flushinbetween
+  // printf("== First experiment Done  == \n");
   //
-  printf("== Second experiment Start == \n");
-  cache_exp_mispredict_counters(); // Fills each set with one access
-  printf("== Second experiment Done  == \n");
-
-  printf("== Third experiment Start == \n");
-  cache_exp_mispredict_counters();
-  cache_exp_mispredict_counters_0();
-  cache_exp_mispredict_counters_if_1();
-  cache_exp_mispredict_counters_if_2();
-  cache_exp_mispredict_counters_load();
-  cache_exp_mispredict_counters_loop();
-  cache_exp_mispredict_counters_train();
-  printf("== Third experiment Done  == \n");
-
-  // printf("== Forth experiment Start == \n");
-  // //cache_exp_straight_spec(); // Not done. Not sure how to correctly do it. Will try constant jump.
-  // printf("== Forth experiment Done  == \n");
+  cache_exp_spec_tranfser();
+  // printf("== Second experiment Start == \n");
+  // cache_exp_mispredict_counters();
+  // cache_exp_mispredict_counters_speculative_load();
+  // cache_exp_mispredict_counters_speculative_noload();
+  // printf("== Second experiment Done  == \n");
+  // cache_exp_predict_trainer();
   //
-  printf("== Fifth experiment Start == \n");
-  test_value_in_cache(); // Basically shows that two accesses to the same memory address within the cacheable area will cause a miss and then a hit.
-  test_value_in_cache2();
-  test_value_in_cache3();
-  printf("== Fifth experiment Done  == \n");
-
-
-  printf("== Sixth experiment Start == \n");
-  cache_exp_miss_and_hit_from_base(); // Shows that the 8 accesses to the same set are in the cache.
-  printf("== Sixth experiment Done  == \n");
-
-  printf("== Seventh experiment Start == \n");
-  cache_exp_miss_and_hit_from_cacheable(); // Shows that the 9 accesses to the same set are NOT all in the cache.
-  printf("== Seventh experiment Done  == \n");
-
-
-
-  printf("== Eight experiment Start == \n");
-  cache_exp_timings_instructions(); // Timings
-  printf("== Eight experiment Done  == \n");
-
-  printf("== Ninth experiment Start == \n");
-  test_two_ways(); // Shows that sets are being filled in 2ways
-  printf("== Ninth experiment Done == \n");
-
-  printf("== Tenth experiment Start == \n");
-  test_eight_ways(); // Shows that sets are being filled in all there ways.
-  printf("== Tenth experiment Done == \n");
-
-  printf("== Eleventh experiment Start == \n");
-  test_nine_ways(); // Shows that sets are being filled in all there ways.
-  printf("== Eleventh experiment Done == \n");
-
-  printf("== Twelfth experiment Start == \n");
-  cache_exp_primeandprobe_two_executions(); // prime and probe 2 times, to compare caches.
-  printf("== Twelfth experiment Done == \n");
-
-  printf("== 13 experiment Start == \n");
-  cache_exp_primeandprobe_no_access(); // prime and probe
-  printf("== 13 experiment Done == \n");
+  // printf("== Third experiment Start == \n");
+  // cache_exp_mispredict_counters();
+  // cache_exp_mispredict_counters_0();
+  // cache_exp_mispredict_counters_if_1();
+  // cache_exp_mispredict_counters_if_2();
+  // cache_exp_mispredict_counters_load();
+  // cache_exp_mispredict_counters_loop();
+  // cache_exp_mispredict_counters_train();
+  // printf("== Third experiment Done  == \n");
+  //
+  // // printf("== Forth experiment Start == \n");
+  // // //cache_exp_straight_spec(); // Not done. Not sure how to correctly do it. Will try constant jump.
+  // // printf("== Forth experiment Done  == \n");
+  // //
+  // printf("== Fifth experiment Start == \n");
+  // test_value_in_cache(); // Basically shows that two accesses to the same memory address within the cacheable area will cause a miss and then a hit.
+  // test_value_in_cache2();
+  // test_value_in_cache3();
+  // printf("== Fifth experiment Done  == \n");
+  //
+  //
+  // printf("== Sixth experiment Start == \n");
+  // cache_exp_miss_and_hit_from_base(); // Shows that the 8 accesses to the same set are in the cache.
+  // printf("== Sixth experiment Done  == \n");
+  //
+  // printf("== Seventh experiment Start == \n");
+  // cache_exp_miss_and_hit_from_cacheable(); // Shows that the 9 accesses to the same set are NOT all in the cache.
+  // printf("== Seventh experiment Done  == \n");
+  //
+  //
+  //
+  // printf("== Eight experiment Start == \n");
+  // cache_exp_timings_instructions(); // Timings
+  // printf("== Eight experiment Done  == \n");
+  //
+  // printf("== Ninth experiment Start == \n");
+  // test_two_ways(); // Shows that sets are being filled in 2ways
+  // printf("== Ninth experiment Done == \n");
+  //
+  // printf("== Tenth experiment Start == \n");
+  // test_eight_ways(); // Shows that sets are being filled in all there ways.
+  // printf("== Tenth experiment Done == \n");
+  //
+  // printf("== Eleventh experiment Start == \n");
+  // test_nine_ways(); // Shows that sets are being filled in all there ways.
+  // printf("== Eleventh experiment Done == \n");
+  //
+  // printf("== Twelfth experiment Start == \n");
+  // cache_exp_primeandprobe_two_executions(); // prime and probe 2 times, to compare caches.
+  // printf("== Twelfth experiment Done == \n");
+  //
+  // printf("== 13 experiment Start == \n");
+  // cache_exp_primeandprobe_no_access(); // prime and probe
+  // printf("== 13 experiment Done == \n");
 }
 
 // experiments and test cases END
