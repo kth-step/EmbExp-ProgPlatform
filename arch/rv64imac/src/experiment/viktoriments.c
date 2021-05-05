@@ -153,7 +153,6 @@ uint8_t check_address_is_in_cache2(uint64_t x){
    }
 }
 
-
 uint8_t check_address_is_in_cache(uint64_t x){
   uint64_t dcache_misses0 = 0;
   uint64_t cycles0 = 0;
@@ -179,8 +178,6 @@ uint8_t check_address_is_in_cache(uint64_t x){
      return 1; // if hit, it was in the cache
    }
 }
-
-
 
 // experiment definitions
 // ------------------------------------------------------------------------
@@ -1145,68 +1142,941 @@ void cache_exp_mispredict_counters(){
    print_cache_state(&cache_state);
 }
 
-void victim_function(uint64_t x)
-{
-  asm volatile(
-    "add t2, x0, %0;\n"
-    "addi t3, x0, 4;\n"
-    "la t0, _experiment_memory;\n"
-    "addi t0, t0, 0;\n"
-    "blt t3, t2, label;\n"
-    "lb t1, 32(t0);\n"
-    "nop;\n"
-    "nop;\n"
-    "nop;\n"
-    "nop;\n"
-    "label:\n"
-    "nop;\n"
-    "nop;\n"
-    "nop;\n"
-    "nop;\n"
-     :
-     : "r"(x)
-     :
-   );
+// Initial tests to examine speculative execution
 
-
+void inputfunction(int x) {
+ asm volatile(
+   "la t0, _experiment_memory;\n"
+   "li t1, 4;\n"
+   "sd t1, 48(t0);\n"
+   "sd %0, 80(t0);\n"
+    :
+    : "r"(x)
+    :
+  );
 }
 
-void cache_exp_spec_tranfser(){
-  // if blt t2, t3
-  // experiment: cache_exp_spec_tranfser
-  // set 2
-  // - way 7
-  // if blt t3, t2
-  // experiment: cache_exp_spec_tranfser
+void victim_function_noload_nofences() {
+  uint64_t dcache_misses0 = 0;
+  uint64_t mispredicts = 0;
+  uint64_t cycles0 = 0;
+
+ asm volatile(
+   "la t0, _experiment_memory;\n"
+   "fence iorw, iorw;\n"
+   "csrr t5, 0xb0e;\n"
+   "csrr a6, 0xb04;\n"
+   "csrr a5, 0xb00;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+
+   "ld t4, 48(t0);\n"
+   "ld t1, 80(t0);\n"
+
+   "blt t4, t1, label_noloadf;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+
+   "label_noloadf:\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+
+   "csrr t3, 0xb0e;\n"
+   "csrr a3, 0xb04;\n"
+   "csrr a2, 0xb00;\n"
+
+   "sub %0, a3, a6;\n"
+   "sub %1, a2, a5;\n"
+   "sub %2, t3, t5;\n"
+
+   "fence iorw, iorw;\n"
+    : "=r"(dcache_misses0), "=r"(cycles0), "=r"(mispredicts)
+    :
+    :
+  );
+  printf("[Exp time from asm: l1dc miss: %d, cycles: %d. mispredicts: %d] \n", dcache_misses0, cycles0, mispredicts);
+}
+
+void victim_function_noload_uncond() {
+  uint64_t dcache_misses0 = 0;
+  uint64_t mispredicts = 0;
+  uint64_t cycles0 = 0;
+
+ asm volatile(
+   "la t0, _experiment_memory;\n"
+
+   "fence iorw, iorw;\n"
+   "csrr t5, 0xb0e;\n"
+   "csrr a6, 0xb04;\n"
+   "csrr a5, 0xb00;\n"
+   "fence iorw, iorw;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+
+   "ld t4, 48(t0);\n"
+   "ld t1, 80(t0);\n"
+
+   "blt t4, t1, label_consuming;\n"
+   "j label_end;\n"
+
+   "label_consuming:\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+
+   "label_end:\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+
+   "fence iorw, iorw;\n"
+   "csrr t3, 0xb0e;\n"
+   "csrr a3, 0xb04;\n"
+   "csrr a2, 0xb00;\n"
+   "fence iorw, iorw;\n"
+
+   "sub %0, a3, a6;\n"
+   "sub %1, a2, a5;\n"
+   "sub %2, t3, t5;\n"
+
+   "fence iorw, iorw;\n"
+    : "=r"(dcache_misses0), "=r"(cycles0), "=r"(mispredicts)
+    :
+    :
+  );
+  printf("[Exp time from asm: l1dc miss: %d, cycles: %d. mispredicts: %d] \n", dcache_misses0, cycles0, mispredicts);
+}
+
+void victim_function_uncond() {
+  uint64_t dcache_misses0 = 0;
+  uint64_t mispredicts = 0;
+  uint64_t cycles0 = 0;
+
+ asm volatile(
+   "la t0, _experiment_memory;\n"
+
+   "fence iorw, iorw;\n"
+   "csrr t5, 0xb0e;\n"
+   "csrr a6, 0xb04;\n"
+   "csrr a5, 0xb00;\n"
+   "fence iorw, iorw;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+
+   "ld t4, 48(t0);\n"
+   "ld t1, 80(t0);\n"
+
+   "blt t4, t1, label_consumingl;\n"
+   "j label_endl;\n"
+
+   "label_consumingl:\n"
+   "ld t6, 0(t0);\n"
+
+   "label_endl:\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+
+   "fence iorw, iorw;\n"
+   "csrr t3, 0xb0e;\n"
+   "csrr a3, 0xb04;\n"
+   "csrr a2, 0xb00;\n"
+   "fence iorw, iorw;\n"
+
+   "sub %0, a3, a6;\n"
+   "sub %1, a2, a5;\n"
+   "sub %2, t3, t5;\n"
+
+   "fence iorw, iorw;\n"
+    : "=r"(dcache_misses0), "=r"(cycles0), "=r"(mispredicts)
+    :
+    :
+  );
+  printf("[Exp time from asm: l1dc miss: %d, cycles: %d. mispredicts: %d] \n", dcache_misses0, cycles0, mispredicts);
+}
+
+void victim_function_noload() {
+  uint64_t dcache_misses0 = 0;
+  uint64_t mispredicts = 0;
+  uint64_t cycles0 = 0;
+
+ asm volatile(
+   "la t0, _experiment_memory;\n"
+
+   "fence iorw, iorw;\n"
+   "csrr t5, 0xb0e;\n"
+   "csrr a6, 0xb04;\n"
+   "csrr a5, 0xb00;\n"
+   "fence iorw, iorw;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+
+   "ld t4, 48(t0);\n"
+   "ld t1, 80(t0);\n"
+
+   "blt t4, t1, label_noload;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+
+   "label_noload:\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+
+   "fence iorw, iorw;\n"
+   "csrr t3, 0xb0e;\n"
+   "csrr a3, 0xb04;\n"
+   "csrr a2, 0xb00;\n"
+   "fence iorw, iorw;\n"
+
+   "sub %0, a3, a6;\n"
+   "sub %1, a2, a5;\n"
+   "sub %2, t3, t5;\n"
+
+   "fence iorw, iorw;\n"
+    : "=r"(dcache_misses0), "=r"(cycles0), "=r"(mispredicts)
+    :
+    :
+  );
+  printf("[Exp time from asm: l1dc miss: %d, cycles: %d. mispredicts: %d] \n", dcache_misses0, cycles0, mispredicts);
+}
+
+void victim_function_add() {
+  uint64_t dcache_misses0 = 0;
+  uint64_t mispredicts = 0;
+  uint64_t cycles0 = 0;
+
+ asm volatile(
+   "la t0, _experiment_memory;\n"
+
+   "addi a4, x0, 1;\n"
+   "fence iorw, iorw;\n"
+   "csrr t5, 0xb0e;\n"
+   "csrr a6, 0xb04;\n"
+   "csrr a5, 0xb00;\n"
+   "fence iorw, iorw;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+
+   "ld t4, 48(t0);\n"
+   "ld t1, 80(t0);\n"
+
+   "blt t4, t1, label_add;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+
+   "label_add:\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+   "add a4, a4, a4;\n"
+
+   "fence iorw, iorw;\n"
+   "csrr t3, 0xb0e;\n"
+   "csrr a3, 0xb04;\n"
+   "csrr a2, 0xb00;\n"
+   "fence iorw, iorw;\n"
+
+   "sub %0, a3, a6;\n"
+   "sub %1, a2, a5;\n"
+   "sub %2, t3, t5;\n"
+
+   "fence iorw, iorw;\n"
+    : "=r"(dcache_misses0), "=r"(cycles0), "=r"(mispredicts)
+    :
+    :
+  );
+  printf("[Exp time from asm: l1dc miss: %d, cycles: %d. mispredicts: %d] \n", dcache_misses0, cycles0, mispredicts);
+}
+
+void victim_function() {
+  uint64_t dcache_misses0 = 0;
+  uint64_t mispredicts = 0;
+  uint64_t cycles0 = 0;
+
+ asm volatile(
+   "la t0, _experiment_memory;\n"
+
+   "fence iorw, iorw;\n"
+   "csrr t5, 0xb0e;\n"
+   "csrr a6, 0xb04;\n"
+   "csrr a5, 0xb00;\n"
+   "fence iorw, iorw;\n"
+
+   "ld t4, 48(t0);\n"
+   "ld t1, 80(t0);\n"
+
+   "blt t4, t1, label;\n"
+   "lb t6, 0(t0);\n"
+
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+
+   "label:\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+
+   "fence iorw, iorw;\n"
+   "csrr t3, 0xb0e;\n"
+   "csrr a3, 0xb04;\n"
+   "csrr a2, 0xb00;\n"
+   "fence iorw, iorw;\n"
+
+   "sub %0, a3, a6;\n"
+   "sub %1, a2, a5;\n"
+   "sub %2, t3, t5;\n"
+
+   "fence iorw, iorw;\n"
+    : "=r"(dcache_misses0), "=r"(cycles0), "=r"(mispredicts)
+    :
+    :
+  );
+  printf("[Exp time from asm: l1dc miss: %d, cycles: %d. mispredicts: %d] \n", dcache_misses0, cycles0, mispredicts);
+}
+
+void inputfunction_moreloads(int x) {
+ asm(
+   "la t0, _experiment_memory;\n"
+   "li t1, 16;\n"
+   "sd t1, 48(t0);\n"
+   "add t1, t1, t0;\n"
+   "sd %0, 32(t1);\n"
+    :
+    : "r"(x)
+    :
+  );
+}
+
+void victim_function_moreloads() {
+  uint64_t dcache_misses0 = 0;
+  uint64_t mispredicts = 0;
+  uint64_t cycles0 = 0;
+
+ asm(
+   "la t0, _experiment_memory;\n"
+
+   "fence iorw, iorw;\n"
+   "csrr t5, 0xb0e;\n"
+   "csrr a6, 0xb04;\n"
+   "csrr a5, 0xb00;\n"
+   "fence iorw, iorw;\n"
+
+   "ld t4, 48(t0);\n"
+   "ld t1, 80(t0);\n"
 
 
 
-  printf("experiment: cache_exp_spec_tranfser\n");
+   "blt t4, t1, labelml;\n"
+   "lb t6, 0(t0);\n"
+
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+
+   "labelml:\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+   "nop;\n"
+
+   "fence iorw, iorw;\n"
+   "csrr t3, 0xb0e;\n"
+   "csrr a3, 0xb04;\n"
+   "csrr a2, 0xb00;\n"
+   "fence iorw, iorw;\n"
+
+   "sub %0, a3, a6;\n"
+   "sub %1, a2, a5;\n"
+   "sub %2, t3, t5;\n"
+
+   "fence iorw, iorw;\n"
+    : "=r"(dcache_misses0), "=r"(cycles0), "=r"(mispredicts)
+    :
+    :
+  );
+  printf("[Exp time from asm: l1dc miss: %d, cycles: %d. mispredicts: %d] \n", dcache_misses0, cycles0, mispredicts);
+}
+
+void cache_exp_spec_load_adds(){
+
+  printf("experiment: cache_exp_spec_load_adds\n");
 
   flush_cache();
 
-   uint64_t abc = 1;
-   for(int i = 0; i < 100; i++){
-    victim_function(abc);
+  for(int i = 0; i < 15; i++){
+    inputfunction(1);
+   victim_function_add();
+  }
+
+  inputfunction(17); // same for input value 1 above for the training
+
+  flush_cache_not_bp();
+
+
+  cache_state cache_state;
+  cache_func_prime();
+
+  victim_function_add();
+
+  cache_func_probe(&cache_state);
+  print_cache_state(&cache_state);
+
+   printf("end experiment: cache_exp_spec_load_adds\n");
+}
+
+void cache_exp_spec_load_more_loads(){
+
+  printf("experiment: cache_exp_spec_load_more_loads\n");
+
+  flush_cache();
+
+  for(int i = 0; i < 15; i++){
+    inputfunction(1);
+   victim_function();
+  }
+
+  inputfunction(17); // same for input value 1 above for the training
+
+  flush_cache_not_bp();
+
+
+  cache_state cache_state;
+  cache_func_prime();
+
+  victim_function();
+
+  cache_func_probe(&cache_state);
+  print_cache_state(&cache_state);
+
+   printf("end experiment: cache_exp_spec_load_more_loads\n");
+}
+
+void cache_exp_spec_load(){
+
+  printf("experiment: cache_exp_spec_load\n");
+
+  flush_cache();
+
+  for(int i = 0; i < 15; i++){
+    inputfunction(1);
+   victim_function();
+  }
+
+  inputfunction(17); // same for input value 1 above for the training
+
+  flush_cache_not_bp();
+
+
+  cache_state cache_state;
+  cache_func_prime();
+
+  victim_function();
+
+  cache_func_probe(&cache_state);
+  print_cache_state(&cache_state);
+
+   printf("end experiment: cache_exp_spec_load\n");
+}
+
+void cache_exp_spec_load_but_no_mispredict(){
+
+  printf("experiment: cache_exp_spec_load_but_no_mispredict\n");
+
+  flush_cache();
+
+
+
+  for(int i = 0; i < 15; i++){
+    inputfunction(1);
+   victim_function();
+  }
+
+  inputfunction(1);
+
+  flush_cache_not_bp();
+
+  cache_state cache_state;
+  cache_func_prime();
+
+  victim_function();
+
+  cache_func_probe(&cache_state);
+  print_cache_state(&cache_state);
+
+  printf("end experiment: cache_exp_spec_load_but_no_mispredict\n");
+}
+
+void cache_exp_spec_load_but_no_mispredict_noload_nop(){
+
+
+
+    printf("experiment: cache_exp_spec_load_but_no_mispredict_noload_nop\n");
+
+    flush_cache();
+
+
+
+    for(int i = 0; i < 15; i++){
+      inputfunction(17);
+     victim_function_noload();
     }
 
-     abc=17;
+    inputfunction(17);
 
     flush_cache_not_bp();
-
 
     cache_state cache_state;
     cache_func_prime();
 
-    victim_function(abc);
+    victim_function_noload();
 
-   cache_func_probe(&cache_state);
-   print_cache_state(&cache_state);
+    cache_func_probe(&cache_state);
+    print_cache_state(&cache_state);
 
-   printf("end experiment: cache_exp_spec_tranfser\n");
+
+    printf("end experiment: cache_exp_spec_load_but_no_mispredict_noload_nop\n");
 }
 
+void cache_exp_spec_load_noload_nop(){
 
+    printf("experiment: cache_exp_spec_load_noload_nop_trainTAKE\n");
+
+    flush_cache();
+
+    for(int i = 0; i < 15; i++){
+      inputfunction(1);
+     victim_function_noload();
+    }
+
+    inputfunction(17);
+
+    flush_cache_not_bp();
+
+    cache_state cache_state;
+    cache_func_prime();
+
+    victim_function_noload();
+
+    cache_func_probe(&cache_state);
+    print_cache_state(&cache_state);
+
+
+    printf("end experiment: cache_exp_spec_load_noload_nop\n");
+}
+
+void cache_exp_spec_load_but_no_mispredict_noload_nop_uncond(){
+
+    uint64_t first_input = 1;
+    uint64_t second_input = 17;
+
+
+    printf("experiment: cache_exp_spec_load_but_no_mispredict_noload_nop_uncond\n first_input: %d, second_input %d.\n", first_input, second_input);
+
+    flush_cache();
+
+
+
+    for(int i = 0; i < 15; i++){
+      inputfunction(first_input);
+     victim_function_noload_uncond();
+    }
+
+    inputfunction(second_input);
+
+    flush_cache_not_bp();
+
+    cache_state cache_state;
+    cache_func_prime();
+
+    victim_function_noload_uncond();
+
+    cache_func_probe(&cache_state);
+    print_cache_state(&cache_state);
+
+
+    printf("end experiment: cache_exp_spec_load_but_no_mispredict_noload_nop_uncond\n");
+}
+
+void cache_exp_spec_load_noload_nop_uncond(){
+
+  uint64_t first_input = 17;
+  uint64_t second_input = 17;
+
+    printf("experiment: cache_exp_spec_load_noload_nop_train_uncond\n first_input: %d, second_input %d.\n", first_input, second_input);
+
+    flush_cache();
+
+    for(int i = 0; i < 15; i++){
+      inputfunction(first_input);
+     victim_function_noload_uncond();
+    }
+
+    inputfunction(second_input);
+
+    flush_cache_not_bp();
+
+    cache_state cache_state;
+    cache_func_prime();
+
+    victim_function_noload_uncond();
+
+    cache_func_probe(&cache_state);
+    print_cache_state(&cache_state);
+
+
+    printf("end experiment: cache_exp_spec_load_noload_nop_uncond\n");
+}
+
+void cache_exp_spec_load_but_no_mispredict_uncond(){
+
+    uint64_t first_input = 1;
+    uint64_t second_input = 17;
+
+
+    printf("experiment: cache_exp_spec_load_but_no_mispredict_uncond\n first_input: %d, second_input %d.\n", first_input, second_input);
+
+    flush_cache();
+
+
+
+    for(int i = 0; i < 15; i++){
+      inputfunction(first_input);
+     victim_function_uncond();
+    }
+
+    inputfunction(second_input);
+
+    flush_cache_not_bp();
+
+    cache_state cache_state;
+    cache_func_prime();
+
+    victim_function_uncond();
+
+    cache_func_probe(&cache_state);
+    print_cache_state(&cache_state);
+
+
+    printf("end experiment: cache_exp_spec_load_but_no_mispredict_uncond\n");
+}
+
+void cache_exp_spec_load_uncond(){
+
+  uint64_t first_input = 17;
+  uint64_t second_input = 17;
+
+    printf("experiment: cache_exp_spec_load_train_uncond\n first_input: %d, second_input %d.\n", first_input, second_input);
+
+    flush_cache();
+
+    for(int i = 0; i < 15; i++){
+      inputfunction(first_input);
+     victim_function_uncond();
+    }
+
+    inputfunction(second_input);
+
+    flush_cache_not_bp();
+
+    cache_state cache_state;
+    cache_func_prime();
+
+    victim_function_uncond();
+
+    cache_func_probe(&cache_state);
+    print_cache_state(&cache_state);
+
+
+    printf("end experiment: cache_exp_spec_load_uncond\n");
+}
+
+void cache_exp_spec_diff_correct_false_predict(){
+  printf("start experiment: cache_exp_spec_diff_correct_false_predict\n");
+  cache_exp_spec_load();
+  cache_exp_spec_load_but_no_mispredict();
+  cache_exp_spec_load_noload_nop();
+  cache_exp_spec_load_but_no_mispredict_noload_nop();
+  cache_exp_spec_load_more_loads();
+  cache_exp_spec_load_noload_nop_uncond();
+  cache_exp_spec_load_but_no_mispredict_noload_nop_uncond();
+  cache_exp_spec_load_uncond();
+  cache_exp_spec_load_but_no_mispredict_uncond();
+  cache_exp_spec_load_div();
+  cache_exp_spec_load_adds();
+  printf("end experiment: cache_exp_spec_diff_correct_false_predict\n");
+}
 
 uint64_t cache_helper_train_helper(int value){
 //   experiment: cache_exp_predict_trainer
@@ -1422,161 +2292,20 @@ void cache_exp_predict_trainer(){
 
 }
 
-
-/*
-
-void cache_exp_branch_specload_part2(uint64_t x){
-  //branch on a condition, try to see if a load is made while speculative,
-  // maybe better to have function which branches on a argument.
-  asm volatile(
-     "addi t0, x0, 256;\n"
-     "add t1, %0, sp;\n"
-     "bge %0, t0, end;\n"//jump
-     "lw t0, 0(t1);\n"//spec load
-     "end:\n"           //jump dest.
-     :
-     :"r"(x)
-     :
-   );
-}
-
-void cache_exp_branch_specload_part1(){
-  //branch on a condition, try to see if a load is made while speculative,
-  // maybe better to have function which branches on a argument.
-  printf("experiment: cache_exp_branch_specload\n");
-
-  flush_cache();
-
-  volatile uint64_t x = 0;
-  x = 100;
-  volatile uint64_t * xP = (uint64_t * )CACHEABLE(x);
-  volatile uint64_t y = 0;
-  x = 0x52;
-  volatile uint64_t * yP = (uint64_t * )CACHEABLE(y);
-
-  uint64_t dcache_misses0;
-  uint64_t cycles0;
-  uint64_t mispredicts;
-  uint64_t dcache_misses1;
-  uint64_t cycles1;
-  uint64_t mispredict1;
-
-  //train branch
-  cache_exp_branch_specload_part2(*xP);
-
-  asm volatile(
-     "csrr t1, 0xb0e;\n"
-     "csrr t2, 0xb04;\n"
-     "csrr t3, 0xb00;\n"
-     : "=r"(dcache_misses0), "=r"(cycles0), "=r"(mispredicts)
-     :
-     :
-   );
-
-  //bad x
-  cache_exp_branch_specload_part2(*yP);
-
-  asm volatile(
-     "csrr t1, 0xb0e;\n"
-     "csrr t2, 0xb04;\n"
-     "csrr t3, 0xb00;\n"
-     : "=r"(dcache_misses1), "=r"(cycles1), "=r"(mispredict1)
-     :
-     :
-   );
-
-   printf("[Exp time: l1dc miss: %d, cycles: %d, mispredicts: %d.] \n", dcache_misses1 - dcache_misses0, cycles1 - cycles0, mispredict1 - mispredicts);
-}
-
-void cache_exp_branch_specload(){
-  //branch on a condition, try to see if a load is made while speculative,
-  // maybe better to have function which branches on a argument.
-  printf("experiment: cache_exp_branch_specload\n");
-
-  uint64_t dcache_misses0;
-  uint64_t cycles0;
-  uint64_t mispredicts;
-
-  asm volatile(
-     "0xfffff00b;\n" //fence.t
-     "add t0, x0, 5;\n"
-     "add a1, x0, 5;\n"
-     "sw t0, 0(sp);\n"
-     "fence iorw, iorw;\n"
-     "csrr t5, 0xb0e;\n"
-     "csrr t1, 0xb04;\n"
-     "csrr t2, 0xb00;\n"
-     "lw a0, 0(sp);\n"//spec load
-     "beq a1, a0, stop;\n"//jump
-     "lw t0, 9(sp);\n"//spec load
-     "stop:\n"           //jump dest.
-     "csrr t3, 0xb00;\n"
-     "csrr t4, 0xb04;\n"
-     "csrr a3, 0xb0e;\n"
-     "sub %0, t4, t1;\n"
-     "sub %1, t3, t2;\n"
-     "sub %2, a3, t5;\n"
-     : "=r"(dcache_misses0), "=r"(cycles0), "=r"(mispredicts)
-     :
-     :
-   );
-
-   printf("[Exp time: l1dc miss: %d, cycles: %d, mispredicts: %d.] \n", dcache_misses0, cycles0, mispredicts);
-}
-
-void cache_exp_straight_spec(){
-  //jmp to a address, based on a value in pipeline.
-  //below jmp, have a load, see if load leaks.
-
-  printf("experiment: cache_exp_straight_spec\n");
-
-  uint64_t dcache_misses0;
-  uint64_t cycles0;
-  uint64_t mispredicts;
-
-  asm volatile(
-     "0xfffff00b;\n" //fence.t
-     "add t0, sp, 512;\n"
-     "sw a0, 0(sp);\n"
-     "fence iorw, iorw;\n"
-     "csrr t5, 0xb0e;\n"
-     "csrr t1, 0xb04;\n"
-     "csrr t2, 0xb00;\n"
-     "lw a0, 0(sp);\n"//spec load
-     "jr 0(a0);\n" //jump
-     "lw t0, 16(sp);\n"//spec load
-     //"end: a0, x0, 3;\n" //arbitary
-     "csrr t3, 0xb00;\n"
-     "csrr t4, 0xb04;\n"
-     "csrr a3, 0xb0e;\n"
-     "sub %0, t4, t1;\n"
-     "sub %1, t3, t2;\n"
-     "sub %2, a3, t5;\n"
-     : "=r"(dcache_misses0), "=r"(cycles0), "=r"(mispredicts)
-     :
-     :
-   );
-
-   printf("[Exp time: l1dc miss: %d, cycles: %d, mispredicts: %d.] \n", dcache_misses0, cycles0, mispredicts);
-}
-
-
-*/
-
-
 void cache_exp_all(){
 
   // printf("== First experiment Start == \n");
   // cache_exp_flushinbetween(); // cache_exp_flushinbetween
   // printf("== First experiment Done  == \n");
   //
-  cache_exp_spec_tranfser();
   // printf("== Second experiment Start == \n");
   // cache_exp_mispredict_counters();
   // cache_exp_mispredict_counters_speculative_load();
   // cache_exp_mispredict_counters_speculative_noload();
+  //cache_exp_spec_diff_correct_false_predict();
+  //cache_exp_predict_trainer();();
   // printf("== Second experiment Done  == \n");
-  // cache_exp_predict_trainer();
+  //
   //
   // printf("== Third experiment Start == \n");
   // cache_exp_mispredict_counters();
@@ -1598,7 +2327,6 @@ void cache_exp_all(){
   // test_value_in_cache3();
   // printf("== Fifth experiment Done  == \n");
   //
-  //
   // printf("== Sixth experiment Start == \n");
   // cache_exp_miss_and_hit_from_base(); // Shows that the 8 accesses to the same set are in the cache.
   // printf("== Sixth experiment Done  == \n");
@@ -1606,7 +2334,6 @@ void cache_exp_all(){
   // printf("== Seventh experiment Start == \n");
   // cache_exp_miss_and_hit_from_cacheable(); // Shows that the 9 accesses to the same set are NOT all in the cache.
   // printf("== Seventh experiment Done  == \n");
-  //
   //
   //
   // printf("== Eight experiment Start == \n");
@@ -1635,10 +2362,3 @@ void cache_exp_all(){
 }
 
 // experiments and test cases END
-
-
-//Could add normal flush instructions as experiment?
-//fence_i_o,          // flush I$ and pipeline
-//fence_o,            // flush D$ and pipeline
-/*
-*/
