@@ -75,7 +75,7 @@ uint8_t cache_run_mult_compare(uint8_t _input_id, cache_state cache_, uint8_t n)
   switch (_input_id) {
     case 1:
       _clean_mem_run = _clean_experiment_memory_run1;
-      _scamv_run__   = _scamv_run1;
+      _scamv_run__   = _scamv_run2;
       break;
 #ifdef EXP_HAS_INPUT_2
     case 2:

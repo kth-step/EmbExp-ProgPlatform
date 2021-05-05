@@ -76,7 +76,7 @@ _scamv_run2:
 	str x30, [x0]
 	mov x0,  #0
 	mov x30, #0
-.include "experiment/asm_setup_2.h"
+.include "experiment/asm_setup_1.h"
 	dsb sy
 	isb
 	b scamv_entry
