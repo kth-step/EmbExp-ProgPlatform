@@ -49,6 +49,7 @@ _scamv_train_loop_cnt:
 .section .text
 
 #ifdef EXP_HAS_INPUT_TRAIN
+.align 16
 _scamv_train:
 	ldr x0, =_scamv_ret_store
 	str x30, [x0]
@@ -59,7 +60,7 @@ _scamv_train:
 	isb
 	b scamv_entry
 #endif // EXP_HAS_INPUT_TRAIN
-
+.align 16
 _scamv_run1:
 	ldr x0, =_scamv_ret_store
 	str x30, [x0]
@@ -71,6 +72,7 @@ _scamv_run1:
 	b scamv_entry
 
 #ifdef EXP_HAS_INPUT_2
+.align 16
 _scamv_run2:
 	ldr x0, =_scamv_ret_store
 	str x30, [x0]
