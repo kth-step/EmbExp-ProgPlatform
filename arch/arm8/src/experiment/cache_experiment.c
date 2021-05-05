@@ -386,23 +386,23 @@ void access_sequence()
 void test_prefetching(void) {
   uint64_t value = get_prefetching_conf();
   prefetch_conf conf = parse_prefetch_conf(value);
-  //printf("Conf for prefetching 1 %x\n", value);
-  //printf("NPFSTRM %d\n", conf.NPFSTRM);
-  //printf("STRIDE %d\n", conf.STRIDE);
-  //printf("L1PCTL %d\n", conf.L1PCTL);
+  printf("Conf for prefetching 1 %x\n", value);
+  printf("NPFSTRM %d\n", conf.NPFSTRM);
+  printf("STRIDE %d\n", conf.STRIDE);
+  printf("L1PCTL %d\n", conf.L1PCTL);
 
   conf.NPFSTRM = 1;
-  conf.STRIDE = 1;
+  conf.STRIDE = 0;
   conf.L1PCTL = 5;
   value = set_prefetching_conf(value, conf);
-  //printf("New value is %x\n", value);
+  printf("New value is %x\n", value);
 
   value = get_prefetching_conf();
   conf = parse_prefetch_conf(value);
-  //printf("Conf for prefetching 2 %x\n", value);
-  //printf("NPFSTRM %d\n", conf.NPFSTRM);
-  //printf("STRIDE %d\n", conf.STRIDE);
-  //printf("L1PCTL %d\n", conf.L1PCTL);
+  printf("Conf for prefetching 2 %x\n", value);
+  printf("NPFSTRM %d\n", conf.NPFSTRM);
+  printf("STRIDE %d\n", conf.STRIDE);
+  printf("L1PCTL %d\n", conf.L1PCTL);
 
 
 /*
