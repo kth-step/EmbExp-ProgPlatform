@@ -36,6 +36,10 @@ int main();
 int main_entry(void) {
     hw_clock_init();
     hw_gpio_init();
+
+    // configure flash access time (careful with changes to this line, has to be in accordance with clock speed setting!)
+    LPC_FLASHCTRL->FLASHCFG = (LPC_FLASHCTRL->FLASHCFG & (~0x3)) + 0;
+
     ui_init();
     char on = 1;
     ui_set_led(0, on);
