@@ -2073,7 +2073,6 @@ void cache_exp_spec_diff_correct_false_predict(){
   cache_exp_spec_load_but_no_mispredict_noload_nop_uncond();
   cache_exp_spec_load_uncond();
   cache_exp_spec_load_but_no_mispredict_uncond();
-  cache_exp_spec_load_div();
   cache_exp_spec_load_adds();
   printf("end experiment: cache_exp_spec_diff_correct_false_predict\n");
 }
