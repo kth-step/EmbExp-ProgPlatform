@@ -67,6 +67,10 @@ void flush_cache_not_bp() {
   asm volatile("fence iorw, iorw");
 }
 
+
+// Prime and Probe functions
+// ------------------------------------------------------------------------
+
 void cache_func_prime() {
   asm volatile("fence iorw, iorw");
   for (int way = 0; way < WAYS; way++) {
@@ -121,6 +125,35 @@ void print_cache_state(cache_state* c) {
   }
 }
 
+// Stopwatch cache functions
+// ------------------------------------------------------------------------
+void cache_func_start_clock(cache_state* cache_state) {
+  asm volatile("fence iorw, iorw");
+  cache_state->cycles = get_cycles();
+  asm volatile("fence iorw, iorw");
+}
+
+void cache_func_stop_clock(cache_state* cache_state) {
+  asm volatile("fence iorw, iorw");
+  cache_state->cycles = get_cycles() - cache_state->cycles;
+  asm volatile("fence iorw, iorw");
+}
+
+uint8_t compare_cache_time(cache_state* c1, cache_state* c2) {
+  uint64_t delta_value = c1->cycles - c2->cycles;
+  if (delta_value < 0){ // abs()
+    delta_value = delta_value * (-1);
+  }
+  if (delta_value > THRESHOLD) {
+    return 1; // different enough
+  }
+  return 0; // not different enough
+}
+
+void print_cache_time(cache_state* c) {
+  //printf("Printing used cache time \n");
+  printf("set %d\n", c->cycles);
+}
 
 // utility cache functions
 // ------------------------------------------------------------------------
