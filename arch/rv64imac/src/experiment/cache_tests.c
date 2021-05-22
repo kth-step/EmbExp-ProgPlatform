@@ -38,11 +38,12 @@ void run_cache_experiment() {
   uint16_t diff = 0;
 
   //remove This
-  cache_exp_all();
+  //cache_exp_all();
 
 
   validate_cache_aligned_memory("_experiment_memory", (uint64_t)&_experiment_memory);
   validate_cache_aligned_memory("_probing_memory", (uint64_t)&_probing_memory);
+
 
 #ifdef RUN_2EXPS
   // run 2 cache experiments
