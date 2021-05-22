@@ -344,11 +344,11 @@ void test_value_in_cache3() {
   printf("experiment: test_value_in_cache3\n");
   //Modified from cache_experiment.c
   // check memory alias
-  volatile uint64_t x = 0;
+  //volatile uint64_t x = 0;
   uint64_t dcache_misses0 = 0;
   uint64_t cycles0 = 0;
   uint64_t dcache_misses1 = 0;
-  uint64_t cycles1 = 0;
+  //uint64_t cycles1 = 0;
 
   flush_cache();
 
@@ -473,11 +473,11 @@ void cache_exp_timings_instructions(){
   // timing: load fence measure add measure
   // [load fence measure add measure: between load cycles: 102, between add cycles: 62..]
 
-  uint64_t dcache_misses0;
-  uint64_t dcache_misses1;
+  //uint64_t dcache_misses0;
+  //uint64_t dcache_misses1;
   uint64_t cycles0;
   uint64_t cycles1;
-  volatile uint64_t * xP = (uint64_t * )CACHEABLE2(memory);
+  //volatile uint64_t * xP = (uint64_t * )CACHEABLE2(memory);
 
   printf("timing: fence\n");
   asm volatile(
@@ -584,6 +584,8 @@ void test_two_ways() {
   cache_func_probe(&cache_state);
   print_cache_state(&cache_state);
 
+  x = y;
+  y = x;
 }
 
 void test_eight_ways() {
@@ -884,7 +886,7 @@ void cache_exp_mispredict_counters_load(){
 
   memory[0] = 0x456;
   volatile uint64_t * xP = (uint64_t * )CACHEABLE2(memory[0]);
-
+  uint64_t x;
 
   asm volatile(
     "csrr %2, 0xb0e;\n"
@@ -901,7 +903,7 @@ void cache_exp_mispredict_counters_load(){
    i++;
  }
  if(i != j){
-   uint64_t x = *(xP);
+   x = *(xP);
  }
 
   asm volatile(
@@ -914,6 +916,8 @@ void cache_exp_mispredict_counters_load(){
    );
 
    printf("[Exp time: l1dc miss: %d, cycles: %d, mispredicts: %d.] \n", dcache_misses1 - dcache_misses0, cycles1 - cycles0, mispredict1 - mispredicts);
+
+   x = x;
 }
 
 
@@ -1010,12 +1014,12 @@ experiment: cache_exp_mispredict_counters_speculative_noload
 
   flush_cache();
 
-  uint64_t dcache_misses0 = 0;
-  uint64_t cycles0 = 0;
-  uint64_t mispredicts = 0;
-  uint64_t dcache_misses1 = 0;
-  uint64_t cycles1 = 0;
-  uint64_t mispredict1 = 0;
+  // uint64_t dcache_misses0 = 0;
+  // uint64_t cycles0 = 0;
+  // uint64_t mispredicts = 0;
+  // uint64_t dcache_misses1 = 0;
+  // uint64_t cycles1 = 0;
+  // uint64_t mispredict1 = 0;
 
 
   uint64_t * xP = (uint64_t * )CACHEABLE2(memory[0]);
@@ -1110,12 +1114,12 @@ void cache_exp_mispredict_counters(){
 
   flush_cache();
 
-  uint64_t dcache_misses0 = 0;
-  uint64_t cycles0 = 0;
-  uint64_t mispredicts = 0;
-  uint64_t dcache_misses1 = 0;
-  uint64_t cycles1 = 0;
-  uint64_t mispredict1 = 0;
+  // uint64_t dcache_misses0 = 0;
+  // uint64_t cycles0 = 0;
+  // uint64_t mispredicts = 0;
+  // uint64_t dcache_misses1 = 0;
+  // uint64_t cycles1 = 0;
+  // uint64_t mispredict1 = 0;
 
 
   uint64_t * xP = (uint64_t * )CACHEABLE2(memory[0]);
