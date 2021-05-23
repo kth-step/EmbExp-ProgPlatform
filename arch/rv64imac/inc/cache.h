@@ -31,6 +31,7 @@ void flush_cache_not_bp();
 void cache_func_prime();
 void cache_func_probe(cache_state* c);
 uint8_t compare_cache(cache_state* c1, cache_state* c2);
+uint8_t compare_cache_print_diff(cache_state* c1, cache_state* c2);
 
 void print_cache_state(cache_state* c);
 void validate_cache_aligned_memory(char* name, uint64_t addr);
