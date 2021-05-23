@@ -105,6 +105,24 @@ uint8_t compare_cache(cache_state* c1, cache_state* c2) {
   return 0; // no difference
 }
 
+uint8_t compare_cache_print_diff(cache_state* c1, cache_state* c2) {
+  uint8_t difference = 0;
+  for (int set = 0; set < SETS; set++) {
+    uint8_t first_in_set = 1;
+    for (int way = 0; way < WAYS; way++) {
+      if (c1->evicted[set][way] != c2->evicted[set][way]) {
+        if(first_in_set){
+          first_in_set = 0;
+          printf("set %d\n", set);
+        }
+        printf("- way %d\n", way);
+        difference = 1;
+      }
+    }
+  }
+  return difference; // no difference
+}
+
 void print_cache_state(cache_state* c) {
   //printf("Printing evicted cache sets \n");
   //printf("_probing_memory is @0x%x\n", _probing_memory);
