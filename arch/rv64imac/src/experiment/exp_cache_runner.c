@@ -1,5 +1,7 @@
 #include "config.h"
-
+#include "cache.h"
+#include <stdint.h>
+ #include "lib/printf.h"
 // this is the abstraction module for the low level assembly code exp_cache_run_asm.S
 
 #ifdef RUN_CACHE
@@ -20,8 +22,7 @@
 #  define EXP_HAS_INPUT_2
 #endif
 
-#include "cache.h"
-#include <stdint.h>
+
 
 uint64_t expmem_byte_to_word(uint8_t v) {
   uint64_t w = v;
@@ -87,6 +88,7 @@ uint8_t cache_run_mult_compare(uint8_t _input_id, cache_state* cache_, uint8_t n
       while (1);
   }
 
+
   uint8_t diff = 0;
   _cache_run(cache_, _clean_mem_run, _scamv_run__, _clean_mem_train, _scamv_train__);
   for (uint8_t i = n; i > 0; i--) {
@@ -96,62 +98,62 @@ uint8_t cache_run_mult_compare(uint8_t _input_id, cache_state* cache_, uint8_t n
   }
   return diff;
 }
-#define as_c_function
-#ifdef as_c_function
-typedef void (*func_type)();
+//
+// #define as_c_function
+// #ifdef as_c_function
+// typedef void (*func_type)();
+//
+//
+// //void _cache_run_(cache_state* cache, void (*_clean_mem_run)(), void (*_scamv_run)(), void (*_clean_mem_train)(), void (*_scamv_train)());
+//
+// void _cache_run_(cache_state *cache_, func_type _clean_mem_run, func_type _scamv_run__, func_type _clean_mem_train, func_type _scamv_train__){
+// /*
+//   flush_cache();
+//   cache_func_prime();
+//   cache_func_probe(cache_);
+//
+//   printf("0x%x\n", cache_);
+//   uint64_t r = _cache_run_(cache_, _clean_mem_run, _scamv_run__, _clean_mem_train, _scamv_train);
+//   printf("0x%x\n", r);
+//
+//   return;
+// */
+//
+//   // training loop start
+//   #ifdef EXP_HAS_INPUT_TRAIN
+//   for(int i = 0; i < 0; i++){ // TODO: adjust to train more
+//     // prepare
+//     _clean_mem_train();
+//
+//     // Want to keep values in branch predictor, use special flush.
+//     // TODO: Is this how we want it?
+//     if(i == 0){
+//       flush_cache();
+//     }else{
+//       flush_cache_not_bp();
+//     }
+//     // training
+//     _scamv_train__();
+//   }
+//   #endif
+//   // training loop end
+//
+//   // prepare and prime start
+//   _clean_mem_run();
+//   #ifdef EXP_HAS_INPUT_TRAIN
+//   flush_cache_not_bp(); // Want to keep values in branch predictor, use special flush.
+//   #else
+//   flush_cache(); // no training - flush normally
+//   #endif
+//   cache_func_prime();
+//   // prepare and prime end
+//
+//   // run experiment
+//   _scamv_run__();
+//
+//   // probe
+//   cache_func_probe(cache_);
+// }
 
-#include "lib/printf.h"
-
-//void _cache_run_(cache_state* cache, void (*_clean_mem_run)(), void (*_scamv_run)(), void (*_clean_mem_train)(), void (*_scamv_train)());
-
-void _cache_run_(cache_state *cache_, func_type _clean_mem_run, func_type _scamv_run__, func_type _clean_mem_train, func_type _scamv_train__){
-/*
-  flush_cache();
-  cache_func_prime();
-  cache_func_probe(cache_);
-
-  printf("0x%x\n", cache_);
-  uint64_t r = _cache_run_(cache_, _clean_mem_run, _scamv_run__, _clean_mem_train, _scamv_train);
-  printf("0x%x\n", r);
-
-  return;
-*/
-
-  // training loop start
-  #ifdef EXP_HAS_INPUT_TRAIN
-  for(int i = 0; i < 0; i++){ // TODO: adjust to train more
-    // prepare
-    _clean_mem_train();
-
-    // Want to keep values in branch predictor, use special flush.
-    // TODO: Is this how we want it?
-    if(i == 0){
-      flush_cache();
-    }else{
-      flush_cache_not_bp();
-    }
-    // training
-    _scamv_train__();
-  }
-  #endif
-  // training loop end
-
-  // prepare and prime start
-  _clean_mem_run();
-  #ifdef EXP_HAS_INPUT_TRAIN
-  flush_cache_not_bp(); // Want to keep values in branch predictor, use special flush.
-  #else
-  flush_cache(); // no training - flush normally
-  #endif
-  cache_func_prime();
-  // prepare and prime end
-
-  // run experiment
-  _scamv_run__();
-
-  // probe
-  cache_func_probe(cache_);
-}
-
-#endif
+//#endif
 #endif // RUN_CACHE

@@ -14,7 +14,6 @@
 #define ALIAS(x)     ((void *)(((uint64_t)(&x)) + 0x00000000))
 
 // Changed for RISC-V, Ariane.
-// Only for RUN_1EXPS at the moment.
 
 void reset_cache_experiment() {
   // Only runs when the board is starting.
@@ -64,11 +63,11 @@ void run_cache_experiment() {
   #define CACHE_SET_UPPER (SETS)
 #elif defined RUN_CACHE_MULTIW_SUBSET
   #define CACHE_EQ_FUN compare_cache_print_diff // bounds not implemented yet
-  #define CACHE_SET_LOWER (((SETS)/2)-3)
+  #define CACHE_SET_LOWER (SETS)
   #define CACHE_SET_UPPER (SETS)
 #elif defined RUN_CACHE_MULTIW_SUBSET_PAGE_BOUNDARY
   #define CACHE_EQ_FUN compare_cache_print_diff // bounds not implemented yet
-  #define CACHE_SET_LOWER ((SETS)/2)
+  #define CACHE_SET_LOWER (SETS)
   #define CACHE_SET_UPPER (SETS)
 #else
   #error "no cache experiment parameters selected"
