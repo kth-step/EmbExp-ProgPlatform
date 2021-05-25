@@ -78,8 +78,9 @@ void run_cache_experiment() {
     // bounds not implemented yet
     if (CACHE_EQ_FUN(&cache1, &cache2) == 0)
        printf("RESULT: EQUAL\n");
-    else
-       printf("RESULT: UNEQUAL\n");
+    //else
+       //printing in compare function
+       //printf("RESULT: UNEQUAL\n");
   } else {
     printf("INCONCLUSIVE: %d\n", diff);
   }

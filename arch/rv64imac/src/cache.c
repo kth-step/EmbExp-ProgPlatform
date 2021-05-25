@@ -107,10 +107,15 @@ uint8_t compare_cache(cache_state* c1, cache_state* c2) {
 
 uint8_t compare_cache_print_diff(cache_state* c1, cache_state* c2) {
   uint8_t difference = 0;
+  uint64_t first_time = 1;
   for (int set = 0; set < SETS; set++) {
     uint8_t first_in_set = 1;
     for (int way = 0; way < WAYS; way++) {
       if (c1->evicted[set][way] != c2->evicted[set][way]) {
+        if (first_time) {
+          first_time = 0;
+          printf("RESULT: UNEQUAL\n");
+        }
         if(first_in_set){
           first_in_set = 0;
           printf("set %d\n", set);
