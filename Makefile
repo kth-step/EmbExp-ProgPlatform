@@ -54,8 +54,8 @@ else ifeq ("$(PROGPLAT_ARCH)", "rv32imac")
   LDFLAGS_PRE  += -melf32lriscv
   LDFLAGS_POST  = -L$(RVSYS) -L$(RVLIB) -lgcc
 else ifeq ("$(PROGPLAT_ARCH)", "rv64imac")
-  SFLAGS_EXTRA  = -march=rv64imac -mabi=lp64 -mno-relax
-  CFLAGS_EXTRA  = -g3 -ffreestanding -march=rv64imac -mabi=lp64 -mno-relax -mcmodel=medany -mexplicit-relocs
+  SFLAGS_EXTRA  = -march=rv64im -mabi=lp64 -mno-relax
+  CFLAGS_EXTRA  = -g3 -ffreestanding -march=rv64im -mabi=lp64 -mno-relax -mcmodel=medany -mexplicit-relocs
   LDFLAGS_PRE  += -melf64lriscv
   LDFLAGS_POST  = -L$(RVSYS) -L$(RVLIB) -lgcc
 else ifeq ("$(PROGPLAT_ARCH)", "rv64gc")
@@ -99,4 +99,3 @@ clean:
 
 # running and debugging
 include Makefile.run
-
