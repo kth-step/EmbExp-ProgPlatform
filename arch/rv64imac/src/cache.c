@@ -173,6 +173,19 @@ uint8_t compare_cache_time(cache_state* c1, cache_state* c2) {
   return 0; // not different enough
 }
 
+uint8_t compare_cache_time_print_diff(cache_state* c1, cache_state* c2) {
+  uint64_t delta_value = c1->cycles - c2->cycles;
+  if (delta_value < 0){ // abs()
+    delta_value = delta_value * (-1);
+  }
+  if (delta_value > THRESHOLD) {
+    printf("RESULT: UNEQUAL\n");
+    printf("time difference: %d\n", delta_value);
+    return 1; // different enough
+  }
+  return 0; // not different enough
+}
+
 void print_cache_time(cache_state* c) {
   //printf("Printing used cache time \n");
   printf("set %d\n", c->cycles);

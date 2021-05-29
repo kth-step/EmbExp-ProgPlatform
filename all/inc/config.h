@@ -50,11 +50,14 @@
   #define RUN_CACHE
   #define RUN_CACHE_MULTIW_SUBSET_PAGE_BOUNDARY
 #elif defined __PROGPLAT_PARAMS__TIME
-  #define RUN_TIME
+  #define RUN_CACHE // RUN_TIME, change the functions to be seperate later
+  #define RUN_TIMING_MULTIW
 #elif defined __PROGPLAT_PARAMS__NOTHING
 #else
   #error "no experiment parameters selected"
 #endif
+
+
 
 #ifdef __PROGPLAT_MUL_RUNS__
   #define NUM_MUL_RUNS __PROGPLAT_MUL_RUNS__
@@ -81,4 +84,3 @@
 #endif
 
 #endif // CONFIG_H
-

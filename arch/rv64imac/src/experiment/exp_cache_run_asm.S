@@ -215,6 +215,10 @@ __exit_scamv_train_loop:
 // prime for measurement
 	la	x1, cache_func_prime
 	jalr	x1
+// take time measurement, and save the cache state for this run
+	la	x1, cache_func_start_clock
+	ld	a0, (8 * 10)(sp)
+	jalr	x1
 // load _scamv_run in x1 (RA)
 	ld	x1, (8 * 12)(sp)
 // create defined processor state
@@ -256,6 +260,10 @@ __exit_scamv_train_loop:
 // restore SP register
 	la	t0, _sp_store
 	ld	sp, 0(t0)
+// take time measurement, and save the cache state for this run
+	la	x1, cache_func_stop_clock
+	ld	a0, (8 * 10)(sp)
+	jalr	x1
 // probe for measurement, and save the cache state for this run
 	la	x1, cache_func_probe
 	ld	a0, (8 * 10)(sp)

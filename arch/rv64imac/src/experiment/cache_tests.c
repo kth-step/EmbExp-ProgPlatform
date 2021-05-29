@@ -69,6 +69,10 @@ void run_cache_experiment() {
   #define CACHE_EQ_FUN compare_cache_print_diff // bounds not implemented yet
   #define CACHE_SET_LOWER (SETS)
   #define CACHE_SET_UPPER (SETS)
+#elif defined RUN_TIMING_MULTIW
+  #define CACHE_EQ_FUN compare_cache_time_print_diff // bounds not implemented yet
+  #define CACHE_SET_LOWER (SETS)
+  #define CACHE_SET_UPPER (SETS)
 #else
   #error "no cache experiment parameters selected"
 #endif
@@ -87,6 +91,8 @@ void run_cache_experiment() {
 #elif defined RUN_1EXPS
   diff += cache_run_mult_compare(1, &cache, NUM_MUL_RUNS);
   print_cache_state(&cache);
+
+  print_cache_time(&cache);
   if (diff != 0)
     printf("INCONCLUSIVE: %d\n", diff);
 #else
