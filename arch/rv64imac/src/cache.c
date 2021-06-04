@@ -174,10 +174,10 @@ uint8_t compare_cache_time(cache_state* c1, cache_state* c2) {
   //   printf("after *-1: %d\n", delta_value);
   // }
   if (delta_value < THRESHOLD && delta_value > -(THRESHOLD)) {
-    printf("returns true: %d. C1: %d, C2: %d. \n", delta_value, c1->cycles, c2->cycles);
+    //printf("returns true: %d. C1: %d, C2: %d. \n", delta_value, c1->cycles, c2->cycles);
     return 0; // not different enough
   }
-  printf("returns false : %d. C1: %d, C2: %d. \n", delta_value, c1->cycles, c2->cycles);
+  //printf("returns false : %d. C1: %d, C2: %d. \n", delta_value, c1->cycles, c2->cycles);
   return 1; //  different enough
 }
 
