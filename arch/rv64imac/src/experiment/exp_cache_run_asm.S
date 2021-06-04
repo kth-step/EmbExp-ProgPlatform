@@ -36,7 +36,21 @@
 
 .section .text //.experiment_code
 scamv_entry:
+#ifdef RUN_TIMING_MULTIW
+	fence iorw, iorw
+	csrr x30, mcycle
+	fence iorw, iorw
+#else
+
+#endif
 .include "experiment/asm.h"
+#ifdef RUN_TIMING_MULTIW
+	fence iorw, iorw
+	csrr x31, mcycle
+	fence iorw, iorw
+#else
+
+#endif
 	j scamv_exit
 
 
@@ -184,8 +198,14 @@ __enter_scamv_train_loop:
 	mv	x27, zero
 	mv	x28, zero
 	mv	x29, zero
+	// Add if TIME here and there.
+#ifdef RUN_TIMING_MULTIW
+
+#else
 	mv	x30, zero
 	mv	x31, zero
+#endif
+
 	// TODO: are there ALU flags that should be set to a defined state?
 	// like ARM "adds x0, x1, x2"
 
@@ -212,13 +232,20 @@ __exit_scamv_train_loop:
 	fence iorw, iorw
 	// flush here! tried with 7 now. With full fffff, we get also result.
 	.word 0xfff7f00b
+#ifdef RUN_TIMING_MULTIW
+// take time measurement, and save the cache state for this run
+//	la	x1, cache_func_start_clock
+//	ld	a0, (8 * 10)(sp)
+//	fence iorw, iorw
+//	jalr	x1
+//	fence iorw, iorw
+#else
 // prime for measurement
 	la	x1, cache_func_prime
 	jalr	x1
-// take time measurement, and save the cache state for this run
-	la	x1, cache_func_start_clock
-	ld	a0, (8 * 10)(sp)
-	jalr	x1
+#endif
+
+
 // load _scamv_run in x1 (RA)
 	ld	x1, (8 * 12)(sp)
 // create defined processor state
@@ -250,8 +277,12 @@ __exit_scamv_train_loop:
 	mv	x27, zero
 	mv	x28, zero
 	mv	x29, zero
+#ifdef RUN_TIMING_MULTIW
+
+#else
 	mv	x30, zero
 	mv	x31, zero
+#endif
 	// TODO: are there ALU flags that should be set to a defined state?
 	// like ARM "adds x0, x1, x2"
 
@@ -260,14 +291,19 @@ __exit_scamv_train_loop:
 // restore SP register
 	la	t0, _sp_store
 	ld	sp, 0(t0)
+#ifdef RUN_TIMING_MULTIW
 // take time measurement, and save the cache state for this run
-	la	x1, cache_func_stop_clock
+	la	x1, cache_func_set_time
 	ld	a0, (8 * 10)(sp)
+	mv	a1, x30
+	mv	a2, x31
 	jalr	x1
+#else
 // probe for measurement, and save the cache state for this run
 	la	x1, cache_func_probe
 	ld	a0, (8 * 10)(sp)
 	jalr	x1
+#endif
 
 /*
 // debug the first cache set

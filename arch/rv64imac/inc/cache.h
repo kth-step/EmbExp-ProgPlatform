@@ -14,7 +14,7 @@
 #define CACHE_SIZE (WAYS * SETS * LINE_LEN)
 
 // threshold for hw-model
-#define THRESHOLD (25)
+#define THRESHOLD (11)
 
 // cache state structure
 // ------------------------------
@@ -40,6 +40,7 @@ void cache_func_start_clock(cache_state* cache_state);
 void cache_func_stop_clock(cache_state* cache_state);
 uint8_t compare_cache_time(cache_state* c1, cache_state* c2);
 void print_cache_time(cache_state* c);
+uint8_t compare_cache_time_print_diff(cache_state* c1, cache_state* c2);
 
 // utility cache functions (fence and performance counters)
 // ------------------------------

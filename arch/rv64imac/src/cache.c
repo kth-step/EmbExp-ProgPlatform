@@ -162,33 +162,38 @@ void cache_func_stop_clock(cache_state* cache_state) {
   asm volatile("fence iorw, iorw");
 }
 
+void cache_func_set_time(cache_state* cache_state, uint64_t start_time, uint64_t end_time) {
+  cache_state->cycles = end_time - start_time;
+}
+
 uint8_t compare_cache_time(cache_state* c1, cache_state* c2) {
-  uint64_t delta_value = c1->cycles - c2->cycles;
-  if (delta_value < 0){ // abs()
-    delta_value = delta_value * (-1);
+  int64_t delta_value = c1->cycles - c2->cycles;
+  // printf("before -1: %d\n", delta_value);
+  // if (delta_value < 0){ // abs()
+  //   delta_value = delta_value * (-1);
+  //   printf("after *-1: %d\n", delta_value);
+  // }
+  if (delta_value < THRESHOLD && delta_value > -(THRESHOLD)) {
+    printf("returns true: %d. C1: %d, C2: %d. \n", delta_value, c1->cycles, c2->cycles);
+    return 0; // not different enough
   }
-  if (delta_value > THRESHOLD) {
-    return 1; // different enough
-  }
-  return 0; // not different enough
+  printf("returns false : %d. C1: %d, C2: %d. \n", delta_value, c1->cycles, c2->cycles);
+  return 1; //  different enough
 }
 
 uint8_t compare_cache_time_print_diff(cache_state* c1, cache_state* c2) {
-  uint64_t delta_value = c1->cycles - c2->cycles;
-  if (delta_value < 0){ // abs()
-    delta_value = delta_value * (-1);
+  int64_t delta_value = c1->cycles - c2->cycles;
+  if (delta_value < THRESHOLD && delta_value > -(THRESHOLD)) {
+    return 0; // not different enough
   }
-  if (delta_value > THRESHOLD) {
-    printf("RESULT: UNEQUAL\n");
-    printf("time difference: %d\n", delta_value);
-    return 1; // different enough
-  }
-  return 0; // not different enough
+  printf("RESULT: UNEQUAL\n");
+  printf("cycles difference: %d\n", delta_value);
+  return 1; //  different enough
 }
 
 void print_cache_time(cache_state* c) {
   //printf("Printing used cache time \n");
-  printf("set %d\n", c->cycles);
+  printf("cycles used: %d\n", c->cycles);
 }
 
 

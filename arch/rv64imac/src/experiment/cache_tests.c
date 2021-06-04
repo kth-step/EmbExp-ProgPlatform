@@ -90,9 +90,12 @@ void run_cache_experiment() {
   }
 #elif defined RUN_1EXPS
   diff += cache_run_mult_compare(1, &cache, NUM_MUL_RUNS);
-  print_cache_state(&cache);
+  #ifdef RUN_TIMING_MULTIW
+    print_cache_time(&cache);
+  #else
+    print_cache_state(&cache);
+  #endif
 
-  print_cache_time(&cache);
   if (diff != 0)
     printf("INCONCLUSIVE: %d\n", diff);
 #else
