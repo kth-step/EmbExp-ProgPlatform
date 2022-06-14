@@ -3,7 +3,9 @@
 #include "lib/printf.h"
 #include "config.h"
 
-#include "binarypatcher.h"
+#if __has_include("experiment/binpatch.h")
+#include "experiment/binpatch.h"
+#endif
 
 
 #ifdef RUN_CACHE
@@ -22,9 +24,9 @@ void experiment_complete_marker() {
 
 int main()
 {
-
-  // make this an option, think of a way to pass the locations through to here (config options or similar), allow processing of multiple items, (later also need to revert the patches afterwards)
-  patch_arm8_br(0x200038, 0x2004);
+#if __has_include("experiment/binpatch.h")
+  patch_binary();
+#endif
 
 #ifdef RUN_CACHE
   reset_cache_experiment();
