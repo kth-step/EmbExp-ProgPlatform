@@ -11,6 +11,7 @@ endif
 
 export EMBEXP_UART_PORT=$(shell bash -c "echo $$(( 20000 + ($(EMBEXP_INSTANCE_IDX) * 100) ))")
 export EMBEXP_GDBS_PORT=$(shell bash -c "echo $$(( 20013 + ($(EMBEXP_INSTANCE_IDX) * 100) ))")
+export PROGPLAT_LOAD_ELF_IN=$(PROGPLAT_LOAD_ELF)
 
 
 # targets for running and debugging
