@@ -24,7 +24,7 @@ int main()
 {
 
   // make this an option, think of a way to pass the locations through to here (config options or similar), allow processing of multiple items, (later also need to revert the patches afterwards)
-  patch_the_binary();
+  patch_arm8_br(0x200038, 0x2004);
 
 #ifdef RUN_CACHE
   reset_cache_experiment();
