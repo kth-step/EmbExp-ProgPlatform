@@ -9,6 +9,8 @@ with open("Makefile.config", "r") as f:
 		assert len(parts) == 2
 		k = parts[0].strip()
 		v = parts[1].strip()
+		if k == "PROGPLAT_LOAD_ELF":
+			continue
 		if k.startswith("__") and k.endswith("__"):
 			output_text += f"#define {k} {v}\n"
 		else:

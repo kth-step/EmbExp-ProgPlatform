@@ -25,7 +25,7 @@ _embexp_entry:
 	msr vbar_el2, x0
 	msr vbar_el1, x0
 	// ... to execute the main c function
-	ldr x5, =0x00100000
+	ldr x5, =__stack_memory_top
 	mov sp, x5
 	bl main
 	b _hang

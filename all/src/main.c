@@ -3,6 +3,10 @@
 #include "lib/printf.h"
 #include "config.h"
 
+#if __has_include("experiment/binpatch.h")
+#include "experiment/binpatch.h"
+#endif
+
 
 #ifdef RUN_CACHE
 void run_cache_experiment();
@@ -20,6 +24,10 @@ void experiment_complete_marker() {
 
 int main()
 {
+#if __has_include("experiment/binpatch.h")
+  patch_binary();
+#endif
+
 #ifdef RUN_CACHE
   reset_cache_experiment();
 #endif
