@@ -61,11 +61,14 @@ void get_cache_line(cache_line *line, uint64_t set, uint64_t way) {
     value |= (0b111111111111111111111111 & set) << 6;
     value |= (0b111 & offset) << 3;
 
+    // printf("accessing cache line value is %b\n", value);
+
     asm (
          "MSR S3_3_C15_C4_0, %x[input_i]"
          :
          : [input_i] "r" (value)
          );
+    // Reading data
     asm (
          "MRS %x[result], S3_3_C15_C0_0"
          : [result] "=r" (value)
@@ -115,6 +118,103 @@ void get_cache_line(cache_line *line, uint64_t set, uint64_t way) {
 }
 
 
+/* Page 183- ARMv8 Cortex-a72 reference manual: L1-D Data RAM. */
+/*   31-24: RAMID = 0x09 */
+/*   23-19: Reserved     */
+/*   18: Way select      */
+/*   17-14: Unused       */
+/*   13-6: Set select    */
+/*   5-4: Bank select    */
+/*   3: Upper or lower doubleword within the quadword */
+/*   2-0: Reserved       */
+// DL1DATA1[31:0] Data word 1.
+// DL1DATA0[31:0] Data word 0.
+
+/* Page 183- ARMv8 Cortex-a72 reference manual: L1-D Tag RAM. */
+/*   31-24: RAMID = 0x08 */
+/*   23-19: Reserved     */
+/*   18: Way select      */
+/*   17-14: Unused       */
+/*   13-8: Row select    */
+/*   7-6: Bank select    */
+/*   5-0: Reserved       */
+// DL1DATA1[1:0] MESI state:
+// -- 0b00 Invalid.
+// -- 0b01 Exclusive.
+// -- 0b10 Shared.
+// -- 0b11 Modified.
+// DL1DATA0[30]   Non-secure identifier for the physical address.
+// DL1DATA0[29:0] Physical address tag [43:14].
+
+void get_cache_line_a72(cache_line *line, uint64_t set, uint64_t way) {
+  volatile uint64_t value;
+  BARRIER_DSB_ISB();
+
+  for (uint64_t  bank = 0; bank < 8; bank++) { 
+    value = 0;
+    value |= (0b11111111 & 0x09) << 24;
+    value |= (0b1 & way) << 18;
+    value |= (0b11111111 & set) << 6;
+    value |= (0b111 & bank) << 3;
+    /* printf("Accessedg cache line value is %b\n", value); */
+    asm (/* Instead of LDR pseudo-instruction I directly pass the address to SYS instruction */
+	       "SYS #0, C15, C4, #0, %x[input_i]"
+	       :
+	       : [input_i] "r" (value)
+	       );
+    BARRIER_DSB_ISB();
+
+    // Reading data
+    asm (
+	       "MRS %x[result], S3_0_C15_C1_0"
+	       : [result] "=r" (value)
+	       :
+	       );
+    line->data[bank] = value;
+    asm (
+	       "MRS %x[result], S3_0_C15_C1_1"
+	       : [result] "=r" (value)
+	       :
+	       );
+    line->data[bank] |= (value << 32);
+  }
+  
+  // get info
+  value = 0;
+  value |= (0b11111111 & 0x08) << 24;
+  value |= (0b1 & way) << 18;
+  value |= (0b11111111 & set) << 6;
+
+  asm (
+       "SYS #0, C15, C4, #0, %x[input_i]"
+       :
+       : [input_i] "r" (value)
+       );
+  BARRIER_DSB_ISB();
+  // Reading data
+  asm (
+       "MRS %x[result], S3_0_C15_C1_0"
+       : [result] "=r" (value)
+       :
+       );
+  line->r0 = value;
+  line->tag = ((0x3FFFFFFF&value) << 14);  
+  line->tag += set * 64; // TODO: what is this? whitout this tag from rpi3 and rpi4 are not equal
+
+  asm (
+       "MRS %x[result], S3_0_C15_C1_1"
+       : [result] "=r" (value)
+       :
+       );
+  line->r1 = value;
+  line->valid = (((0x00000003 & value) << 29) != 0);
+
+  BARRIER_DSB_ISB();
+
+  return;
+}
+
+
 uint64_t get_prefetching_conf() {
   uint64_t volatile value;
   asm (
@@ -161,7 +261,11 @@ void save_cache_state(cache_state cache) {
 
   for (int set=0; set<SETS; set++) {
     for (int way=0; way<WAYS; way++) {
+    #ifdef CORTEX_A72
+      get_cache_line_a72(&(cache[set][way]), set, way);
+    #else
       get_cache_line(&(cache[set][way]), set, way);
+    #endif
     }
   }
 

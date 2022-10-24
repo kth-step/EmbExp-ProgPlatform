@@ -1,16 +1,31 @@
 #ifndef _CACHE_H
 #define _CACHE_H
 
+#include "config.h"
 #include <stdint.h>
 
-#define WAYS (4)
-#define SETS (32 * 1024 / 64 / WAYS)
-#define SET(x) ((((uint64_t)(x))/64)%SETS)
-#define TAG_OF_ADDR(x) (((uint64_t)(x)) / SETS / 64)
-#define TAG_SET_TO_ADDR(tag, set) (tag * 64 * SETS + set*64)
+#ifndef CORTEX_A72
+  //general: rpi3...
+  #define WAYS (4)
+  #define SETS (32 * 1024 / 64 / WAYS)
+  #define SET(x) ((((uint64_t)(x))/64)%SETS)
+  #define TAG_OF_ADDR(x) (((uint64_t)(x)) / SETS / 64)
+  #define TAG_SET_TO_ADDR(tag, set) (tag * 64 * SETS + set*64)
 
-#define WAYS_L2 (16)
-#define SETS_L2 (512 * 1024 / 64 / WAYS_L2)
+  #define WAYS_L2 (16)
+  #define SETS_L2 (512 * 1024 / 64 / WAYS_L2)
+#else
+  //rpi4
+  #define WAYS (2)
+  #define SETS (32 * 1024 / 64 / WAYS)
+  #define SET(x) ((((uint64_t)(x))/64)%SETS)
+  #define TAG_OF_ADDR(x) (((uint64_t)(x)) / SETS / 64)
+  #define TAG_SET_TO_ADDR(tag, set) (tag * 64 * SETS + set*64)
+
+  #define WAYS_L2 (16)
+  // size of L2 is 1MB. Source: https://www.raspberrypi.org/documentation/hardware/raspberrypi/bcm2711/README.md
+  #define SETS_L2 (1024 * 1024 / 64 / WAYS_L2)
+#endif
 
 #define TRUE (1)
 #define FALSE (0)
