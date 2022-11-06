@@ -30,6 +30,12 @@ def add_gdb_script(l, scriptname, mustexist = False, alt_scriptname = None):
 gdb_exec_l = [args.gdb_cmd, f"--eval-command=target remote {args.gdb_remote}"]
 gdb_exec_l = add_gdb_script(gdb_exec_l, f"reset_{args.gdb_boardconfig}")
 gdb_exec_l = add_gdb_script(gdb_exec_l, "load", True)
+
+if os.environ["PROGPLAT_LOAD_ELF_IN"] == "":
+	print("!!!! PROGPLAT_LOAD_ELF_IN is empty !!!!")
+else:
+	gdb_exec_l += ["--eval-command=load " + os.environ["PROGPLAT_LOAD_ELF_IN"], "--eval-command=set confirm off", "--eval-command=delete"]
+
 gdb_exec_l = add_gdb_script(gdb_exec_l, f"prep_{args.gdb_boardconfig}", False, "prep")
 gdb_exec_l = add_gdb_script(gdb_exec_l, gdb_mode, True)
 gdb_exec_l = gdb_exec_l + [args.gdb_elf]

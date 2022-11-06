@@ -70,7 +70,7 @@ cores0123:
 	msr vbar_el1, x0
 
 	// then, core0 can move on to execute the main c function
-	ldr x5, =0x00100000
+	ldr x5, =__stack_memory_top
 	mov sp, x5
 	bl main
 	b hang

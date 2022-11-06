@@ -13,6 +13,8 @@ SECTIONS
 {
 	__boot_loc              =   0x1000;
 
+	__stack_memory_len_res  =  0x10000;
+
 	__experiment_code_loc   =   0x2000;
 	__experiment_memory_loc = 0x100000;
 	__experiment_memory_len =  0x40000;/* 32 * 1024 * 8 */
@@ -76,12 +78,19 @@ SECTIONS
 		KEEP(*(.__bss_end));
 	}
 
+	__stack_memory_start = .;
+	__stack_memory_top = __experiment_memory_loc - 0x10; /* 0x000FFFF0 */
+
+	CHECK_STACK_SPACE = 1 / ((__stack_memory_start + __stack_memory_len_res) <= __stack_memory_top);
+	/*ASSERT(((. + __stack_len_reserve) < __stack_memory), "error: not enough room for the stack");*/
+
+
 	.experiment_memory __experiment_memory_loc :
 	{
 		_experiment_memory = . ;
 		. += __experiment_memory_len ;/* 32 * 1024 * 8 */
 	}
-
+	
 	/DISCARD/ : { *(.dynsym) }
 	/DISCARD/ : { *(.dynstr*) }
 	/DISCARD/ : { *(.dynamic*) }
