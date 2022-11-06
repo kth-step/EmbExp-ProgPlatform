@@ -1,5 +1,9 @@
 #include <stdint.h>
 
+#include "config.h"
+
+#ifdef __PROGPLAT_ARCH__ARM8
+
 void patch_arm8_br(uint64_t instr_addr, uint64_t jump_target) {
   // inputs must be evenly divisible by 4
   if (((instr_addr % 4) != 0) || ((jump_target % 4) != 0))
@@ -48,3 +52,6 @@ detach
 quit
 
 */
+
+#endif
+
