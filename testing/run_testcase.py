@@ -41,7 +41,9 @@ inputfilemap = {
 	"asm_setup_1.h":     "all/inc/experiment/asm_setup_1.h",
 	"asm_setup_2.h":     "all/inc/experiment/asm_setup_2.h",
 	"asm_setup_train.h": "all/inc/experiment/asm_setup_train.h",
-	"Makefile.config":   "Makefile.config"
+	"binpatch.h":        "all/inc/experiment/binpatch.h",
+	"Makefile.config":   "Makefile.config",
+	"program.elf":       "program.elf"
 }
 
 
