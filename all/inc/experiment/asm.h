@@ -1,46 +1,44 @@
-nop
-nop
-nop
-nop
-nop
 
-// start here: 40 cycles + ?
-
-// select one of three experiments here
-//b finished // this gives 4 extra cycles
-//b ait_e1 // this gives 10 extra cycles
-b ait_e2 // this also gives 10 extra cycles
-
-
-
-// aligned experiment
-.align 3
-ait_e1:
-nop
-nop
-nop
-b finished
-
-
-
-// not aligned experiment
-.align 3
-nop // this breaks the alignment
-ait_e2:
-nop
-nop
-nop
-b finished
-
-
-
-
-nop
-nop
-nop
-
-// we finish aligned
-.align 3
-finished:
-nop
+_reffunc_ld5_ldldbr8: // takes 57, ait computes 55!!!
+  ldr r0, [sp, #0]
+  ldr r0, [sp, #0]
+  b _reffunc_ld3_j1
+  .align 3
+_reffunc_ld3_j1:
+  ldr r0, [sp, #0]
+  ldr r0, [sp, #0]
+  b _reffunc_ld3_j2
+  .align 3
+_reffunc_ld3_j2:
+  ldr r0, [sp, #0]
+  ldr r0, [sp, #0]
+  b _reffunc_ld3_j3
+  .align 3
+_reffunc_ld3_j3:
+  ldr r0, [sp, #0]
+  ldr r0, [sp, #0]
+  b _reffunc_ld3_j4
+  .align 3
+_reffunc_ld3_j4:
+  ldr r0, [sp, #0]
+  ldr r0, [sp, #0]
+  b _reffunc_ld3_j5
+  .align 3
+_reffunc_ld3_j5:
+  ldr r0, [sp, #0]
+  ldr r0, [sp, #0]
+  b _reffunc_ld3_j6
+  .align 3
+_reffunc_ld3_j6:
+  ldr r0, [sp, #0]
+  ldr r0, [sp, #0]
+  b _reffunc_ld3_j7
+  .align 3
+_reffunc_ld3_j7:
+  ldr r0, [sp, #0]
+  ldr r0, [sp, #0]
+  b _reffunc_ld3_j8
+  .align 3
+_reffunc_ld3_j8:
+  nop
 
