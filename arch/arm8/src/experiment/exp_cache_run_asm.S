@@ -30,7 +30,19 @@
 
 .section .experiment_code
 scamv_entry:
+  #if COUNT_CPU_CYCLES
+	ldr x0, =_sp_store
+	ldr x1, [x0]
+	mov sp, x1
+  mov x0, #1
+	mov x1, #17 // 0x11 CPU_CYCLES
+  bl enable_pmu
 .include "experiment/asm.h"
+  mov x0, #0
+  bl disable_pmu
+  #else
+.include "experiment/asm.h"
+  #endif
 	b scamv_exit
 
 

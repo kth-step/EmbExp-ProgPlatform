@@ -77,5 +77,11 @@
   #define EXPMEM_TRAIN_DEFAULT_VALUE 0
 #endif
 
+#ifdef __COUNT_CPU_CYCLES__
+  #define COUNT_CPU_CYCLES 1
+#else
+  #define COUNT_CPU_CYCLES 0
+#endif
+
 #endif // CONFIG_H
 
