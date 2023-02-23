@@ -230,6 +230,14 @@ __exit_scamv_train_loop:
 	ldr x0, =_sp_store
 	ldr x1, [x0]
 	mov sp, x1
+#if COUNT_CPU_CYCLES
+// enable_pmu(1, 0x11);
+  mov x0, #1
+  mov x1, #17
+  bl enable_pmu
+  mov x0, #0
+  mov x1, #0
+#endif
 // flush the cache
 	//flush_d_cache(0);
 	mov x0, #0
