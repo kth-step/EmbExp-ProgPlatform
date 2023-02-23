@@ -88,6 +88,10 @@ uint8_t cache_run_mult_compare(uint8_t _input_id, cache_state cache_, uint8_t n)
       while (1);
   }
 
+#if COUNT_CPU_CYCLES
+  enable_pmu(1, 0x11);
+#endif
+
   uint8_t diff = 0;
   _cache_run(cache_, _clean_mem_run, _scamv_run__, _clean_mem_train, _scamv_train__);
 

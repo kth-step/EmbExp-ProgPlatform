@@ -30,19 +30,7 @@
 
 .section .experiment_code
 scamv_entry:
-  #if COUNT_CPU_CYCLES
-	ldr x0, =_sp_store
-	ldr x1, [x0]
-	mov sp, x1
-  mov x0, #1
-	mov x1, #17 // 0x11 CPU_CYCLES
-  bl enable_pmu
 .include "experiment/asm.h"
-  mov x0, #0
-  bl disable_pmu
-  #else
-.include "experiment/asm.h"
-  #endif
 	b scamv_exit
 
 
@@ -80,6 +68,10 @@ _scamv_run1:
 .include "experiment/asm_setup_1.h"
 	dsb sy
 	isb
+#if COUNT_CPU_CYCLES
+  // reset counter
+  msr	pmxevcntr_el0, xzr
+#endif
 	b scamv_entry
 
 #ifdef EXP_HAS_INPUT_2
@@ -91,12 +83,28 @@ _scamv_run2:
 .include "experiment/asm_setup_2.h"
 	dsb sy
 	isb
+#if COUNT_CPU_CYCLES
+  // reset counter
+  msr	pmxevcntr_el0, xzr
+#endif
 	b scamv_entry
 #endif // EXP_HAS_INPUT_2
 
 scamv_exit:
 	dsb sy
 	isb
+#if COUNT_CPU_CYCLES
+// disable_pmu(1);
+/*
+  mov	w0, #0x1
+  and	w0, w0, #0x1f
+  mov	w1, #0x1
+  lsl	w0, w1, w0
+  msr	pmcntenclr_el0, x0
+*/
+  mov	x0, #0x2
+  msr	pmcntenclr_el0, x0
+#endif
 	ldr x0, =_scamv_ret_store
 	ldr x30, [x0]
 	ret
