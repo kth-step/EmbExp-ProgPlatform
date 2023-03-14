@@ -86,6 +86,7 @@ void run_cache_experiment() {
 #else
   #error "no cache experiment parameters selected"
 #endif
+  reset_count_valid_cache_lines();
   for (uint64_t n=0; n < NUM_CACHE_EXP; n++) {
     //printf("RUN1\n");
     // run 2 cache experiments
@@ -96,20 +97,32 @@ void run_cache_experiment() {
     //  print_cache_valid(cache2);
     //debug_set(cache1[0], 0);
     //debug_set(cache2[0], 0);
+    count_valid_cache_lines(cache1[n], 1);
+    count_valid_cache_lines(cache2[n], 2);
     if (diff == 0) {
       // compare and print result of comparison
       if (CACHE_EQ_FUN(cache1[n], cache2[n], CACHE_SET_LOWER, CACHE_SET_UPPER) == 0)
         printf("RESULT: EQUAL\n");
       else
-        printf("RESULT: UNEQUAL\n");
+        if (eval_result()) {
+          printf("RESULT: UNEQUAL\n");
+        } else {
+          printf("INCONCLUSIVE: %d\n", diff);
+        }
     }
     else {
-      printf("INCONCLUSIVE: %d\n", diff);
+      if (eval_result()) {
+        printf("RESULT: UNEQUAL\n");
+      } else {
+        printf("INCONCLUSIVE: %d\n", diff);
+      }
     }
   }
 #elif defined RUN_1EXPS
+  reset_count_valid_cache_lines();
   for (uint64_t n=0; n < NUM_CACHE_EXP; n++) {
     diff += cache_run_mult_compare(1, cache[n], cache_line_to_evict, NUM_MUL_RUNS);
+    count_valid_cache_lines(cache[n]);
   }
   if (diff != 0)
     printf("INCONCLUSIVE: %d\n", diff);
