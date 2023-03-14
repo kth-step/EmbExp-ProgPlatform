@@ -50,6 +50,84 @@ void flush_d_cache(uint64_t level) {
   BARRIER_DSB_ISB();
 }
 
+static unsigned long int next = 1;
+int rand(void) {
+  next = next * 1103515245 + 12345;
+  return (unsigned int)(next/65536) % 32768;
+}
+void srand(unsigned int seed) {
+  next = seed;
+}
+
+void choose_cache_lines_to_evict(cache_line *cache_lines_to_evict, cache_state cache) {
+  uint64_t n = 0;
+  for (uint64_t set=0; set<SETS; set++) {
+    for (uint64_t way=0; way<WAYS; way++) {
+      if (&cache[set][way].valid) {
+        if (rand() % 2) {
+          cache_lines_to_evict[n] = cache[set][way];
+          //debug_line_info(&cache_lines_to_evict[n]);
+          ++n;
+          if (n >= 10)
+            return 0;
+        }
+      }
+    }
+  }
+
+  return 0;
+}
+
+void flush_cache_lines(uint64_t level, cache_state cache, cache_line *cache_lines) {
+  uint64_t nways = (level == 0)?WAYS:WAYS_L2;
+  uint64_t nsets = (level == 0)?SETS:SETS_L2;
+  
+  // add	x2, x2, #4		/* x2 <- log2(cache line size) */
+  uint64_t x2 = 6;
+  // clz	w5, w3			/* bit position of #ways */
+  uint64_t x5;
+  asm (
+       "clz %x[result], %x[input_i]"
+       : [result] "=r" (x5)
+       : [input_i] "r" (nways-1)
+       );
+  x5 -= 32;
+  // uint64_t x5 = 29;
+  //and	x4, x4, x6, lsr #13	/* x4 <- max number of #sets */
+  /* x12 <- cache level << 1 */
+  uint64_t x12 = (level << 1);
+  /* x2 <- line length offset */
+  /* x3 <- number of cache ways - 1 */
+  /* x4 <- number of cache sets - 1 */
+  /* x5 <- bit position of #ways */
+
+  for (uint64_t set=0; set < nsets; set++) {
+    for (uint64_t n=0; n < 10; n++) {
+      if (cache_lines[n].valid) {
+        for (uint64_t x6=0; x6<nways; x6 ++ ) {
+          cache_line * l2 = &cache[set][x6];
+          if (l2->valid && (cache_lines[n].tag == l2->tag)) {
+            //	lsl	x7, x6, x5
+            uint64_t x7 = x6 << x5;
+            // orr	x9, x12, x7		/* map way and level to cisw value */
+            volatile uint64_t x9 = x12 | x7;
+            // lsl	x7, x4, x2
+            x7 = set << x2;
+            // orr	x9, x9, x7		/* map set number to cisw value */
+            x9 = x9 | x7;
+            asm (
+                 "dc	cisw, %x[input_i]"
+                 :
+                 : [input_i] "r" (x9)
+                 );
+          }
+        }
+      }
+    }
+  }
+
+  BARRIER_DSB_ISB();
+}
 
 void get_cache_line(cache_line *line, uint64_t set, uint64_t way) {
   volatile uint64_t value;
@@ -358,7 +436,6 @@ int hit_for_pa(cache_state cache, uint64_t pa) {
   cache_line * line = get_line_for_pa(cache, pa);
   return (line != 0);
 }
-
 
 uint64_t compare_cache(cache_state c1, cache_state c2) {
   return compare_cache_bounds(c1, c2, 0, SETS);

@@ -52,6 +52,8 @@ uint64_t set_prefetching_conf(uint64_t conf, prefetch_conf new_conf);
 
 
 void flush_d_cache(uint64_t level);
+void choose_cache_lines_to_evict(cache_line *cl, cache_state c);
+void flush_cache_lines(uint64_t level, cache_state c, cache_line *cl);
 void get_cache_line(cache_line *line, uint64_t set, uint64_t way);
 void save_cache_state(cache_state cache);
 void debug_line(cache_line * line, _Bool values);

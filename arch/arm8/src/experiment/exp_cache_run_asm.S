@@ -98,7 +98,7 @@ _cache_run:
 	str x2,  [sp, #(8 *  2)] // _scamv_run
 	str x3,  [sp, #(8 *  3)] // _clean_mem_train
 	str x4,  [sp, #(8 *  4)] // _scamv_train
-	str x5,  [sp, #(8 *  5)]
+	str x5,  [sp, #(8 *  5)] // _cache_line_to_evict
 	str x6,  [sp, #(8 *  6)]
 	str x7,  [sp, #(8 *  7)]
 	str x8,  [sp, #(8 *  8)]
@@ -259,6 +259,101 @@ __exit_scamv_train_loop:
 
 // run the experiment code
 	blr x30
+
+// restore SP register
+	ldr x0, =_sp_store
+	ldr x1, [x0]
+	mov sp, x1
+	ldr x0,  [sp, #(8 *  0)]
+	bl save_cache_state
+	/*
+	ldr x0,  [sp, #(8 *  0)]
+	bl print_cache_valid
+	dsb sy
+	isb
+	*/
+  ldr x0,  [sp, #(8 *  6)]
+  mov x1,  #2
+  cmp x0, x1
+  b.eq cache_state_second_run
+
+	ldr x0,  [sp, #(8 *  5)]
+	ldr x1,  [sp, #(8 *  0)]
+	bl choose_cache_lines_to_evict
+	dsb sy
+	isb
+	b cache_state_second_run
+
+cache_state_second_run:
+// restore SP register
+	ldr x0, =_sp_store
+	ldr x1, [x0]
+	mov sp, x1
+//flush_cache_lines(0, cache, _cache_line_to_evict)
+	mov x0, #0
+	ldr x1,  [sp, #(8 *  0)]
+	ldr x2,  [sp, #(8 *  5)]
+	bl flush_cache_lines
+//flush_d_cache(1);
+	//mov x0, #1
+	//bl flush_d_cache
+// restore SP register
+	ldr x0, =_sp_store
+	ldr x1, [x0]
+	mov sp, x1
+	ldr x0,  [sp, #(8 *  0)]
+	bl save_cache_state
+	/*
+	ldr x0,  [sp, #(8 *  0)]
+	bl print_cache_valid
+	dsb sy
+	isb
+	*/
+	
+	// Second execution
+	// clean experiment memory: _clean_mem_run
+	ldr x30, [sp, #(8 *  1)]
+	blr x30
+// load _scamv_run in x30 (LR)
+	ldr x30, [sp, #(8 *  2)]
+// create defined processor state
+	mov x0,  #0
+	mov x1,  #0
+	mov x2,  #0
+	mov x3,  #0
+	mov x4,  #0
+	mov x5,  #0
+	mov x6,  #0
+	mov x7,  #0
+	mov x8,  #0
+	mov x9,  #0
+	mov x10, #0
+	mov x11, #0
+	mov x12, #0
+	mov x13, #0
+	mov x14, #0
+	mov x15, #0
+	mov x16, #0
+	mov x17, #0
+	mov x18, #0
+	mov x19, #0
+	mov x20, #0
+	mov x21, #0
+	mov x22, #0
+	mov x23, #0
+	mov x24, #0
+	mov x25, #0
+	mov x26, #0
+	mov x27, #0
+	mov x28, #0
+	mov x29, #0
+	mov sp,  x0
+	// set all ALU flags to a defined state
+	adds x0, x1, x2
+
+// run the experiment code
+	blr x30
+
 // restore SP register
 	ldr x0, =_sp_store
 	ldr x1, [x0]

@@ -77,5 +77,11 @@
   #define EXPMEM_TRAIN_DEFAULT_VALUE 0
 #endif
 
+#ifdef __PROGPLAT_CACHE_EXP__
+  #define NUM_CACHE_EXP __PROGPLAT_CACHE_EXP__
+#else
+  #define NUM_CACHE_EXP 0
+#endif
+
 #endif // CONFIG_H
 

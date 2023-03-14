@@ -57,15 +57,17 @@ void _clean_experiment_memory_run2() {
 void _scamv_train();
 void _scamv_run1();
 void _scamv_run2();
+void _cache_line_to_evict();
 
-void _cache_run(cache_state cache, void (*_clean_mem_run)(), void (*_scamv_run)(), void (*_clean_mem_train)(), void (*_scamv_train)());
+void _cache_run(cache_state cache, void (*_clean_mem_run)(), void (*_scamv_run)(), void (*_clean_mem_train)(), void (*_scamv_train)(), void (*_cache_line_to_evict)(), uint8_t _input_id);
 
 static cache_state cache_temp;
-uint8_t cache_run_mult_compare(uint8_t _input_id, cache_state cache_, uint8_t n) {
+uint8_t cache_run_mult_compare(uint8_t _input_id, cache_state cache_, cache_line *cache_line_to_evict, uint8_t n) {
   void (*_clean_mem_run)()   = 0;
   void (*_scamv_run__)()     = 0;
   void (*_clean_mem_train)() = 0;
   void (*_scamv_train__)()   = 0;
+  void (*_cache_line_to_evict)() = cache_line_to_evict;
 
 #ifdef EXP_HAS_INPUT_TRAIN
   _clean_mem_train = _clean_experiment_memory_train;
@@ -88,9 +90,9 @@ uint8_t cache_run_mult_compare(uint8_t _input_id, cache_state cache_, uint8_t n)
   }
 
   uint8_t diff = 0;
-  _cache_run(cache_, _clean_mem_run, _scamv_run__, _clean_mem_train, _scamv_train__);
+  _cache_run(cache_, _clean_mem_run, _scamv_run__, _clean_mem_train, _scamv_train__, _cache_line_to_evict, _input_id);
   for (uint8_t i = n; i > 0; i--) {
-    _cache_run(cache_temp, _clean_mem_run, _scamv_run__, _clean_mem_train, _scamv_train__);
+    _cache_run(cache_temp, _clean_mem_run, _scamv_run__, _clean_mem_train, _scamv_train__, _cache_line_to_evict, 2);
     if (compare_cache(cache_, cache_temp) != 0)
       diff++;
   }

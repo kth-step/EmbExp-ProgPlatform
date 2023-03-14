@@ -45,10 +45,12 @@ static void basic_mmu() {
 
 // allocated data for cache state data structures
 #ifdef RUN_2EXPS
-static cache_state cache1;
-static cache_state cache2;
+static cache_state cache1[NUM_CACHE_EXP];
+static cache_state cache2[NUM_CACHE_EXP];
+static cache_line cache_line_to_evict[NUM_CACHE_EXP][10];
 #elif defined RUN_1EXPS
-static cache_state cache;
+static cache_state cache[NUM_CACHE_EXP];
+static cache_line cache_line_to_evict[NUM_CACHE_EXP][10];
 #else
   #error "no experiment type selected"
 #endif
@@ -65,14 +67,6 @@ void run_cache_experiment() {
   v = *((uint64_t *)(0x80000000));
 
 #ifdef RUN_2EXPS
-  // run 2 cache experiments
-  diff += cache_run_mult_compare(1, cache1, NUM_MUL_RUNS);
-  //  print_cache_valid(cache1);
-  diff += cache_run_mult_compare(2, cache2, NUM_MUL_RUNS);
-  //  print_cache_valid(cache2);
-  //debug_set(cache1[0], 0);
-  //debug_set(cache2[0], 0);
-
 #ifdef RUN_CACHE_MULTIW
   #define CACHE_EQ_FUN compare_cache_bounds
   #define CACHE_SET_LOWER 0
@@ -92,18 +86,31 @@ void run_cache_experiment() {
 #else
   #error "no cache experiment parameters selected"
 #endif
-  if (diff == 0) {
-    // compare and print result of comparison
-    if (CACHE_EQ_FUN(cache1, cache2, CACHE_SET_LOWER, CACHE_SET_UPPER) == 0)
-      printf("RESULT: EQUAL\n");
-    else
-      printf("RESULT: UNEQUAL\n");
-  } else {
-    printf("INCONCLUSIVE: %d\n", diff);
+  for (uint64_t n=0; n < NUM_CACHE_EXP; n++) {
+    //printf("RUN1\n");
+    // run 2 cache experiments
+    diff += cache_run_mult_compare(1, cache1[n], cache_line_to_evict[n], NUM_MUL_RUNS);
+    //  print_cache_valid(cache1);
+    //printf("RUN2\n");
+    diff += cache_run_mult_compare(2, cache2[n], cache_line_to_evict[n], NUM_MUL_RUNS);
+    //  print_cache_valid(cache2);
+    //debug_set(cache1[0], 0);
+    //debug_set(cache2[0], 0);
+    if (diff == 0) {
+      // compare and print result of comparison
+      if (CACHE_EQ_FUN(cache1[n], cache2[n], CACHE_SET_LOWER, CACHE_SET_UPPER) == 0)
+        printf("RESULT: EQUAL\n");
+      else
+        printf("RESULT: UNEQUAL\n");
+    }
+    else {
+      printf("INCONCLUSIVE: %d\n", diff);
+    }
   }
 #elif defined RUN_1EXPS
-  diff += cache_run_mult_compare(1, cache, NUM_MUL_RUNS);
-  print_cache_valid(cache);
+  for (uint64_t n=0; n < NUM_CACHE_EXP; n++) {
+    diff += cache_run_mult_compare(1, cache[n], cache_line_to_evict, NUM_MUL_RUNS);
+  }
   if (diff != 0)
     printf("INCONCLUSIVE: %d\n", diff);
 #else
