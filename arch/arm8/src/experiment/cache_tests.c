@@ -103,18 +103,18 @@ void run_cache_experiment() {
       // compare and print result of comparison
       if (CACHE_EQ_FUN(cache1[n], cache2[n], CACHE_SET_LOWER, CACHE_SET_UPPER) == 0)
         printf("RESULT: EQUAL\n");
-      else
-        if (eval_result()) {
-          printf("RESULT: UNEQUAL\n");
-        } else {
-          printf("INCONCLUSIVE: %d\n", diff);
-        }
     }
     else {
-      if (eval_result()) {
-        printf("RESULT: UNEQUAL\n");
-      } else {
-        printf("INCONCLUSIVE: %d\n", diff);
+      switch (eval_result()) {
+        case 1:
+          printf("RESULT: UNEQUAL\n");
+          break;
+        case 0:
+          printf("INCONCLUSIVE: %d\n", diff);
+          break;
+        case -1:
+          printf("RESULT: EQUAL\n");
+          break;
       }
     }
   }
