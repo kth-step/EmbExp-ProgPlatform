@@ -59,10 +59,10 @@ void _scamv_run1();
 void _scamv_run2();
 void _cache_line_to_evict();
 
-void _cache_run(cache_state cache, void (*_clean_mem_run)(), void (*_scamv_run)(), void (*_clean_mem_train)(), void (*_scamv_train)(), void (*_cache_line_to_evict)(), uint8_t _input_id);
+void _cache_run(cache_state cache, void (*_clean_mem_run)(), void (*_scamv_run)(), void (*_clean_mem_train)(), void (*_scamv_train)(), void (*_cache_line_to_evict)(), uint8_t _input_id, cache_state initial_cache);
 
 static cache_state cache_temp;
-uint8_t cache_run_mult_compare(uint8_t _input_id, cache_state cache_, cache_line *cache_line_to_evict, uint8_t n) {
+uint8_t cache_run_mult_compare(uint8_t _input_id, cache_state cache_, cache_state initial_cache_, cache_line *cache_line_to_evict, uint8_t n) {
   void (*_clean_mem_run)()   = 0;
   void (*_scamv_run__)()     = 0;
   void (*_clean_mem_train)() = 0;
@@ -90,10 +90,15 @@ uint8_t cache_run_mult_compare(uint8_t _input_id, cache_state cache_, cache_line
   }
 
   uint8_t diff = 0;
-  _cache_run(cache_, _clean_mem_run, _scamv_run__, _clean_mem_train, _scamv_train__, _cache_line_to_evict, _input_id);
+  _cache_run(cache_, _clean_mem_run, _scamv_run__, _clean_mem_train, _scamv_train__, _cache_line_to_evict, _input_id, initial_cache_);
+  print_cache_valid(initial_cache_);
+  print_cache_valid(cache_);
   for (uint8_t i = n; i > 0; i--) {
-    _cache_run(cache_temp, _clean_mem_run, _scamv_run__, _clean_mem_train, _scamv_train__, _cache_line_to_evict, 2);
+    printf("-----check inconclusive-----\n");
+    _cache_run(cache_temp, _clean_mem_run, _scamv_run__, _clean_mem_train, _scamv_train__, _cache_line_to_evict, 2, initial_cache_);
     count_valid_cache_lines(cache_temp, _input_id);
+    print_cache_valid(initial_cache_);
+    print_cache_valid(cache_);
     if (compare_cache(cache_, cache_temp) != 0)
       diff++;
   }

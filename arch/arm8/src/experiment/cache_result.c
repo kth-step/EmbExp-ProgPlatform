@@ -19,10 +19,8 @@ typedef struct counter_cache_line_ {
 } counter_cache_line;
 
 #ifdef RUN_2EXPS
-//static uint64_t counts[NUM_CACHE_LINES][2];
 static counter_cache_line counts[NUM_CACHE_LINES];
 #elif defined RUN_1EXPS
-//static uint64_t counts[NUM_CACHE_LINES][2];
 static counter_cache_line counts[NUM_CACHE_LINES];
 #else
   #error "no experiment type selected"
@@ -88,10 +86,10 @@ void count_valid_cache_lines(cache_state c, uint8_t scamv_run) {
   }
 }
 
-void print_cache_lines_occurrences(counter_cache_line *counter) {
+void print_cache_lines_occurrences() {
   for (uint64_t n=0; n<NUM_CACHE_LINES; n++) {
-    if (counter[n].count > 0) {
-      printf("%x: %d %d %d\n", counter[n].tag, counter[n].count, counter[n].scamv_run1, counter[n].scamv_run2);
+    if (counts[n].count > 0) {
+      printf("%x: %d %d %d\n", counts[n].tag, counts[n].count, counts[n].scamv_run1, counts[n].scamv_run2);
     }
   }
 }
@@ -106,14 +104,14 @@ int eval_result() {
   for (uint64_t n=0; n<NUM_CACHE_LINES; n++) {
     if (counts[n].count > 0) {
       if (counts[n].scamv_run1 && !counts[n].scamv_run2) {
-        if (counts[n].count > (NUM_CACHE_EXP*(NUM_MUL_RUNS+1))/2)
+        if (counts[n].count > ((NUM_MUL_RUNS+1)*75/100))
           condition1 = 1;
         else {
           condition3 = 1;
         }
       }
       if (!counts[n].scamv_run1 && counts[n].scamv_run2) {
-        if (counts[n].count > (NUM_CACHE_EXP*(NUM_MUL_RUNS+1))/2)
+        if (counts[n].count > ((NUM_MUL_RUNS+1)*75/100))
           condition2 = 1;
         else {
           condition3 = 1;
@@ -126,13 +124,14 @@ int eval_result() {
     }
   }
 
-  if (condition1 & condition2) {
+  print_cache_lines_occurrences();
+  if (condition1 || condition2) {
     return 1;  // counterexample
   }
   else {
     if (condition3)
       return 0;
-    if (((tot_count_shared_cl * 100)/tot_count_cl) >= 80)
+    if (((tot_count_shared_cl * 100)/tot_count_cl) < 80)
       return 0;  // inconclusive
     else
       return -1; // valid

@@ -45,8 +45,8 @@ static void basic_mmu() {
 
 // allocated data for cache state data structures
 #ifdef RUN_2EXPS
-static cache_state cache1[NUM_CACHE_EXP];
-static cache_state cache2[NUM_CACHE_EXP];
+static cache_state cache1[NUM_CACHE_EXP][2];
+static cache_state cache2[NUM_CACHE_EXP][2];
 static cache_line cache_line_to_evict[NUM_CACHE_EXP][10];
 #elif defined RUN_1EXPS
 static cache_state cache[NUM_CACHE_EXP];
@@ -88,21 +88,23 @@ void run_cache_experiment() {
 #endif
   reset_count_valid_cache_lines();
   for (uint64_t n=0; n < NUM_CACHE_EXP; n++) {
-    //printf("RUN1\n");
+    printf("RUN1\n");
     // run 2 cache experiments
-    diff += cache_run_mult_compare(1, cache1[n], cache_line_to_evict[n], NUM_MUL_RUNS);
+    diff += cache_run_mult_compare(1, cache1[n][0], cache1[n][1], cache_line_to_evict[n], NUM_MUL_RUNS);
     //  print_cache_valid(cache1);
-    //printf("RUN2\n");
-    diff += cache_run_mult_compare(2, cache2[n], cache_line_to_evict[n], NUM_MUL_RUNS);
+    printf("RUN2\n");
+    diff += cache_run_mult_compare(2, cache2[n][0], cache2[n][1], cache_line_to_evict[n], NUM_MUL_RUNS);
     //  print_cache_valid(cache2);
     //debug_set(cache1[0], 0);
     //debug_set(cache2[0], 0);
-    count_valid_cache_lines(cache1[n], 1);
-    count_valid_cache_lines(cache2[n], 2);
+    count_valid_cache_lines(cache1[n][0], 1);
+    count_valid_cache_lines(cache2[n][0], 2);
     if (diff == 0) {
       // compare and print result of comparison
-      if (CACHE_EQ_FUN(cache1[n], cache2[n], CACHE_SET_LOWER, CACHE_SET_UPPER) == 0)
+      if (CACHE_EQ_FUN(cache1[n][0], cache2[n][0], CACHE_SET_LOWER, CACHE_SET_UPPER) == 0)
         printf("RESULT: EQUAL\n");
+      else
+        printf("RESULT: UNEQUAL\n");
     }
     else {
       switch (eval_result()) {
@@ -117,6 +119,7 @@ void run_cache_experiment() {
           break;
       }
     }
+    reset_count_valid_cache_lines();
   }
 #elif defined RUN_1EXPS
   reset_count_valid_cache_lines();
