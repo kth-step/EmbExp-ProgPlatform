@@ -98,7 +98,7 @@ uint8_t cache_run_mult_compare(uint8_t _input_id, cache_state cache_, cache_stat
     _cache_run(cache_temp, _clean_mem_run, _scamv_run__, _clean_mem_train, _scamv_train__, _cache_line_to_evict, 2, initial_cache_);
     count_valid_cache_lines(cache_temp, _input_id);
     print_cache_valid(initial_cache_);
-    print_cache_valid(cache_);
+    print_cache_valid(cache_temp);
     if (compare_cache(cache_, cache_temp) != 0)
       diff++;
   }
