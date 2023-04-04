@@ -300,13 +300,10 @@ cache_state_second_run:
 //flush_d_cache(1);
 	//mov x0, #1
 	//bl flush_d_cache
-// restore SP register
-	ldr x0, =_sp_store
-	ldr x1, [x0]
-	mov sp, x1
+	/*
+	//check how the cache looks after evicted some cache lines
 	ldr x0,  [sp, #(8 *  0)]
 	bl save_cache_state
-	/*
 	ldr x0,  [sp, #(8 *  0)]
 	bl print_cache_valid
 	dsb sy

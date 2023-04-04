@@ -49,7 +49,7 @@ static cache_state cache1[NUM_CACHE_EXP][2];
 static cache_state cache2[NUM_CACHE_EXP][2];
 static cache_line cache_line_to_evict[NUM_CACHE_EXP][10];
 #elif defined RUN_1EXPS
-static cache_state cache[NUM_CACHE_EXP];
+static cache_state cache[NUM_CACHE_EXP][2];
 static cache_line cache_line_to_evict[NUM_CACHE_EXP][10];
 #else
   #error "no experiment type selected"
@@ -124,11 +124,12 @@ void run_cache_experiment() {
 #elif defined RUN_1EXPS
   reset_count_valid_cache_lines();
   for (uint64_t n=0; n < NUM_CACHE_EXP; n++) {
-    diff += cache_run_mult_compare(1, cache[n], cache_line_to_evict, NUM_MUL_RUNS);
+    diff += cache_run_mult_compare(1, cache[n][0], cache[n][1], cache_line_to_evict, NUM_MUL_RUNS);
     count_valid_cache_lines(cache[n]);
+    if (diff != 0)
+      printf("INCONCLUSIVE: %d\n", diff);
+    reset_count_valid_cache_lines();
   }
-  if (diff != 0)
-    printf("INCONCLUSIVE: %d\n", diff);
 #else
   #error "no experiment type selected"
 #endif
