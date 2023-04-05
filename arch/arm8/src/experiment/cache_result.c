@@ -104,7 +104,7 @@ int eval_result() {
   for (uint64_t n=0; n<NUM_CACHE_LINES; n++) {
     if (counts[n].count > 0) {
       if (counts[n].scamv_run1 && !counts[n].scamv_run2) {
-        if (counts[n].count > ((NUM_MUL_RUNS+1)*75/100))
+        if (counts[n].count > ((NUM_MUL_RUNS+1)*70/100))
           condition1 = 1;
         else {
           condition3 = 1;
@@ -112,7 +112,7 @@ int eval_result() {
         continue;
       }
       if (!counts[n].scamv_run1 && counts[n].scamv_run2) {
-        if (counts[n].count > ((NUM_MUL_RUNS+1)*75/100))
+        if (counts[n].count > ((NUM_MUL_RUNS+1)*70/100))
           condition2 = 1;
         else {
           condition3 = 1;
