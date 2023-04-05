@@ -66,16 +66,14 @@ void choose_cache_lines_to_evict(cache_line *cache_lines_to_evict, cache_state c
       if (&cache[set][way].valid) {
         if (rand() % 2) {
           cache_lines_to_evict[n] = cache[set][way];
-          //debug_line_info(&cache_lines_to_evict[n]);
+          debug_line_info(&cache_lines_to_evict[n]);
           ++n;
           if (n >= 10)
-            return 0;
+            return;
         }
       }
     }
   }
-
-  return 0;
 }
 
 void flush_cache_lines(uint64_t level, cache_state cache, cache_line *cache_lines) {

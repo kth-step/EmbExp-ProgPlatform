@@ -99,7 +99,7 @@ _cache_run:
 	str x3,  [sp, #(8 *  3)] // _clean_mem_train
 	str x4,  [sp, #(8 *  4)] // _scamv_train
 	str x5,  [sp, #(8 *  5)] // _cache_line_to_evict
-	str x6,  [sp, #(8 *  6)]
+	str x6,  [sp, #(8 *  6)] // 1 or 2
 	str x7,  [sp, #(8 *  7)]
 	str x8,  [sp, #(8 *  8)]
 	str x9,  [sp, #(8 *  9)]
@@ -272,6 +272,7 @@ __exit_scamv_train_loop:
 	dsb sy
 	isb
 	*/
+
   ldr x0,  [sp, #(8 *  6)]
   mov x1,  #2
   cmp x0, x1
@@ -297,13 +298,10 @@ cache_state_second_run:
 //flush_d_cache(1);
 	//mov x0, #1
 	//bl flush_d_cache
-// restore SP register
-	ldr x0, =_sp_store
-	ldr x1, [x0]
-	mov sp, x1
+	/*
+	//check how the cache looks after evicted some cache lines
 	ldr x0,  [sp, #(8 *  0)]
 	bl save_cache_state
-	/*
 	ldr x0,  [sp, #(8 *  0)]
 	bl print_cache_valid
 	dsb sy
