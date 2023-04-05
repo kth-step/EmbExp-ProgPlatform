@@ -23,6 +23,8 @@
 #include "cache.h"
 #include <stdint.h>
 
+typedef struct dif_ { uint8_t diff1; uint8_t diff2 } dif;
+
 uint64_t expmem_byte_to_word(uint8_t v) {
   uint64_t w = v;
   return ((w << 56) | (w << 48) | (w << 40) | (w << 32) |
@@ -61,7 +63,10 @@ void _cache_line_to_evict();
 
 void _cache_run(cache_state cache, void (*_clean_mem_run)(), void (*_scamv_run)(), void (*_clean_mem_train)(), void (*_scamv_train)(), void (*_cache_line_to_evict)(), uint8_t _input_id, cache_state initial_cache);
 
+static dif diff;
 static cache_state cache_temp;
+static cache_state initial_cache_temp;
+
 uint8_t cache_run_mult_compare(uint8_t _input_id, cache_state cache_, cache_state initial_cache_, cache_line *cache_line_to_evict, uint8_t n) {
   void (*_clean_mem_run)()   = 0;
   void (*_scamv_run__)()     = 0;
@@ -89,20 +94,24 @@ uint8_t cache_run_mult_compare(uint8_t _input_id, cache_state cache_, cache_stat
       while (1);
   }
 
-  uint8_t diff = 0;
+  diff.diff1 = 0;
+  diff.diff2 = 0;
   _cache_run(cache_, _clean_mem_run, _scamv_run__, _clean_mem_train, _scamv_train__, _cache_line_to_evict, _input_id, initial_cache_);
   print_cache_valid(initial_cache_);
   print_cache_valid(cache_);
   for (uint8_t i = n; i > 0; i--) {
     printf("-----check inconclusive-----\n");
-    _cache_run(cache_temp, _clean_mem_run, _scamv_run__, _clean_mem_train, _scamv_train__, _cache_line_to_evict, 2, initial_cache_);
-    count_valid_cache_lines(cache_temp, _input_id);
-    print_cache_valid(initial_cache_);
+    _cache_run(cache_temp, _clean_mem_run, _scamv_run__, _clean_mem_train, _scamv_train__, _cache_line_to_evict, 2, initial_cache_temp);
+    count_valid_cache_lines(cache_temp, _input_id, 0);
+    count_valid_cache_lines(initial_cache_temp, _input_id, 1);
+    print_cache_valid(initial_cache_temp);
     print_cache_valid(cache_temp);
     if (compare_cache(cache_, cache_temp) != 0)
-      diff++;
+      diff.diff1++;
+    if (compare_cache(initial_cache_, initial_cache_temp) != 0)
+      diff.diff2++;
   }
-  return diff;
+  return diff.diff1;
 }
 
 
