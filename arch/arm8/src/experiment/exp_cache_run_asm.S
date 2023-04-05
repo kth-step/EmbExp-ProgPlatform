@@ -93,14 +93,14 @@ scamv_exit:
 _cache_run:
 // save registers on stack
 	sub sp, sp, #(8 * 40)
-	str x0,  [sp, #(8 *  0)] // cache
+	str x0,  [sp, #(8 *  0)] // second_cache
 	str x1,  [sp, #(8 *  1)] // _clean_mem_run
 	str x2,  [sp, #(8 *  2)] // _scamv_run
 	str x3,  [sp, #(8 *  3)] // _clean_mem_train
 	str x4,  [sp, #(8 *  4)] // _scamv_train
 	str x5,  [sp, #(8 *  5)] // _cache_line_to_evict
 	str x6,  [sp, #(8 *  6)] // 1 or 2
-	str x7,  [sp, #(8 *  7)]
+	str x7,  [sp, #(8 *  7)] // first_cache
 	str x8,  [sp, #(8 *  8)]
 	str x9,  [sp, #(8 *  9)]
 	str x10, [sp, #(8 * 10)]
@@ -266,8 +266,10 @@ __exit_scamv_train_loop:
 	mov sp, x1
 	ldr x0,  [sp, #(8 *  0)]
 	bl save_cache_state
+	ldr x0,  [sp, #(8 *  7)]
+	bl save_cache_state
 	/*
-	ldr x0,  [sp, #(8 *  0)]
+	ldr x0,  [sp, #(8 *  7)]
 	bl print_cache_valid
 	dsb sy
 	isb
