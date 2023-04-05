@@ -125,7 +125,7 @@ void run_cache_experiment() {
   reset_count_valid_cache_lines();
   for (uint64_t n=0; n < NUM_CACHE_EXP; n++) {
     diff += cache_run_mult_compare(1, cache[n][0], cache[n][1], cache_line_to_evict, NUM_MUL_RUNS);
-    count_valid_cache_lines(cache[n][0], 1, 0);
+    count_valid_cache_lines(cache[n][0], 1);
     if (diff != 0)
       printf("INCONCLUSIVE: %d\n", diff);
     reset_count_valid_cache_lines();
