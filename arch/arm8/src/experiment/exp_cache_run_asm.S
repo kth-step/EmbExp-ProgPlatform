@@ -28,6 +28,10 @@
 .globl _scamv_run2
 #endif
 
+#ifdef COUNT_CPU_CYCLES
+.globl _scamv_cpu_cycles_sum
+#endif
+
 .section .experiment_code
 scamv_entry:
 .include "experiment/asm.h"
@@ -44,6 +48,14 @@ _scamv_ret_store:
 .align 3
 _scamv_train_loop_cnt:
 	.quad 0
+#ifdef COUNT_CPU_CYCLES
+.align 3
+_scamv_cpu_cycles_loop_cnt:
+  .quad 0
+.align 3
+_scamv_cpu_cycles_sum:
+  .quad 0
+#endif
 
 
 .section .text
@@ -68,6 +80,10 @@ _scamv_run1:
 .include "experiment/asm_setup_1.h"
 	dsb sy
 	isb
+#ifdef COUNT_CPU_CYCLES
+	// reset counter
+	msr	pmxevcntr_el0, xzr
+#endif
 	b scamv_entry
 
 #ifdef EXP_HAS_INPUT_2
@@ -79,12 +95,34 @@ _scamv_run2:
 .include "experiment/asm_setup_2.h"
 	dsb sy
 	isb
+#ifdef COUNT_CPU_CYCLES
+	// reset counter
+	msr	pmxevcntr_el0, xzr
+#endif
 	b scamv_entry
 #endif // EXP_HAS_INPUT_2
 
 scamv_exit:
 	dsb sy
 	isb
+#ifdef COUNT_CPU_CYCLES
+// disable_pmu(1);
+	/*
+	mov	w0, #0x1
+	and	w0, w0, #0x1f
+	mov	w1, #0x1
+	lsl	w0, w1, w0
+	msr	pmcntenclr_el0, x0
+	*/
+	mov	x0, #0x2
+	msr	pmcntenclr_el0, x0
+	// sum of cycles
+	ldr x0, =_scamv_cpu_cycles_sum
+	ldr x1, [x0]
+	mrs	x16, pmxevcntr_el0
+	add x1, x1, x16
+	str x1, [x0]
+#endif
 	ldr x0, =_scamv_ret_store
 	ldr x30, [x0]
 	ret
@@ -210,6 +248,17 @@ __exit_scamv_train_loop:
 	ldr x0, =_sp_store
 	ldr x1, [x0]
 	mov sp, x1
+#ifdef COUNT_CPU_CYCLES
+// enable_pmu(1, 0x11);
+	mov x0, #1
+	mov x1, #17
+	bl enable_pmu
+	mov x0, #0
+	mov x1, #0
+// reset total sum
+	ldr x0, =_scamv_cpu_cycles_sum
+	str x1, [x0]
+#endif
 // flush the cache
 	//flush_d_cache(0);
 	mov x0, #0
@@ -314,6 +363,34 @@ cache_state_second_run:
 	// clean experiment memory: _clean_mem_run
 	ldr x30, [sp, #(8 *  1)]
 	blr x30
+#ifdef COUNT_CPU_CYCLES
+// ========================================================
+	ldr x0, =_scamv_cpu_cycles_loop_cnt
+	mov x1, #0
+	str x1, [x0]
+// reset total sum
+	ldr x0, =_scamv_cpu_cycles_sum
+	str x1, [x0]
+	mov x1, #0
+
+__enter_scamv_cpu_cycles_loop:
+	ldr x0, =_scamv_cpu_cycles_loop_cnt
+	ldr x1, [x0]
+	mov x2, #50000 //rounds
+	cmp x1, x2
+	b.ge __exit_scamv_cpu_cycles_loop
+	add x1, x1, #1
+	str x1, [x0]
+
+// restore SP register
+	ldr x0, =_sp_store
+	ldr x1, [x0]
+	mov sp, x1
+// enable_pmu(1, 0x11);
+	mov x0, #1
+	mov x1, #17
+	bl enable_pmu
+#endif
 // load _scamv_run in x30 (LR)
 	ldr x30, [sp, #(8 *  2)]
 // create defined processor state
@@ -354,6 +431,16 @@ cache_state_second_run:
 // run the experiment code
 	blr x30
 
+#ifdef COUNT_CPU_CYCLES
+  b __enter_scamv_cpu_cycles_loop
+
+__exit_scamv_cpu_cycles_loop:
+
+// restore SP register
+	ldr x0, =_sp_store
+	ldr x1, [x0]
+	mov sp, x1
+#else
 // restore SP register
 	ldr x0, =_sp_store
 	ldr x1, [x0]
@@ -362,6 +449,7 @@ cache_state_second_run:
 	//save_cache_state(cache);
 	ldr x0,  [sp, #(8 *  0)]
 	bl save_cache_state
+#endif
 
 /*
 // debug the first cache set

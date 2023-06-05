@@ -83,5 +83,9 @@
   #define NUM_CACHE_EXP 0
 #endif
 
+#ifdef __COUNT_CPU_CYCLES__
+  #define COUNT_CPU_CYCLES
+#endif
+
 #endif // CONFIG_H
 

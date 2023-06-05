@@ -38,6 +38,10 @@ void _clean_experiment_memory(uint64_t default_val) {
   }
 }
 
+#ifdef COUNT_CPU_CYCLES
+extern uint64_t _scamv_cpu_cycles_sum;
+#endif
+
 #ifdef EXP_HAS_INPUT_TRAIN
 void _clean_experiment_memory_train() {
   _clean_experiment_memory(EXPMEM_TRAIN_DEFAULT_VALUE);
@@ -90,18 +94,29 @@ uint8_t cache_run_mult_compare(uint8_t _input_id, cache_state second_cache_, cac
   }
 
   uint8_t diff = 0;
-  _cache_run(second_cache_, _clean_mem_run, _scamv_run__, _clean_mem_train, _scamv_train__, _cache_line_to_evict, _input_id, first_cache_);
-  print_cache_valid(first_cache_);
-  print_cache_valid(second_cache_);
-  for (uint8_t i = n; i > 0; i--) {
-    printf("-----check inconclusive-----\n");
-    _cache_run(cache_temp, _clean_mem_run, _scamv_run__, _clean_mem_train, _scamv_train__, _cache_line_to_evict, 2, first_cache_);
-    count_valid_cache_lines(cache_temp, _input_id);
+
+  #ifdef COUNT_CPU_CYCLES
+    //uint64_t sum_CPU_CYCLES = 0;
+    for (uint8_t i = n; i > 0; i--) {
+      _cache_run(cache_temp, _clean_mem_run, _scamv_run__, _clean_mem_train, _scamv_train__, _cache_line_to_evict, 2, first_cache_);
+      //sum_CPU_CYCLES += read_pmu(1);
+      printf("CPU_CYCLES: %d\n", (_scamv_cpu_cycles_sum/50000));
+    }
+  #else
+    _cache_run(second_cache_, _clean_mem_run, _scamv_run__, _clean_mem_train, _scamv_train__, _cache_line_to_evict, _input_id, first_cache_);
     print_cache_valid(first_cache_);
-    print_cache_valid(cache_temp);
-    if (compare_cache(second_cache_, cache_temp) != 0)
-      diff++;
-  }
+    print_cache_valid(second_cache_);
+    for (uint8_t i = n; i > 0; i--) {
+      printf("-----check inconclusive-----\n");
+      _cache_run(cache_temp, _clean_mem_run, _scamv_run__, _clean_mem_train, _scamv_train__, _cache_line_to_evict, 2, first_cache_);
+      count_valid_cache_lines(cache_temp, _input_id);
+      print_cache_valid(first_cache_);
+      print_cache_valid(cache_temp);
+      if (compare_cache(second_cache_, cache_temp) != 0)
+        diff++;
+    }
+  #endif
+
   return diff;
 }
 
