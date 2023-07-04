@@ -200,6 +200,10 @@ __enter_scamv_train_loop:
 	blr x30
 // load _scamv_run in x30 (LR)
 	ldr x30, [sp, #(8 *  4)]
+// restore SP register
+	ldr x0, =_sp_store
+	ldr x1, [x0]
+	mov sp, x1
 // create defined processor state
 	mov x0,  #0
 	mov x1,  #0
@@ -231,7 +235,7 @@ __enter_scamv_train_loop:
 	mov x27, #0
 	mov x28, #0
 	mov x29, #0
-	mov sp,  x0
+	//mov sp,  x0
 	// set all ALU flags to a defined state
 	adds x0, x1, x2
 
@@ -271,6 +275,10 @@ __exit_scamv_train_loop:
 	blr x30
 // load _scamv_run in x30 (LR)
 	ldr x30, [sp, #(8 *  2)]
+// restore SP register
+	ldr x0, =_sp_store
+	ldr x1, [x0]
+	mov sp, x1
 // create defined processor state
 	mov x0,  #0
 	mov x1,  #0
@@ -302,7 +310,7 @@ __exit_scamv_train_loop:
 	mov x27, #0
 	mov x28, #0
 	mov x29, #0
-	mov sp,  x0
+	//mov sp,  x0
 	// set all ALU flags to a defined state
 	adds x0, x1, x2
 
@@ -393,6 +401,10 @@ __enter_scamv_cpu_cycles_loop:
 #endif
 // load _scamv_run in x30 (LR)
 	ldr x30, [sp, #(8 *  2)]
+// restore SP register
+	ldr x0, =_sp_store
+	ldr x1, [x0]
+	mov sp, x1
 // create defined processor state
 	mov x0,  #0
 	mov x1,  #0
@@ -424,7 +436,7 @@ __enter_scamv_cpu_cycles_loop:
 	mov x27, #0
 	mov x28, #0
 	mov x29, #0
-	mov sp,  x0
+	//mov sp,  x0
 	// set all ALU flags to a defined state
 	adds x0, x1, x2
 
