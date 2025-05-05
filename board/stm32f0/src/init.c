@@ -85,9 +85,14 @@ static void isr_reset(void)
 	while(rd32(R_FLASH_SR) & BIT0);
 	wr32(R_FLASH_ACR, 0b001);
 
-	/* Use PLL as system clock */
-	or32(RCC_CFGR, 0b10);
-	while (((rd32(RCC_CFGR) >> 2) & 0x3) != 0b10);
+	const int no_flash_latency = 1;
+	if (no_flash_latency) {
+		wr32(R_FLASH_ACR, 0b000);
+	} else {
+		/* Use PLL as system clock */
+		or32(RCC_CFGR, 0b10);
+		while (((rd32(RCC_CFGR) >> 2) & 0x3) != 0b10);
+	}
 
 	/* Enable clock on used AHB and APB peripherals */
 	or32(RCC_APB2ENR, BIT14); /* USART1 */
@@ -106,7 +111,7 @@ static void isr_reset(void)
 	gpio_mode(IO(PORTA, 10), PULL_NO);
 
 	/*  fPCLK=48MHz, br=115.2KBps, BRR=0x1A1, see table 104 pag. 704 */
-	wr32(R_USART1_BRR, 0x1a1);
+	wr32(R_USART1_BRR, 0x1a1 / (no_flash_latency ? 6 : 1));
 	or32(R_USART1_CR1, BIT3 | BIT0);
 
 	main();
