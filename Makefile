@@ -38,6 +38,13 @@ LINKERFILE    = board/$(PROGPLAT_BOARD)/$(BOARDCONFIG).ld
 
 # compiler flags
 # ---------------------------------
+#OPTIMIZED_MODE = 1
+ifeq ("$(OPTIMIZED_MODE)", "")
+  OPTIMIZATION_FLAG = -O0
+else
+  OPTIMIZATION_FLAG = -O3
+endif
+
 LDFLAGS_PRE  = -Bstatic -nostartfiles -nostdlib
 
 ifeq ("$(PROGPLAT_ARCH)", "arm8")
@@ -57,8 +64,14 @@ endif
 
 INCFLAGS     = $(foreach d,$(CODE_DIRS),-I$d/inc)
 SFLAGS       = ${SFLAGS_EXTRA} ${INCFLAGS}
-CFLAGS	     = -std=gnu99 -Wall -fno-builtin -fno-stack-protector ${INCFLAGS} ${CFLAGS_EXTRA}
+CFLAGS	     = -std=gnu99 -Wall -fno-builtin -fno-stack-protector ${INCFLAGS} ${OPTIMIZATION_FLAG} ${CFLAGS_EXTRA}
 
+BENCHMARK_MODE = 1
+ifeq ("$(BENCHMARK_MODE)", "")
+  DEFINES_EXTRA  = 
+else
+  DEFINES_EXTRA  = -D__BENCHMARK_MODE
+endif
 
 
 # compilation and linking
@@ -69,15 +82,23 @@ all/inc/config_input.h: ${CONFIGFILE}
 	./scripts/gen_config_input.py
 
 %.o: %.S ${INCLUDE_FILES}
-	${CROSS}cpp ${INCFLAGS} $< | ${CROSS}as ${SFLAGS} -o $@ -
+	${CROSS}cpp ${INCFLAGS} ${DEFINES_EXTRA} $< | ${CROSS}as ${SFLAGS} -o $@ -
 
 %.o: %.c ${INCLUDE_FILES}
-	${CROSS}gcc ${CFLAGS} -c -o $@ $<
+	${CROSS}gcc ${CFLAGS} ${DEFINES_EXTRA} -c -o $@ $<
 
-$(NAME): ${OBJECTS} ${INCLUDE_FILES}
+$(NAME): ${OBJECTS} ${INCLUDE_FILES} $(LINKERFILE) Makefile
 	mkdir -p ${OUTDIR}
 	${CROSS}ld $(LDFLAGS_PRE) -o $@ -T $(LINKERFILE) ${OBJECTS} $(LDFLAGS_POST)
-	${CROSS}objdump -t -h -D $@ > "$@_da"
+	${CROSS}objdump -t -h $@ > "$@.table"
+	${CROSS}objdump -d    $@ > "$@.da"
+	${CROSS}objdump -D    $@ > "$@.da.all"
+	${CROSS}objdump -j.text -j.data -j.bss -d $@ > "$@.da.plus"
+	${CROSS}objdump -j.text -j.data -j.bss -s $@ > "$@.mem"
+#	${CROSS}objdump -j.reloadtext -t -h $@ > "$@.reloadtext.table"
+#	${CROSS}objdump -j.reloadtext -d $@ > "$@.reloadtext.da"
+#	${CROSS}objcopy --gap-fill=0xff -j.reloadtext -O binary $@ "$@.reloadtext"
+#	${CROSS}objcopy -O ihex $@ "$@.ihex"
 
 clean:
 	rm -rf ${OUTDIR}
