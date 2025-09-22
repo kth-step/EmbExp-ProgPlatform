@@ -22,8 +22,23 @@ void experiment_complete_marker() {
   printf_echoloop();
 }
 
+void benchmark_run();
+#include "io.h"
+
 int main()
 {
+#ifdef __BENCHMARK_MODE
+	io_init();
+	out_info("");
+	out_info("--------------------------------");
+	out_info("io ready!");
+	out_info("benchmark start");
+
+	while(1) {
+		benchmark_run();
+	}
+#endif
+
 #if __has_include("experiment/binpatch.h")
   patch_binary();
 #endif
