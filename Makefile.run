@@ -6,6 +6,7 @@ ifndef EMBEXP_INSTANCE_IDX
 endif
 
 
+
 # embexp port redirections
 # ---------------------------------
 
@@ -25,7 +26,7 @@ uart:
 	telnet localhost $(EMBEXP_UART_PORT)
 
 log:
-	nc localhost $(EMBEXP_UART_PORT)
+	stty -icanon && nc localhost $(EMBEXP_UART_PORT)
 
 run debug: $(NAME)
 	./scripts/run_gdb.py ${GDB} "localhost:$(EMBEXP_GDBS_PORT)" $(NAME) $(BOARDCONFIG) $@
@@ -45,5 +46,7 @@ runlog_try: $(NAME)
 cleanuart:
 	make clean && make runlog && cat temp/uart.log
 
+reset:
+	${GDB} --eval-command="target remote localhost:$(EMBEXP_GDBS_PORT)" -x scripts/gdb/reset_$(BOARDCONFIG).gdb -x scripts/gdb/run.gdb
 
-.PHONY: connect uart log run runlog runlog_reset runlog_try cleanuart
+.PHONY: connect uart log run runlog runlog_reset runlog_try cleanuart reset
