@@ -26,6 +26,8 @@
 #define PCLK (HCLK / APB_PRESCALER)
 #define SYSTICKS_FREQ      1000
 
+#define NO_FLASH_LATENCY 1
+
 static uint32_t ticks = 0;
 
 extern unsigned char _sdata_flash;
@@ -36,24 +38,60 @@ extern unsigned char _ebss;
 
 extern int main();
 
-int putchar(int c)
-{
-	/* Write byte to tx register (TDR) */
-	wr32(R_USART1_TDR, c);
+void uart_init() {
+	#ifdef NO_FLASH_LATENCY
+		const int no_flash_latency = 1;
+	#else
+		const int no_flash_latency = 0;
+	#endif
 
-	/* Wait for data sent (TDR becomes empty */
-	while (!(rd32(R_USART1_ISR) & BIT7));
-	return c;
+	/* Init USART1 on PA9/PA10 */
+	gpio_func(IO(PORTA, 9), 1);
+	gpio_func(IO(PORTA, 10), 1);
+	gpio_mode(IO(PORTA, 9), PULL_NO);
+	gpio_mode(IO(PORTA, 10), PULL_NO);
+
+	/*  fPCLK=48MHz, br=115.2KBps, BRR=0x1A1, see table 104 pag. 704 */
+	wr32(R_USART1_BRR, 0x1a1 / (no_flash_latency ? 6 : 1));
+	or32(R_USART1_CR1, BIT3 | BIT2 | BIT0);
+
+	// avoid receiving some wrong byte first, there must be a better way to fix this though
+	for (int i = 0; i < 100; i++) {
+		rd32(R_USART1_ISR);
+		rd32(R_USART1_RDR);
+	}
 }
 
-void uart_init() {
+int uart_write(char c)
+{
+	/* Wait for data sent (TDR becomes empty */
+	if (!(rd32(R_USART1_ISR) & BIT7))
+		return -1;
+
+	/* Write byte to tx register (TDR) */
+	wr32(R_USART1_TDR, c);
+	return 0;
+}
+
+int uart_read()
+{
+	/* wait for data to arrive */
+	if (!(rd32(R_USART1_ISR) & BIT5))
+		return -1;
+
+	/* read byte from rx register (RDR) */
+	return rd32(R_USART1_RDR)&0xFF;
 }
 
 void uart_putchar(char c) {
-	putchar(c);
+	while (uart_write(c));
 }
+
 char uart_getchar() {
-	while (1);
+	int c;
+	while ((c = uart_read()) < 0);
+
+	return (char)c;
 }
 
 static void isr_reset(void)
@@ -85,14 +123,13 @@ static void isr_reset(void)
 	while(rd32(R_FLASH_SR) & BIT0);
 	wr32(R_FLASH_ACR, 0b001);
 
-	const int no_flash_latency = 1;
-	if (no_flash_latency) {
+	#ifdef NO_FLASH_LATENCY
 		wr32(R_FLASH_ACR, 0b000);
-	} else {
+	#else
 		/* Use PLL as system clock */
 		or32(RCC_CFGR, 0b10);
 		while (((rd32(RCC_CFGR) >> 2) & 0x3) != 0b10);
-	}
+	#endif
 
 	/* Enable clock on used AHB and APB peripherals */
 	or32(RCC_APB2ENR, BIT14); /* USART1 */
@@ -104,15 +141,7 @@ static void isr_reset(void)
 	wr32(R_SYST_CVR, 0);
 	wr32(R_SYST_CSR, BIT0 | BIT1 | BIT2);
 
-	/* Init USART1 on PA9/PA10 */
-	gpio_func(IO(PORTA, 9), 1);
-	gpio_func(IO(PORTA, 10), 1);
-	gpio_mode(IO(PORTA, 9), PULL_NO);
-	gpio_mode(IO(PORTA, 10), PULL_NO);
-
-	/*  fPCLK=48MHz, br=115.2KBps, BRR=0x1A1, see table 104 pag. 704 */
-	wr32(R_USART1_BRR, 0x1a1 / (no_flash_latency ? 6 : 1));
-	or32(R_USART1_CR1, BIT3 | BIT0);
+	uart_init();
 
 	main();
 }
