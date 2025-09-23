@@ -11,10 +11,15 @@ import json
 
 from datetime import datetime
 import os
+import argparse
 
 import balrobcomm
 import benchmarklib
 
+# parse arguments
+parser = argparse.ArgumentParser()
+parser.add_argument("experiment_name", help="select from: ldldbr8, aes, modexp, modexp_uidivmod, motor_set, balrob, balrob_fadd, balrob_fdiv")
+args = parser.parse_args()
 
 # beginning of the script
 # ===============================================================
@@ -33,7 +38,17 @@ experiment_results_filename = f"{results_dir}/{now_str}.json"
 if not os.path.isdir(results_dir):
 	os.mkdir(results_dir)
 
-if True:
+#experiment_name = "ldldbr8"
+#experiment_name = "aes"
+#experiment_name = "modexp_uidivmod"
+#experiment_name = "modexp"
+#experiment_name = "motor_set"
+#experiment_name = "balrob_fadd"
+#experiment_name = "balrob_fdiv"
+#experiment_name = "balrob"
+experiment_name = args.experiment_name
+
+if experiment_name != "balrob":
 	overall_start_time = time.time()
 	min_exp = (9999999999, None)
 	max_exp = (0, None)
@@ -58,35 +73,49 @@ if True:
 					# ----- the ldldbr8 example only has one function
 					# ----- this function takes no arguments
 					# --------
-					#cycles = benchmarklib.run_experiment__reffunc_test4(bc)
+					if experiment_name == "ldldbr8":
+						cycles = benchmarklib.run_experiment__reffunc_test4(bc)
 
 					# --------
 					# ----- the aes example only has one function
 					# ----- this experiment handles random input generation internally
 					# --------
-					#cycles = benchmarklib.execute_experiment_my_aes(bc)
-
+					elif experiment_name == "aes":
+						cycles = benchmarklib.execute_experiment_my_aes(bc)
 
 					# --------
 					# ----- the modexp example consists of the modexp function and the modulo emulation function
 					# ----- my_modexp_asm takes 3 int arguments, my_uidivmod_mod_asm takes two uints
 					# --------
-					#cycles = benchmarklib.execute_experiment__my_modexp_asm(bc, *inputs_s)
-					#cycles = benchmarklib.execute_experiment__my_uidivmod_mod_asm(bc, *inputs_s)
-					#
-					#inputs_s = ((2 ** 8) - 1, (2 ** 25) - 1, (2 ** 17) - 1)
-					#cycles = benchmarklib.run_experiment__mymodexp(bc, *inputs_s)
-					#inputs_s = ((2 ** 32) - 1, 1)
-					#cycles = benchmarklib.run_experiment_uidivmod(bc, *inputs_s)
-
+					elif experiment_name == "modexp_uidivmod":
+						c = benchmarklib.gen_rand_uint32()
+						d = benchmarklib.gen_rand_uint32()
+						inputs_s = (c, d)
+						cycles = benchmarklib.execute_experiment__my_uidivmod_mod_asm(bc, *inputs_s)
+					elif experiment_name == "modexp":
+						c = benchmarklib.gen_rand_uint32()
+						d = benchmarklib.gen_rand_uint32()
+						e = benchmarklib.gen_rand_uint32()
+						inputs_s = (c, d, e)
+						cycles = benchmarklib.execute_experiment__my_modexp_asm(bc, *inputs_s)
+						#
+						#inputs_s = ((2 ** 8) - 1, (2 ** 25) - 1, (2 ** 17) - 1)
+						#cycles = benchmarklib.run_experiment__mymodexp(bc, *inputs_s)
+						#inputs_s = ((2 ** 32) - 1, 1)
+						#cycles = benchmarklib.run_experiment_uidivmod(bc, *inputs_s)
 
 					# --------
 					# ----- motor_set_l and motor_set_r are the elementary functions for the motor binary, which internally call motor_prep_input
 					# ----- all use int as datatypes; motor_set and motor_set_multi take two arguments, the others take only one
 					# ----- for the experiments, only motor_set and motor_set_multi are relevant
 					# -------- 
-					#cycles = benchmarklib.execute_experiment_motor_set(bc, *inputs_s) # call to motor_set (calls motor_set_l and motor_set_r)
-					cycles = benchmarklib.run_experiment_motor_set_multi(bc, *inputs_s) # function that calls to motor_set twice (FRAGILE, ONLY WORKS WITH O3)
+					elif experiment_name == "motor_set":
+						c = benchmarklib.gen_rand_int32()
+						d = benchmarklib.gen_rand_int32()
+						inputs_s = (c, d)
+						cycles = benchmarklib.execute_experiment_motor_set(bc, *inputs_s) # call to motor_set (calls motor_set_l and motor_set_r)
+					#else if experiment_name == "motor_set_multi":
+					#	cycles = benchmarklib.run_experiment_motor_set_multi(bc, *inputs_s) # function that calls to motor_set twice (FRAGILE, ONLY WORKS WITH O3)
 					#
 					#cycles = benchmarklib.execute_experiment_motor_set_l(bc, *inputs_s)
 					#cycles = benchmarklib.execute_experiment_motor_prep_input(bc, *inputs_s)
@@ -98,8 +127,16 @@ if True:
 					# ----- the pid example has subfunctions fadd and fdiv, the pid evaluation is further below in this file
 					# ----- fadd and fdiv takes two floats, pid has a special input generator and setter (there are no arguments, but several state components in memory)
 					# --------
-					#cycles = benchmarklib.execute_experiment_fadd(bc, *inputs_s)
-					#cycles = benchmarklib.execute_experiment_fdiv(bc, *inputs_s)
+					elif experiment_name == "balrob_fadd":
+						a = benchmarklib.gen_rand_float()
+						b = benchmarklib.gen_rand_float()
+						inputs_s = (a, b)
+						cycles = benchmarklib.execute_experiment_fadd(bc, *inputs_s)
+					elif experiment_name == "balrob_fdiv":
+						a = benchmarklib.gen_rand_float()
+						b = benchmarklib.gen_rand_float()
+						inputs_s = (a, b)
+						cycles = benchmarklib.execute_experiment_fdiv(bc, *inputs_s)
 					
           
 					print(f"==========>>>>> {cycles}")
@@ -128,6 +165,8 @@ if True:
 
 print("starting experiments")
 overall_start_time = time.time()
+min_exp = (9999999999, None)
+max_exp = (0, None)
 try:
 	with open(experiment_results_filename + "_log", "w") as f_log:
 		f_log.write("[\n")
@@ -151,6 +190,10 @@ try:
 					cycles = benchmarklib.execute_experiment(bc, inputs)
 					time_diff = time.time() - start_time
 					print(f"==========>>>>> {cycles} (exp time: {time_diff:.2f}s)")
+					if cycles > max_exp[0]:
+						max_exp = (cycles, inputs_s)
+					if cycles < min_exp[0]:
+						min_exp = (cycles, inputs_s)
 				finally:
 					# store inputs and cycle count
 					time_diff_s = None if time_diff == None else f"{time_diff:.2f}"
@@ -166,6 +209,10 @@ except KeyboardInterrupt:
 finally:
 	with open(experiment_results_filename, "w") as f:
 		json.dump(experiment_results, f)
+	print("min cycles experiment:")
+	print(min_exp)
+	print("max cycles experiment:")
+	print(max_exp)
 	time_diff = time.time() - overall_start_time
 	print(40 * "=")
 	print(f"    overall benchmarking time: {time_diff:.2f}s")
