@@ -3,7 +3,7 @@
 rm -rf testing_logs
 mkdir testing_logs
 
-rm -rf output && mkdir output && cp output_o0_floortop/* output/ && make run
+make && rm -rf output && mkdir output && cp output_o0_floortop/* output/ && make run
 
 cd pyRC
 ./benchmark.py -h
