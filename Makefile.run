@@ -45,5 +45,8 @@ runlog_try: $(NAME)
 cleanuart:
 	make clean && make runlog && cat temp/uart.log
 
+reset:
+	${GDB} --eval-command="target remote localhost:$(EMBEXP_GDBS_PORT)" -x scripts/gdb/reset_$(BOARDCONFIG).gdb -x scripts/gdb/run.gdb
 
-.PHONY: connect uart log run runlog runlog_reset runlog_try cleanuart
+
+.PHONY: connect uart log run runlog runlog_reset runlog_try cleanuart reset
