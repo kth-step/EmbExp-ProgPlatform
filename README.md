@@ -17,6 +17,7 @@ The repository [`EmbExp-Logs`](https://github.com/kth-step/EmbExp-Logs) utilizes
 - ARM Cortex-A72 - ARMv8-A (Raspberry Pi 4B)
 - ARM Cortex-A76 - ARMv8-A (Raspberry Pi 5B)
 - ARM Cortex-M0 - ARMv6-M (LPCXpresso LPC11C24)
+- ARM Cortex-M0 - ARMv6-M (STM32F0 Discovery - STM32F051R8T6)
 - SiFive Freedom E300 - RV32IMAC (Arty A7-100T)
 
 
