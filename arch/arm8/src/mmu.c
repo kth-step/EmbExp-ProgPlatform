@@ -46,8 +46,16 @@ void l1_set_translation(uint64_t * l1, uint64_t va, uint64_t pa, uint64_t cachea
   l1[idx] = entry;
 }
 
-void enable_mmu(void) {
-    // It is implemented in the CPUECTLR register.
+void enable_smp(void) {
+  // on A53 and A72, have to enable the flag SMP/SMPEN (hardware management of coherency) before enabling caches (even if there is only one core in the system),MMU, TLB maintenance operations - see A53 TRM page 182, see A72 TRM page 208
+  // the flag is in the register S3_1_C15_C2_1, which is called CPUECTLR_EL1 on A53 and A72 - holds an implementation defined configuration
+
+  // Option: Conditionally set SMP bit only if implemented
+  // Check via ID registers (optional defensive code)
+  //uint64_t midr;
+  //asm volatile ("MRS %0, MIDR_EL1" : "=r"(midr));
+  //if ((midr & 0xFFF0) == 0xD030 || (midr & 0xFFF0) == 0xD070) {
+
 #if defined(CORTEX_A53) || defined(CORTEX_A72)
   uint64_t smp;
   asm (
@@ -62,6 +70,10 @@ void enable_mmu(void) {
        : [input_i] "r" (smp)
        );
 #endif
+}
+
+void enable_mmu(void) {
+  enable_smp();
   
   // Enable caches and the MMU.
   uint64_t sctl;
@@ -92,27 +104,7 @@ void enable_mmu(void) {
 }
 
 void disable_mmu(void) {
-    // It is implemented in the CPUECTLR register.
-#if defined(CORTEX_A53) || defined(CORTEX_A72)
-  // Conditionally set SMP bit only if implemented
-  // Check via ID registers (optional defensive code)
-  //uint64_t midr;
-  //asm volatile ("MRS %0, MIDR_EL1" : "=r"(midr));
-  //if ((midr & 0xFFF0) == 0xD030 || (midr & 0xFFF0) == 0xD070) {
-  uint64_t smp;
-  asm (
-       "MRS %x[result], S3_1_C15_C2_1"
-       : [result] "=r" (smp)
-       : 
-       );
-  smp |= (0x1 << 6); // The SMP bit.
-  asm (
-       "MSR S3_1_C15_C2_1, %x[input_i]"
-       :
-       : [input_i] "r" (smp)
-       );
-  //}
-#endif
+  enable_smp();
 
   // disable caches and the MMU.
   uint64_t sctl;
