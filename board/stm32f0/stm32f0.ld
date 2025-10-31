@@ -21,15 +21,15 @@ SECTIONS
 	.data 0x20000000: AT (_erom) {
 		_sdata_flash = LOADADDR(.data);
 		_sdata = .;
-		*(.data);
+		*(.data*);
+	  _edata = .;
 	}
-	_edata = .;
 
 	.bss : {
 		. = ALIGN(16);
 		_sbss = .;
-		*(.bss);
+		*(.bss*);
 		. = ALIGN(16);
-		_ebss = .;
+	  _ebss = .;
 	}
 }
