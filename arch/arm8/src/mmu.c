@@ -48,6 +48,7 @@ void l1_set_translation(uint64_t * l1, uint64_t va, uint64_t pa, uint64_t cachea
 
 void enable_mmu(void) {
     // It is implemented in the CPUECTLR register.
+#if defined(CORTEX_A53) || defined(CORTEX_A72)
   uint64_t smp;
   asm (
        "MRS %x[result], S3_1_C15_C2_1"
@@ -60,6 +61,7 @@ void enable_mmu(void) {
        :
        : [input_i] "r" (smp)
        );
+#endif
   
   // Enable caches and the MMU.
   uint64_t sctl;
@@ -91,6 +93,12 @@ void enable_mmu(void) {
 
 void disable_mmu(void) {
     // It is implemented in the CPUECTLR register.
+#if defined(CORTEX_A53) || defined(CORTEX_A72)
+  // Conditionally set SMP bit only if implemented
+  // Check via ID registers (optional defensive code)
+  //uint64_t midr;
+  //asm volatile ("MRS %0, MIDR_EL1" : "=r"(midr));
+  //if ((midr & 0xFFF0) == 0xD030 || (midr & 0xFFF0) == 0xD070) {
   uint64_t smp;
   asm (
        "MRS %x[result], S3_1_C15_C2_1"
@@ -103,8 +111,10 @@ void disable_mmu(void) {
        :
        : [input_i] "r" (smp)
        );
-  
-  // Enable caches and the MMU.
+  //}
+#endif
+
+  // disable caches and the MMU.
   uint64_t sctl;
   asm (
        "MRS %x[result], SCTLR_EL3"

@@ -261,10 +261,14 @@ void save_cache_state(cache_state cache) {
 
   for (int set=0; set<SETS; set++) {
     for (int way=0; way<WAYS; way++) {
-    #ifdef CORTEX_A72
-      get_cache_line_a72(&(cache[set][way]), set, way);
-    #else
+    #if defined(CORTEX_A53)
       get_cache_line(&(cache[set][way]), set, way);
+    #elif defined(CORTEX_A72)
+      get_cache_line_a72(&(cache[set][way]), set, way);
+    #elif defined(CORTEX_A76)
+      #error cannot read cache state of A76 through EL3 software (rest of mmu/cache code also untested for rpi5)
+    #else
+      #error unknown processor type
     #endif
     }
   }

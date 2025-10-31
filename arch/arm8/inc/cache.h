@@ -4,8 +4,9 @@
 #include "config.h"
 #include <stdint.h>
 
-#ifndef CORTEX_A72
-  //general: rpi3...
+// https://www.raspberrypi.com/documentation/computers/processors.html
+#if defined(CORTEX_A53)
+  // rpi3
   #define WAYS (4)
   #define SETS (32 * 1024 / 64 / WAYS)
   #define SET(x) ((((uint64_t)(x))/64)%SETS)
@@ -14,7 +15,7 @@
 
   #define WAYS_L2 (16)
   #define SETS_L2 (512 * 1024 / 64 / WAYS_L2)
-#else
+#elif defined(CORTEX_A72)
   //rpi4
   #define WAYS (2)
   #define SETS (32 * 1024 / 64 / WAYS)
@@ -23,8 +24,22 @@
   #define TAG_SET_TO_ADDR(tag, set) (tag * 64 * SETS + set*64)
 
   #define WAYS_L2 (16)
-  // size of L2 is 1MB. Source: https://www.raspberrypi.org/documentation/hardware/raspberrypi/bcm2711/README.md
+  // size of L2 is 1MB
   #define SETS_L2 (1024 * 1024 / 64 / WAYS_L2)
+#elif defined(CORTEX_A76)
+  //rpi5
+  #define WAYS (4)
+  #define SETS (64 * 1024 / 64 / WAYS)
+  #define SET(x) ((((uint64_t)(x))/64)%SETS)
+  #define TAG_OF_ADDR(x) (((uint64_t)(x)) / SETS / 64)
+  #define TAG_SET_TO_ADDR(tag, set) (tag * 64 * SETS + set*64)
+
+  // L2 is 512kB per core
+  #define WAYS_L2 (8)
+  #define SETS_L2 (512 * 1024 / 64 / WAYS_L2)
+  // there is 2MB shared L3
+#else
+  #error unknown processor type
 #endif
 
 #define TRUE (1)
