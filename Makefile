@@ -74,7 +74,7 @@ all/inc/config_input.h: ${CONFIGFILE}
 %.o: %.c ${INCLUDE_FILES}
 	${CROSS}gcc ${CFLAGS} -c -o $@ $<
 
-$(NAME): ${OBJECTS} ${INCLUDE_FILES}
+$(NAME): ${OBJECTS} ${INCLUDE_FILES} $(LINKERFILE) Makefile
 	mkdir -p ${OUTDIR}
 	${CROSS}ld $(LDFLAGS_PRE) -o $@ -T $(LINKERFILE) ${OBJECTS} $(LDFLAGS_POST)
 	${CROSS}objdump -t -h -D $@ > "$@_da"
